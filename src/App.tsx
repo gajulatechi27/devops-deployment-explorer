@@ -6,7 +6,7 @@ import { Activity,ArrowRight,Box,Check,ChevronDown,Cloud,GitBranch,Layers,Moon,P
 
 type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"server"|"database";
 type NodeDef={id:string;name:string;sub:string;kind:NodeKind;pos:[number,number,number];description:string;tech:string[]};
-const brandIcons:Record<string,string>={git:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg",ci:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-original.svg",ecr:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Containers/48/Arch_Amazon-Elastic-Container-Registry_48.svg",eks:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Containers/48/Arch_Amazon-Elastic-Kubernetes-Service_48.svg",pods:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg",alb:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Networking-Content-Delivery/48/Arch_Elastic-Load-Balancing_48.svg",jenkins:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg",registry:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg",gitlab:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg",runner:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg",host:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg",ec2:"https://api.iconify.design/logos:aws-ec2.svg",nginx:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg",container:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg",aks:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",acr:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",azureci:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",gke:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",gar:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",cloudbuild:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",market:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",edge:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cloudflare/cloudflare-original.svg",gateway:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg",services:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",events:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apachekafka/apachekafka-original.svg",cache:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg",data:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",observability:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg",catalog:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/elasticsearch/elasticsearch-original.svg",cart:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg",orders:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",inventory:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",payments:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg",auth:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/keycloak/keycloak-original.svg",origin:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg",encode:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ffmpeg/ffmpeg-original.svg",recommend:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",restaurant:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",dispatch:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",location:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg",notify:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg",customer:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",payer:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg",payee:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg",switch:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apachekafka/apachekafka-original.svg",risk:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",ledger:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",recon:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",audit:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg",tenant:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",identity:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/keycloak/keycloak-original.svg",app:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",jobs:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rabbitmq/rabbitmq-original.svg",metering:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg"};
+const brandIcons:Record<string,string>={git:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg",ci:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-original.svg",ecr:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Containers/48/Arch_Amazon-Elastic-Container-Registry_48.svg",eks:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Containers/48/Arch_Amazon-Elastic-Kubernetes-Service_48.svg",pods:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg",alb:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Networking-Content-Delivery/48/Arch_Elastic-Load-Balancing_48.svg",jenkins:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg",registry:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg",gitlab:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg",runner:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg",host:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg",ec2:"https://api.iconify.design/logos:aws-ec2.svg",nginx:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg",container:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg",aks:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",acr:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",azureci:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",gke:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",gar:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",cloudbuild:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",market:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",edge:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cloudflare/cloudflare-original.svg",gateway:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg",services:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",events:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apachekafka/apachekafka-original.svg",cache:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg",data:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",observability:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg",catalog:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/elasticsearch/elasticsearch-original.svg",cart:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg",orders:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",inventory:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",payments:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg",auth:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/keycloak/keycloak-original.svg",origin:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg",encode:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ffmpeg/ffmpeg-original.svg",recommend:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",restaurant:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",dispatch:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",location:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg",notify:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg",customer:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",payer:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg",payee:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg",switch:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apachekafka/apachekafka-original.svg",risk:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",ledger:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",recon:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",audit:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg",tenant:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",identity:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/keycloak/keycloak-original.svg",app:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",jobs:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rabbitmq/rabbitmq-original.svg",metering:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",sonar:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sonarqube/sonarqube-original.svg",nexus:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sonatype/sonatype-original.svg",pipeline:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azuredevops/azuredevops-original.svg",artifact:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nexus/nexus-original.svg",s3:"https://api.iconify.design/logos:aws-s3.svg",cdn:"https://api.iconify.design/logos:aws-cloudfront.svg",dns:"https://api.iconify.design/logos:aws-route53.svg",rds:"https://api.iconify.design/logos:aws-rds.svg",flyway:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flyway/flyway-original.svg",postgres:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",backup:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg"};
 type Stage={title:string;detail:string;command:string;node:string;from:string;to:string;kind:"request"|"response"|"success"};
 type Scenario={id:string;name:string;provider:string;category:string;summary:string;nodes:NodeDef[];links:[string,string][];stages:Stage[];appNodes?:NodeDef[];appLinks?:[string,string][]};
 const scenarios:Scenario[]=[
@@ -346,6 +346,124 @@ caseNode(["events","Event Backbone","Kafka-style events","pipeline","Distributes
 caseNode(["data","Data Platform","SQL · Cache · Search","database","Persists orders and catalog data with fit-for-purpose databases, cache and search indexes.","PostgreSQL|Redis|Search"],8)
 ];
 marketplaceCase.appLinks=[["shoppers","edge"],["edge","gateway"],["gateway","catalog"],["gateway","cart"],["cart","orders"],["orders","payments"],["orders","events"],["events","data"],["catalog","data"]];
+
+
+addDeployment({
+ id:"azure-devops-aks",name:"Azure DevOps → Azure AKS",provider:"MICROSOFT AZURE",category:"CI/CD · KUBERNETES",
+ summary:"Use Azure Repos and Azure Pipelines to compile, test, scan, publish an image to ACR and deploy manifests to Azure Kubernetes Service.",
+ nodes:[
+ ["dev","Developer","Code change","source","Pushes reviewed application and pipeline changes to Azure Repos.",["Git","Pull requests"]],
+ ["repo","Azure Repos","Source repository","source","Stores source code, YAML pipeline definitions and Kubernetes manifests.",["Azure Repos","Git"]],
+ ["pipeline","Azure Pipelines","Build + release","pipeline","Runs multi-stage CI/CD with build agents, approvals and deployment environments.",["azure-pipelines.yml","Agents","Environments"]],
+ ["sonar","SonarQube","Code quality gate","workload","Analyses code quality, bugs, vulnerabilities and coverage before artifact publication.",["Quality gate","Coverage","SAST"]],
+ ["acr","Azure Container Registry","Image repository","registry","Stores the versioned OCI image consumed by AKS.",["ACR","Image tags","Digest"]],
+ ["aks","Azure Kubernetes Service","Managed cluster","cluster","Runs Kubernetes workloads and reconciles the submitted manifests.",["AKS","Kubernetes","Namespaces"]],
+ ["pods","Application Pods","Running replicas","workload","Run the application containers and report readiness to Kubernetes.",["Pods","Probes","ReplicaSets"]],
+ ["users","Customers","HTTPS traffic","source","Reach the deployed application through its ingress or gateway.",["Ingress","TLS","HTTPS"]]
+ ],
+ steps:[
+ ["Commit code to Azure Repos","The developer pushes a commit and opens a pull request for review.","git push origin feature/release","dev","repo"],
+ ["Start Azure Pipeline","The YAML pipeline checks out the repository and selects a Microsoft-hosted or self-hosted agent.","az pipelines run --name demo-ci","repo","pipeline"],
+ ["Build and run tests","The agent restores dependencies, compiles the application and runs unit tests.","mvn -B clean verify","pipeline","pipeline","success"],
+ ["Run SonarQube quality gate","The pipeline submits analysis and waits for the configured quality gate result.","mvn sonar:sonar -Dsonar.projectKey=demo-app","pipeline","sonar"],
+ ["Build and push image to ACR","The pipeline builds an image and pushes the version tagged with the commit ID.","docker build -t demo.azurecr.io/web:$BUILD_BUILDID . && docker push demo.azurecr.io/web:$BUILD_BUILDID","sonar","acr"],
+ ["Deploy manifests to AKS","The release stage authenticates to the target environment and applies Kubernetes resources.","kubectl apply -f k8s/","acr","aks"],
+ ["Verify rollout and endpoint","The pipeline waits for rollout completion and checks the application health endpoint.","kubectl rollout status deploy/web -n demo","aks","pods","success"],
+ ["Validate production access","A smoke test confirms the ingress endpoint responds successfully.","curl -fsS https://demo.example.invalid/health","pods","users","response"]
+ ]
+});
+addDeployment({
+ id:"sonar-nexus-ec2",name:"Jenkins + SonarQube + Nexus → EC2",provider:"HYBRID / AWS",category:"CI/CD · CODE QUALITY · ARTIFACT REPOSITORY",
+ summary:"A common enterprise pipeline: Jenkins builds and tests, SonarQube enforces code quality, Nexus stores versioned artifacts, then Ansible deploys to Linux EC2.",
+ nodes:[
+ ["dev","Developer","Code commit","source","Commits source code and build configuration to Git.",["Git","Pull requests"]],
+ ["repo","Git Repository","Source control","source","Stores application code, Maven build file and Jenkinsfile.",["Git","Branches"]],
+ ["jenkins","Jenkins","CI/CD orchestrator","pipeline","Coordinates checkout, Maven build, test, quality analysis, artifact upload and deployment.",["Jenkinsfile","Agents","Credentials"]],
+ ["sonar","SonarQube","Quality gate","workload","Analyses source for maintainability, reliability, security issues and coverage.",["SonarScanner","Quality gate"]],
+ ["nexus","Nexus Repository","Maven artifact store","registry","Stores immutable JAR/WAR artifacts and supports release versioning.",["Maven hosted","SNAPSHOT","Release"]],
+ ["ansible","Ansible","Configuration + deploy","pipeline","Copies the approved artifact and configures the target Linux host.",["Inventory","Playbook","SSH"]],
+ ["ec2","Amazon EC2","Linux application host","server","Runs the Java service under systemd behind a reverse proxy.",["EC2","Linux","systemd"]],
+ ["users","Application users","HTTPS traffic","source","Access the deployed application through the public endpoint.",["DNS","HTTPS"]]
+ ],
+ steps:[
+ ["Push code to Git","A developer pushes a reviewed change to the application repository.","git push origin main","dev","repo"],
+ ["Jenkins checks out and builds","Jenkins checks out the commit and runs the Maven build and unit tests.","mvn -B clean verify","repo","jenkins"],
+ ["SonarQube analysis","Jenkins submits source analysis and blocks promotion if the quality gate fails.","mvn sonar:sonar -Dsonar.projectKey=demo","jenkins","sonar"],
+ ["Publish artifact to Nexus","The versioned JAR is uploaded to the Nexus Maven hosted repository.","mvn deploy -DaltDeploymentRepository=demo::default::https://nexus.example.invalid/repository/releases/","sonar","nexus"],
+ ["Ansible deploys to EC2","Ansible downloads the approved artifact and copies it to the application directory.","ansible-playbook -i inventories/demo deploy.yml","nexus","ansible"],
+ ["Restart and verify service","The EC2 service is restarted and its health endpoint is checked.","sudo systemctl restart demo-app && curl -fsS http://127.0.0.1:8080/health","ansible","ec2","success"],
+ ["Verify production access","A final smoke test checks the application through its HTTPS endpoint.","curl -fsS https://app.example.invalid/health","ec2","users","response"]
+ ]
+});
+addDeployment({
+ id:"s3-cloudfront",name:"GitHub Actions → Amazon S3 + CloudFront",provider:"AWS CLOUD",category:"STATIC WEBSITE · CDN",
+ summary:"Build a static web application, publish versioned assets to an S3 bucket, invalidate CloudFront cache and verify the public website.",
+ nodes:[
+ ["dev","Developer","Frontend commit","source","Commits frontend code and build configuration.",["Git","React / Vite"]],
+ ["repo","GitHub","Source repository","source","Stores frontend source, tests and workflow YAML.",["GitHub","Actions"]],
+ ["ci","GitHub Actions","Build + validate","pipeline","Installs dependencies, runs tests and creates optimized static assets.",["Node.js","npm","OIDC"]],
+ ["artifact","Build output","dist/ assets","registry","Contains HTML, JavaScript, CSS, fonts and static media files.",["HTML","CSS","JS"]],
+ ["s3","Amazon S3","Static asset bucket","database","Stores the published website files with controlled bucket access.",["S3","Versioning","Bucket policy"]],
+ ["cdn","Amazon CloudFront","CDN distribution","network","Caches static assets at edge locations and serves HTTPS traffic.",["CloudFront","TLS","Cache policy"]],
+ ["dns","Route 53","DNS record","network","Maps the website hostname to the CloudFront distribution.",["DNS","Alias record"]],
+ ["users","Website visitors","HTTPS requests","source","Load the website through its custom domain.",["Browser","HTTPS"]]
+ ],
+ steps:[
+ ["Commit frontend changes","A developer pushes the website change to the main branch.","git push origin main","dev","repo"],
+ ["Install and test dependencies","CI installs locked dependencies and runs lint and unit tests.","npm ci && npm test","repo","ci"],
+ ["Build static website","The frontend bundler generates optimized files in the dist directory.","npm run build","ci","artifact"],
+ ["Sync files to S3","The pipeline uploads the static build and applies cache headers to the bucket.","aws s3 sync dist/ s3://demo-web-bucket --delete","artifact","s3"],
+ ["Invalidate CloudFront cache","The release invalidates changed paths so visitors receive the latest entry point and assets.","aws cloudfront create-invalidation --distribution-id E123DEMO --paths '/*'","s3","cdn"],
+ ["Verify DNS and HTTPS","The website hostname resolves to CloudFront and returns the expected response.","curl -I https://www.example.invalid","cdn","dns","success"],
+ ["Confirm website delivery","A browser smoke test checks the deployed website and static assets.","curl -fsS https://www.example.invalid/","dns","users","response"]
+ ]
+});
+addDeployment({
+ id:"rds-flyway",name:"Flyway Database Migration → Amazon RDS",provider:"AWS CLOUD",category:"DATABASE · SCHEMA MIGRATION",
+ summary:"Deploy database schema changes safely: validate migration scripts, review the migration plan, apply versioned Flyway migrations to Amazon RDS and verify schema health.",
+ nodes:[
+ ["dev","Developer","SQL migration","source","Creates an ordered, versioned SQL migration and application compatibility change.",["SQL","Git"]],
+ ["repo","Git Repository","Migration source","source","Stores Flyway migration scripts and database configuration templates.",["V1__*.sql","flyway.conf"]],
+ ["ci","CI Pipeline","Validate migrations","pipeline","Checks migration naming, SQL syntax and compatibility before release.",["Flyway","CI validation"]],
+ ["review","DBA approval","Change review","pipeline","Reviews lock strategy, backup status, backward compatibility and deployment window.",["Change record","DBA review"]],
+ ["flyway","Flyway","Migration runner","workload","Tracks applied migration versions and executes pending scripts in order.",["Schema history","Versioned SQL"]],
+ ["rds","Amazon RDS","Managed database","database","Hosts the relational database in private subnets with backups and monitoring.",["PostgreSQL","Private subnet","Backups"]],
+ ["app","Application service","Database client","workload","Connects using a least-privilege database role and validates application compatibility.",["JDBC","Connection pool"]],
+ ["ops","Operations","DB health checks","source","Checks connectivity, migration history, errors and database performance.",["CloudWatch","SQL checks"]]
+ ],
+ steps:[
+ ["Create versioned SQL migration","The developer adds an ordered migration file and tests it against a disposable database.","V12__add_customer_status.sql","dev","repo"],
+ ["Validate migration scripts","CI checks naming, SQL syntax and migration ordering without touching production data.","flyway validate","repo","ci"],
+ ["Review database change","The DBA reviews execution time, locks, rollback approach, backup and compatibility.","flyway info","ci","review"],
+ ["Prepare migration runner","The deployment job receives the database endpoint and a scoped migration identity from a secret store.","flyway -configFiles=conf/flyway.conf info","review","flyway"],
+ ["Apply schema migration","Flyway connects to the private RDS endpoint and applies pending versioned scripts.","flyway migrate","flyway","rds","success"],
+ ["Deploy compatible application","The application release starts using the updated schema and verifies database connectivity.","./gradlew test && ./deploy-app.sh","rds","app"],
+ ["Verify schema and service health","Operations checks Flyway schema history, database connectivity and application health.","flyway info && psql -c 'select now()'","app","ops","response"]
+ ]
+});
+addDeployment({
+ id:"postgres-ec2",name:"Ansible → PostgreSQL on Linux VM",provider:"ON-PREMISES / AWS",category:"DATABASE SERVER DEPLOYMENT",
+ summary:"Provision a Linux database host, install PostgreSQL, apply secure configuration, create roles and schema, then validate backups and application connectivity.",
+ nodes:[
+ ["dev","DB engineer","DB change request","source","Defines the database version, storage, parameters, roles and migration scripts.",["SQL","Change review"]],
+ ["repo","Git repository","DB automation","source","Stores Ansible playbooks, PostgreSQL configuration templates and SQL migrations.",["Git","YAML","SQL"]],
+ ["ci","CI pipeline","Lint + validate","pipeline","Lints playbooks and validates SQL/configuration before the maintenance window.",["ansible-lint","SQL checks"]],
+ ["ansible","Ansible","Host configuration","pipeline","Installs PostgreSQL packages, configures service settings and manages filesystem permissions.",["Inventory","Roles","Templates"]],
+ ["vm","Linux database VM","Database host","server","Provides the operating system, attached data volume and firewall boundary.",["Linux","LVM","Firewall"]],
+ ["postgres","PostgreSQL","Database engine","database","Runs the relational database and listens only on approved private interfaces.",["PostgreSQL","pg_hba.conf","WAL"]],
+ ["backup","Backup storage","WAL + snapshots","registry","Stores encrypted logical backups and scheduled volume snapshots.",["pg_dump","WAL archive"]],
+ ["app","Application service","DB connection","workload","Connects to the database using a dedicated least-privilege role.",["JDBC","Connection pool"]]
+ ],
+ steps:[
+ ["Commit database automation","The DB engineer commits the host configuration and SQL migration files.","git push origin main","dev","repo"],
+ ["Validate Ansible and SQL","CI checks playbook syntax, lint rules and migration scripts.","ansible-playbook --syntax-check site.yml && ansible-lint","repo","ci"],
+ ["Configure Linux database host","Ansible installs PostgreSQL packages, mounts the data volume and configures the service.","ansible-playbook -i inventory site.yml","ci","ansible"],
+ ["Install and configure PostgreSQL","The playbook renders postgresql.conf and pg_hba.conf, then enables the database service.","sudo systemctl enable --now postgresql","ansible","vm"],
+ ["Create database and roles","A controlled SQL migration creates the application database, schema and least-privilege role.","psql -f sql/bootstrap.sql","vm","postgres","success"],
+ ["Configure backup and recovery","A scheduled job creates a logical backup and validates that the artifact is readable.","pg_dump -Fc demo_db > demo_db.dump","postgres","backup"],
+ ["Verify application connectivity","The application checks a read-only query and connection-pool health.","psql -h db.internal.example.invalid -U app_user -d demo_db -c 'select 1'","postgres","app","response"]
+ ]
+});
 
 
 const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
