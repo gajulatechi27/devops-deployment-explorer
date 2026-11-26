@@ -208,6 +208,130 @@ for(const spec of caseStudies){
  scenarios.push({id:spec.id,name:spec.name,provider:spec.provider,category:spec.category,summary:spec.summary,nodes,links,stages,appNodes:nodes,appLinks:links});
 }
 
+
+type DeploymentSpec={id:string;name:string;provider:string;category:string;summary:string;nodes:(string|string[])[];steps:[string,string,string,string,string,Stage["kind"]?][]};
+function addDeployment(spec:DeploymentSpec){
+ const nodes=spec.nodes.map((row,i)=>caseNode(row,i));
+ const links=spec.steps.map(step=>[step[3],step[4]] as [string,string]);
+ const stages:Stage[]=spec.steps.map(([title,detail,command,from,to,kind="request"])=>({title,detail,command,node:to,from,to,kind}));
+ scenarios.push({id:spec.id,name:spec.name,provider:spec.provider,category:spec.category,summary:spec.summary,nodes,links,stages});
+}
+addDeployment({
+ id:"ecs-fargate",name:"GitHub Actions → AWS ECS Fargate",provider:"AWS CLOUD",category:"CONTAINER PLATFORM",
+ summary:"Build a container image, publish it to Amazon ECR and roll out a service on ECS Fargate without managing EC2 worker nodes.",
+ nodes:[
+ ["dev","Developer","Application commit","source","Pushes reviewed code and task definition changes to the repository.",["Git","Pull requests"]],
+ ["repo","GitHub","Source repository","source","Stores application code, Dockerfile and ECS task definitions.",["GitHub","Workflow YAML"]],
+ ["ci","GitHub Actions","Build + release","pipeline","Runs tests, builds an OCI image and assumes an AWS role using OIDC.",["GitHub Actions","OIDC","Docker"]],
+ ["ecr","Amazon ECR","Container image","registry","Stores immutable image versions for the ECS service.",["ECR","Image digest","Lifecycle policy"]],
+ ["ecs","Amazon ECS","Service scheduler","cluster","Maintains the desired task count and coordinates rolling deployments.",["ECS","Task definition","Service"]],
+ ["fargate","Fargate Tasks","Serverless containers","workload","Runs application tasks without provisioning or patching EC2 instances.",["Fargate","CPU / memory","Health checks"]],
+ ["alb","Application Load Balancer","HTTPS routing","network","Routes requests to healthy ECS task targets.",["ALB","Target groups","TLS"]],
+ ["users","End users","Production traffic","source","Access the application through its public HTTPS endpoint.",["DNS","HTTPS"]]
+ ],
+ steps:[
+ ["Commit application code","A reviewed commit updates the application and deployment definitions.","git push origin main","dev","repo"],
+ ["Run CI validation","GitHub Actions checks out source and runs automated tests.","npm ci && npm test","repo","ci"],
+ ["Build and publish image","The workflow builds a versioned image and pushes it to ECR.","docker build -t web:$GITHUB_SHA . && docker push $ECR/web:$GITHUB_SHA","ci","ecr"],
+ ["Register task definition","The release updates the ECS task definition to reference the immutable image digest.","aws ecs register-task-definition --cli-input-json file://task-definition.json","ecr","ecs"],
+ ["Roll out Fargate tasks","ECS replaces tasks according to the deployment configuration and waits for health checks.","aws ecs update-service --cluster prod --service web --force-new-deployment","ecs","fargate"],
+ ["Route traffic to healthy tasks","The load balancer target group sends requests only to healthy tasks.","aws elbv2 describe-target-health --target-group-arn $TG","fargate","alb","success"],
+ ["Verify production endpoint","A smoke test checks the public application health endpoint.","curl -fsS https://app.example.com/health","alb","users","response"]
+ ]
+});
+addDeployment({
+ id:"lambda-serverless",name:"AWS Lambda Serverless Deployment",provider:"AWS CLOUD",category:"SERVERLESS",
+ summary:"Deploy an event-driven serverless application with API Gateway, Lambda functions, versioned releases and asynchronous messaging.",
+ nodes:[
+ ["dev","Developer","Function code","source","Commits function code, dependencies and infrastructure definitions.",["Git","Python / Node.js"]],
+ ["repo","GitHub","Source repository","source","Stores Lambda source, tests and deployment templates.",["GitHub","Pull requests"]],
+ ["ci","CI Pipeline","Test + package","pipeline","Runs tests, scans dependencies and packages the function artifact.",["GitHub Actions","Unit tests"]],
+ ["artifact","Lambda Package","Versioned artifact","registry","Holds the packaged function code and dependency bundle.",["ZIP","Container image"]],
+ ["lambda","AWS Lambda","Function runtime","workload","Runs functions on demand and scales concurrency based on incoming events.",["Lambda","IAM role","Concurrency"]],
+ ["api","API Gateway","HTTP API","network","Authenticates and routes HTTP requests to Lambda integrations.",["Routes","Authorizers","Throttling"]],
+ ["queue","Amazon SQS","Async events","pipeline","Buffers background work and supports retry and dead-letter handling.",["SQS","DLQ","Visibility timeout"]],
+ ["users","API clients","HTTPS requests","source","Call the serverless API endpoint.",["HTTPS","JWT"]]
+ ],
+ steps:[
+ ["Push function changes","The developer pushes a function update to the repository.","git push origin main","dev","repo"],
+ ["Test and package","CI runs unit tests and packages the function with its runtime dependencies.","pytest && zip -r function.zip src/","repo","ci"],
+ ["Publish function artifact","The packaged artifact is uploaded to the deployment artifact store.","aws s3 cp function.zip s3://deployment-artifacts/releases/","ci","artifact"],
+ ["Update Lambda function","The deployment publishes the new function code and creates a versioned release.","aws lambda update-function-code --function-name orders --s3-bucket deployment-artifacts --s3-key releases/function.zip","artifact","lambda"],
+ ["Connect API and event sources","API Gateway routes synchronous calls while SQS triggers asynchronous processing.","aws lambda update-alias --function-name orders --name prod --function-version 12","lambda","api","success"],
+ ["Process queued work","Lambda consumes queued events with retry and dead-letter handling configured.","aws sqs get-queue-attributes --queue-url $QUEUE_URL","lambda","queue"],
+ ["Verify serverless endpoint","A smoke test invokes the API and validates the response.","curl -fsS https://api.example.com/orders/health","api","users","response"]
+ ]
+});
+addDeployment({
+ id:"argocd-gitops",name:"Argo CD GitOps → Kubernetes",provider:"KUBERNETES",category:"GITOPS",
+ summary:"Use Git as the desired-state source: CI builds and publishes an image, updates manifests, and Argo CD reconciles the Kubernetes cluster.",
+ nodes:[
+ ["dev","Developer","Code change","source","Creates an application change and opens a reviewed pull request.",["Git","Pull request"]],
+ ["repo","Git repository","Application source","source","Stores source code, Helm charts or Kustomize manifests.",["Git","Helm / Kustomize"]],
+ ["ci","CI Pipeline","Test + image build","pipeline","Tests the application, builds the image and publishes it to a registry.",["GitHub Actions","Docker"]],
+ ["registry","Container Registry","Immutable image","registry","Stores the image referenced by the GitOps configuration.",["OCI","Image digest"]],
+ ["config","GitOps repository","Desired cluster state","source","Contains environment-specific manifests and pinned image versions.",["Git","Helm values"]],
+ ["argocd","Argo CD","Reconciliation controller","pipeline","Watches Git and compares the desired state with live Kubernetes resources.",["Argo CD","Sync","Health"]],
+ ["k8s","Kubernetes cluster","Workload platform","cluster","Runs the reconciled Deployments, Services and Pods.",["Kubernetes","Deployments"]],
+ ["users","Application users","Production traffic","source","Reach the application through the Kubernetes ingress or gateway.",["Ingress","HTTPS"]]
+ ],
+ steps:[
+ ["Commit application change","The developer pushes code and opens a pull request for review.","git push origin feature/update","dev","repo"],
+ ["Run tests and build image","CI validates the code and builds a container image.","docker build -t registry.example.com/web:$GIT_SHA .","repo","ci"],
+ ["Publish immutable image","The CI pipeline pushes the image and records its digest.","docker push registry.example.com/web:$GIT_SHA","ci","registry"],
+ ["Update desired state in Git","The deployment automation updates the environment manifest to the new image digest.","yq -i '.image.tag = env(GIT_SHA)' environments/prod/values.yaml","registry","config"],
+ ["Argo CD detects Git change","Argo CD refreshes the application and identifies the desired-state difference.","argocd app diff web-prod","config","argocd"],
+ ["Synchronize Kubernetes resources","Argo CD applies the desired manifests and waits for resource health.","argocd app sync web-prod","argocd","k8s","success"],
+ ["Verify application health","The ingress endpoint and Argo CD application health are checked.","argocd app get web-prod && curl -fsS https://app.example.com/health","k8s","users","response"]
+ ]
+});
+addDeployment({
+ id:"terraform-aws",name:"Terraform → AWS Infrastructure",provider:"AWS CLOUD",category:"INFRASTRUCTURE AS CODE",
+ summary:"Provision version-controlled AWS infrastructure through Terraform plan, review, apply and post-deployment validation.",
+ nodes:[
+ ["dev","Platform engineer","Infrastructure change","source","Edits Terraform modules and submits an infrastructure change for review.",["Terraform","HCL"]],
+ ["repo","Git repository","Terraform code","source","Stores reusable modules, environment variables and backend configuration.",["Git","Modules"]],
+ ["ci","CI Pipeline","Validate + plan","pipeline","Runs formatting, validation, security checks and creates a saved plan.",["GitHub Actions","terraform plan"]],
+ ["review","Change approval","Plan review","pipeline","Reviewers inspect the proposed resource changes before apply.",["Pull request","Policy checks"]],
+ ["state","Remote state","State backend","database","Stores Terraform state with locking and controlled access.",["S3 backend","Locking","Encryption"]],
+ ["terraform","Terraform","IaC engine","pipeline","Calculates and applies the desired infrastructure graph using provider APIs.",["Providers","Dependency graph"]],
+ ["aws","AWS resources","VPC · IAM · Compute","cluster","Represents provisioned networking, identity and compute resources.",["VPC","IAM","EC2 / EKS"]],
+ ["ops","Platform team","Operational handoff","source","Receives outputs and validates infrastructure readiness.",["Outputs","Runbooks"]]
+ ],
+ steps:[
+ ["Commit Terraform change","The engineer commits the infrastructure configuration to Git.","git push origin feature/network-update","dev","repo"],
+ ["Format and validate","CI checks formatting and validates the Terraform configuration.","terraform fmt -check && terraform validate","repo","ci"],
+ ["Generate execution plan","Terraform calculates proposed additions, changes and deletions without applying them.","terraform plan -out=tfplan","ci","terraform"],
+ ["Review infrastructure plan","The team reviews the saved plan and policy results before approval.","terraform show tfplan","terraform","review"],
+ ["Read and update remote state","Terraform uses the configured remote backend and state locking during operations.","terraform init -backend-config=backend.hcl","review","state"],
+ ["Apply approved changes","The approved plan provisions or updates the selected AWS resources.","terraform apply tfplan","state","aws","success"],
+ ["Validate infrastructure outputs","The platform team verifies resource outputs, connectivity and operational readiness.","terraform output && aws ec2 describe-vpcs","aws","ops","response"]
+ ]
+});
+addDeployment({
+ id:"azure-appservice",name:"GitHub Actions → Azure App Service",provider:"MICROSOFT AZURE",category:"PAAS WEB APP",
+ summary:"Deploy a web application to Azure App Service using GitHub Actions, a build artifact, deployment slots and a controlled production swap.",
+ nodes:[
+ ["dev","Developer","Application commit","source","Pushes application changes and deployment configuration to GitHub.",["Git","Pull requests"]],
+ ["repo","GitHub","Source repository","source","Stores application code, tests and workflow definitions.",["GitHub","Actions"]],
+ ["ci","GitHub Actions","Build + test","pipeline","Runs tests, creates a deployable package and authenticates to Azure.",["OIDC","Build pipeline"]],
+ ["artifact","Build artifact","ZIP package","registry","Stores the tested web application package.",["ZIP deploy","Versioning"]],
+ ["app","Azure App Service","Web app runtime","workload","Runs the web application on a managed App Service plan.",["App Service","Managed runtime"]],
+ ["slot","Staging slot","Pre-production","server","Hosts the candidate release for smoke tests before production swap.",["Deployment slots","Warm-up"]],
+ ["monitor","Application Insights","Telemetry","database","Collects request traces, failures and performance telemetry.",["Application Insights","Availability tests"]],
+ ["users","Customers","HTTPS traffic","source","Access the production web application.","HTTPS|Custom domain"]
+ ],
+ steps:[
+ ["Push application changes","A reviewed code change is pushed to the source repository.","git push origin main","dev","repo"],
+ ["Run CI tests","GitHub Actions checks out the commit and runs the application test suite.","npm ci && npm test","repo","ci"],
+ ["Create release package","The workflow builds the application and creates a versioned deployment package.","npm run build && zip -r app.zip dist/","ci","artifact"],
+ ["Deploy to staging slot","The package is deployed to the App Service staging slot, leaving production unchanged.","az webapp deploy --resource-group rg-app --name web-prod --slot staging --src-path app.zip","artifact","slot"],
+ ["Warm up and smoke test","The staging slot is checked for startup, health and critical application behavior.","curl -fsS https://web-prod-staging.azurewebsites.net/health","slot","app","success"],
+ ["Swap staging into production","After approval, the warmed staging slot is swapped with production.","az webapp deployment slot swap --resource-group rg-app --name web-prod --slot staging","app","users"],
+ ["Inspect application telemetry","Application Insights is checked for availability, errors and response-time regressions.","az monitor app-insights query --app app-prod --analytics-query 'requests | take 10'","users","monitor","response"]
+ ]
+});
+
 const marketplaceCase=scenarios.find(s=>s.id==="marketplace")!;
 marketplaceCase.appNodes=[
 caseNode(["shoppers","Shoppers","Web · Mobile","source","Customers browse products, manage carts and place orders.","Web|Mobile"],0),
