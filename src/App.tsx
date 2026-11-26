@@ -239,13 +239,13 @@ const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,flowMode=false):[numbe
   // Source-control actors stay above runtime infrastructure; workload/data stay below it.
   const laneY:Record<NodeKind,number>={source:145,pipeline:265,registry:365,cluster:265,server:265,workload:445,network:145,database:485};
   const peers=originals.filter(n=>n.kind===base.kind).sort((a,b)=>(a.pos?.[0]??0)-(b.pos?.[0]??0));
-  const peerIndex=Math.max(0,peers.findIndex(n=>n.id===baseId));
+  const peerIndex=Math.max(0,peers.findIndex(n=>n.id===base.id));
   const peerOffset=peers.length>1?(peerIndex-(peers.length-1)/2)*54:0;
   return [left+75+nx*spanX,laneY[base.kind]+peerOffset];
  }
- const tier=tierFor(base);const sameTier=nodes.filter(n=>tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===baseId));
+ const tier=tierFor(base);const sameTier=nodes.filter(n=>tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===base.id));
  const column=inTier%3;const row=Math.floor(inTier/3);
- const x=(isDr?700:100)+column*220;
+ const x=100+column*220;
  const y=tierMode===2?(tier===1?132+row*74:400+row*74):(tier===1?92+row*74:tier===2?277+row*74:462+row*62);
  return [x,y];
 };
