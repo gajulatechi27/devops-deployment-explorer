@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, FileCode2, Folder, Search } from "lucide-react";
 
 type LearningFile = { path: string; description: string; content: string };
@@ -190,6 +190,391 @@ spec:
           averageUtilization: 70
 ` }
 ];
+
+type CloudPackKind = "container" | "function" | "static" | "database" | "data" | "vm" | "iac" | "appengine";
+
+function cloudPackKind(id: string): CloudPackKind | undefined {
+  const groups: Record<CloudPackKind, string[]> = {
+    container: ["ecs-fargate-ci", "app-runner", "azure-container-apps", "azure-aks-helm", "cloudrun", "gke-helm"],
+    function: ["lambda-sam", "azure-functions", "gcp-functions", "step-functions"],
+    static: ["s3-cloudfront", "azure-static-web", "gcs-cdn"],
+    database: ["rds-flyway", "azure-sql", "cloudsql-migrate"],
+    data: ["glue-etl", "azure-data-factory", "dataflow"],
+    vm: ["elastic-beanstalk", "azure-vm", "gcp-gce"],
+    iac: ["cloudformation", "azure-bicep", "terraform-gcp"],
+    appengine: ["gcp-appengine"]
+  };
+  return (Object.keys(groups) as CloudPackKind[]).find(kind => groups[kind].includes(id));
+}
+
+function cloudSpecificFiles(id: string, provider: string): LearningFile[] | undefined {
+  const kind = cloudPackKind(id);
+  if (!kind) return undefined;
+  const cloud = provider === "AWS CLOUD" ? "AWS" : provider === "MICROSOFT AZURE" ? "Azure" : "Google Cloud";
+  const region = provider === "AWS CLOUD" ? "ap-south-1" : provider === "MICROSOFT AZURE" ? "centralindia" : "asia-south1";
+  const pipelinePath = provider === "MICROSOFT AZURE" ? "azure-pipelines.yml" : provider === "GOOGLE CLOUD" ? "cloudbuild.yaml" : ".github/workflows/deploy.yml";
+  const pipelineContent = provider === "MICROSOFT AZURE" ? `trigger:
+  branches:
+    include: [ main ]
+pool:
+  vmImage: ubuntu-latest
+variables:
+  appName: demo-app
+  region: ${region}
+stages:
+- stage: Build
+  jobs:
+  - job: Validate
+    steps:
+    - checkout: self
+    - script: echo "Install dependencies, run tests and package the release"
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - deployment: DeployDemo
+    environment: demo
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Authenticate with workload identity and deploy the approved artifact"
+` : provider === "GOOGLE CLOUD" ? `steps:
+- name: 'ubuntu'
+  entrypoint: 'bash'
+  args: ['-c', 'echo "Install dependencies, run tests and package the release"']
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'echo "Authenticate with a dedicated service account and deploy the approved artifact"']
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _REGION: ${region}
+  _APP_NAME: demo-app
+` : `name: Deploy demo to AWS
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Install dependencies, run tests and package the release"
+      - run: echo "Authenticate to AWS using GitHub OIDC (role ARN is a placeholder)"
+      - run: echo "Deploy the approved artifact to the demo environment"
+`;
+  const files: LearningFile[] = [
+    { path: pipelinePath, description: `Provider-specific CI/CD example for the ${cloud} deployment. All connections are placeholders.`, content: pipelineContent },
+    { path: ".env.example", description: "Dummy application settings; never store real secrets in this file.", content: `APP_NAME=demo-app
+APP_ENV=staging
+APP_PORT=8080
+APP_HOST=demo.example.invalid
+CLOUD_REGION=${region}
+IMAGE_TAG=demo-0.1.0
+DATABASE_HOST=db.demo.internal
+DATABASE_NAME=demo_db
+DATABASE_USER=demo_user
+DATABASE_PASSWORD=CHANGE_ME_DUMMY
+` }
+  ];
+
+  if (kind === "container") {
+    files.push(
+      { path: "Dockerfile", description: "Builds a small Java application image for the managed container service.", content: dockerfile },
+      { path: "deployment/container-config.yaml", description: "Declarative container settings: image, port, health check and resource hints.", content: `app: demo-app
+image: registry.example.invalid/demo/app:0.1.0
+port: 8080
+replicas: 2
+healthCheck:
+  path: /health
+  intervalSeconds: 30
+resources:
+  cpu: 0.5
+  memory: 512Mi
+` },
+      { path: "README-deploy.md", description: "Container build, registry, service rollout and verification sequence.", content: `# ${cloud} container deployment
+
+1. Build and test the application.
+2. Build the image: docker build -t demo-app:0.1.0 .
+3. Authenticate to the provider registry using a short-lived identity.
+4. Push an immutable image tag; do not use latest for production releases.
+5. Update the service configuration with the approved image.
+6. Deploy to a staging environment and verify /health, logs and rollout status.
+
+Target example: ${id}. All registry names and credentials are fictional.
+` }
+    );
+  } else if (kind === "function") {
+    files.push(
+      { path: "template.yaml", description: "Serverless function and HTTP trigger definition with least-privilege execution role placeholder.", content: `service: demo-function
+provider:
+  name: ${provider === "AWS CLOUD" ? "aws" : provider === "MICROSOFT AZURE" ? "azure" : "google"}
+  region: ${region}
+function:
+  name: demo-handler
+  runtime: python3.12
+  handler: app.handler
+  memory: 256
+  timeoutSeconds: 15
+trigger:
+  type: http
+  path: /health
+  method: GET
+environment:
+  APP_ENV: demo
+` },
+      { path: "src/app.py", description: "Minimal HTTP-triggered function handler.", content: `import json
+
+def handler(event, context=None):
+    return {
+        "statusCode": 200,
+        "headers": {"content-type": "application/json"},
+        "body": json.dumps({"status": "ok", "environment": "demo"})
+    }
+` },
+      { path: "requirements.txt", description: "Pinned runtime dependencies; empty for this minimal example.", content: "# Add reviewed, pinned dependencies here.\n" },
+      { path: "README-serverless.md", description: "Function packaging, trigger, permissions, environment variables and invocation.", content: `# ${cloud} serverless deployment
+
+1. Review the handler signature and runtime version.
+2. Install dependencies into the deployment package.
+3. Validate the function template and permissions.
+4. Deploy to a development stage using a dedicated identity.
+5. Invoke the HTTP trigger and inspect structured logs.
+6. Publish a version and move the alias/traffic only after verification.
+
+Keep secrets in the provider secret manager. Do not place credentials in environment files or pipeline YAML.
+` }
+    );
+  } else if (kind === "static") {
+    files.push(
+      { path: "package.json", description: "Static frontend build scripts.", content: `{
+  "name": "demo-static-site",
+  "version": "0.1.0",
+  "scripts": { "test": "echo demo tests passed", "build": "vite build" },
+  "devDependencies": { "vite": "5.4.10" }
+}
+` },
+      { path: "src/index.html", description: "Static website entry point.", content: `<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Demo site</title></head>
+<body><main><h1>Demo static deployment</h1></main></body>
+</html>
+` },
+      { path: "infra/static-site.example.yaml", description: "Illustrative private origin, TLS and cache configuration.", content: `site:
+  bucket: demo-static-site
+  originAccess: private
+  tls: enabled
+  defaultDocument: index.html
+cache:
+  htmlSeconds: 60
+  immutableAssetsSeconds: 31536000
+` },
+      { path: "README-static-site.md", description: "Build, upload, origin protection, CDN invalidation and smoke test.", content: `# ${cloud} static website deployment
+
+1. Run npm ci, tests and npm run build.
+2. Inspect the generated dist/ directory.
+3. Upload dist/ to the private object-storage origin.
+4. Keep direct public bucket access disabled where supported; use the CDN origin identity.
+5. Configure HTTPS and DNS.
+6. Invalidate only changed paths and verify the public health check.
+
+Never upload .env files, source maps containing secrets or local build caches.
+` }
+    );
+  } else if (kind === "database") {
+    files.push(
+      { path: "database/connection.example.env", description: "Dummy private database endpoint and connection settings.", content: `DB_HOST=db.demo.internal
+DB_PORT=5432
+DB_NAME=demo_db
+DB_USER=demo_migrator
+DB_PASSWORD=CHANGE_ME_DUMMY
+DB_SSLMODE=require
+` },
+      { path: "sql/V1__create_schema.sql", description: "Versioned initial schema migration.", content: `CREATE TABLE deployment_audit (
+  event_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  release_version VARCHAR(40) NOT NULL,
+  deployed_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+` },
+      { path: "sql/V2__add_release_index.sql", description: "Follow-up migration adding an index for release lookups.", content: `CREATE INDEX idx_deployment_audit_release
+  ON deployment_audit(release_version);
+` },
+      { path: "flyway.conf.example", description: "Flyway migration configuration; credentials are placeholders.", content: `flyway.url=jdbc:postgresql://db.demo.internal:5432/demo_db
+flyway.user=demo_migrator
+flyway.password=CHANGE_ME_DUMMY
+flyway.locations=filesystem:sql
+flyway.validateMigrationNaming=true
+` },
+      { path: "README-database.md", description: "Schema migration, backup, permissions and rollback safety checklist.", content: `# ${cloud} database deployment
+
+1. Confirm a recent backup and a tested restore procedure.
+2. Validate migrations against a disposable database.
+3. Review schema-lock and long-running migration risk.
+4. Use a dedicated migration identity with only required DDL privileges.
+5. Apply migrations in a controlled release window.
+6. Verify schema version, connection health and application compatibility.
+
+Do not expose database endpoints publicly. Use private networking, TLS and a secret manager.
+` }
+    );
+  } else if (kind === "data") {
+    files.push(
+      { path: "jobs/demo_pipeline.py", description: "Small batch-processing example with input validation and structured output.", content: `import json
+
+def run(records):
+    valid = [row for row in records if row.get("id") is not None]
+    return {"input_count": len(records), "valid_count": len(valid)}
+
+if __name__ == "__main__":
+    print(json.dumps(run([{"id": 1}, {"id": 2}, {}])))
+` },
+      { path: "config/job.yaml", description: "Illustrative job schedule, retry policy and input/output locations.", content: `job:
+  name: demo-etl
+  schedule: "0 2 * * *"
+  retries: 2
+  timeoutMinutes: 30
+  input: gs://demo-input-bucket/raw/
+  output: gs://demo-output-bucket/curated/
+  environment: staging
+` },
+      { path: "README-data-pipeline.md", description: "Data ingestion, transformation, validation, retry and observability sequence.", content: `# ${cloud} data pipeline
+
+1. Validate source schema and input partition.
+2. Run the transformation against a small sample.
+3. Write output to a versioned staging location.
+4. Validate row counts, null rates and duplicate keys.
+5. Promote the partition only when checks pass.
+6. Monitor job duration, retries, throughput and data freshness.
+
+Use separate service identities for source reads and destination writes. Example buckets are fictional.
+` }
+    );
+  } else if (kind === "vm") {
+    files.push(
+      { path: "scripts/bootstrap.sh", description: "Linux VM bootstrap script for Java runtime, application directory and service user.", content: `#!/usr/bin/env bash
+set -euo pipefail
+sudo useradd --system --home /opt/demo-app --shell /usr/sbin/nologin demo-app || true
+sudo install -d -o demo-app -g demo-app /opt/demo-app
+java -version
+echo "Install the approved JRE package using your image's package manager"
+` },
+      { path: "systemd/demo-app.service", description: "Systemd unit for a Java application running on the VM.", content: `[Unit]
+Description=Demo application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=demo-app
+WorkingDirectory=/opt/demo-app
+ExecStart=/usr/bin/java -jar /opt/demo-app/app.jar
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+` },
+      { path: "nginx/demo-app.conf", description: "Nginx reverse proxy to the local application process.", content: `server {
+  listen 80;
+  server_name demo.example.invalid;
+  location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}
+` },
+      { path: "README-vm.md", description: "Image, network, bootstrap, service management and health verification.", content: `# ${cloud} VM deployment
+
+1. Select a hardened base image and attach least-privilege instance identity.
+2. Restrict SSH/RDP and application ports to approved source networks.
+3. Bootstrap the runtime and create a dedicated non-login service user.
+4. Transfer the versioned artifact and configure systemd.
+5. Configure TLS termination and health checks.
+6. Verify service status, logs, disk space and rollback artifact.
+
+Example host: 192.0.2.55. This documentation uses reserved example addresses only.
+` }
+    );
+  } else if (kind === "iac") {
+    files.push(
+      { path: "main.tf", description: "Provider-specific infrastructure-as-code starter with a small resource placeholder.", content: provider === "AWS CLOUD" ? `terraform {
+  required_version = ">= 1.6.0"
+  required_providers { aws = { source = "hashicorp/aws", version = "~> 5.0" } }
+}
+provider "aws" { region = "${region}" }
+resource "aws_s3_bucket" "demo" { bucket = "demo-iac-bucket-111122223333" }
+` : provider === "MICROSOFT AZURE" ? `terraform {
+  required_version = ">= 1.6.0"
+  required_providers { azurerm = { source = "hashicorp/azurerm", version = "~> 4.0" } }
+}
+provider "azurerm" { features {} }
+resource "azurerm_resource_group" "demo" {
+  name = "rg-demo-learning"
+  location = "${region}"
+}
+` : `terraform {
+  required_version = ">= 1.6.0"
+  required_providers { google = { source = "hashicorp/google", version = "~> 6.0" } }
+}
+provider "google" { project = "demo-project-123456" region = "${region}" }
+resource "google_storage_bucket" "demo" {
+  name = "demo-learning-bucket-123456"
+  location = "${region}"
+  uniform_bucket_level_access = true
+}
+` },
+      { path: "variables.tf", description: "Inputs for environment-specific values.", content: `variable "environment" { type = string; default = "dev" }
+variable "resource_prefix" { type = string; default = "demo" }
+` },
+      { path: "outputs.tf", description: "Exports the resource identifier after a successful apply.", content: `output "environment" { value = var.environment }
+` },
+      { path: "README-iac.md", description: "Format, validate, plan, review and approval workflow.", content: `# ${cloud} infrastructure as code
+
+1. Run terraform fmt -check.
+2. Initialize providers with terraform init.
+3. Validate configuration with terraform validate.
+4. Review terraform plan and the proposed resource changes.
+5. Require peer review and environment approval before apply.
+6. Record outputs and manage state with encryption and locking.
+
+Never commit state files, credentials or provider key files. Resource names and project/account values are fictional.
+` }
+    );
+  } else {
+    files.push(
+      { path: "app.yaml", description: "App Engine service and runtime configuration.", content: `runtime: python312
+service: demo-web
+instance_class: F1
+automatic_scaling:
+  max_instances: 3
+handlers:
+  - url: /.*
+    script: auto
+` },
+      { path: "main.py", description: "Minimal WSGI-compatible application entry point.", content: `def app(environ, start_response):
+    body = b"DeployLab demo app is healthy"
+    start_response("200 OK", [("Content-Type", "text/plain"), ("Content-Length", str(len(body)))])
+    return [body]
+` },
+      { path: "requirements.txt", description: "Runtime dependency list.", content: "# Minimal demo has no external dependencies.\n" },
+      { path: "README-appengine.md", description: "Runtime configuration, versioned deployment and traffic migration.", content: `# Google App Engine deployment
+
+1. Review app.yaml runtime, scaling and handler configuration.
+2. Run tests and package dependencies.
+3. Deploy a new version without immediately shifting all traffic.
+4. Verify the version health and application logs.
+5. Gradually migrate traffic to the new version.
+6. Roll back traffic to the previous healthy version if needed.
+
+The project ID and service names are placeholders.
+` }
+    );
+  }
+
+  return files;
+}
 
 function pipelineFiles(id: string): LearningFile[] {
   if (id === "ec2") return [
@@ -1273,7 +1658,7 @@ All hostnames, addresses, account IDs and credentials in this pack are placehold
 
 export default function DeploymentFiles({ scenarioId, scenarioName, provider }: Props) {
   const files = useMemo(() => {
-    const base = pipelineFiles(scenarioId);
+    const base = cloudSpecificFiles(scenarioId, provider) || pipelineFiles(scenarioId);
     const intro: LearningFile = {
       path: "README-LEARNING-PACK.md",
       description: "Explains the purpose of this sample deployment pack.",
@@ -1298,6 +1683,7 @@ Never commit real secrets. The secret example is intentionally fake and must be 
     return [intro, ...base];
   }, [scenarioId, scenarioName, provider]);
   const [selected, setSelected] = useState(files[0]?.path || "");
+  useEffect(() => { setSelected(files[0]?.path || ""); }, [scenarioId]);
   const active = files.find(file => file.path === selected) || files[0];
   const download = (file: LearningFile) => {
     const blob = new Blob([file.content], { type: "text/plain;charset=utf-8" });
