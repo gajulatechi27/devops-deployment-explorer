@@ -197,8 +197,8 @@ function cloudPackKind(id: string): CloudPackKind | undefined {
   const groups: Record<CloudPackKind, string[]> = {
     container: ["ecs-fargate-ci", "app-runner", "azure-container-apps", "azure-aks-helm", "cloudrun", "gke-helm"],
     function: ["lambda-sam", "azure-functions", "gcp-functions", "step-functions"],
-    static: ["s3-cloudfront", "azure-static-web", "gcs-cdn"],
-    database: ["rds-flyway", "azure-sql", "cloudsql-migrate"],
+    static: ["azure-static-web", "gcs-cdn"],
+    database: ["azure-sql", "cloudsql-migrate"],
     data: ["glue-etl", "azure-data-factory", "dataflow"],
     vm: ["elastic-beanstalk", "azure-vm", "gcp-gce"],
     iac: ["cloudformation", "azure-bicep", "terraform-gcp"],
@@ -1658,7 +1658,7 @@ All hostnames, addresses, account IDs and credentials in this pack are placehold
 
 export default function DeploymentFiles({ scenarioId, scenarioName, provider }: Props) {
   const files = useMemo(() => {
-    const base = cloudSpecificFiles(scenarioId, provider) || pipelineFiles(scenarioId);
+    const base = cloudSpecificFiles(scenarioId, provider) || pipelineFiles(scenarioId === "lambda-sam" ? "lambda-serverless" : scenarioId);
     const intro: LearningFile = {
       path: "README-LEARNING-PACK.md",
       description: "Explains the purpose of this sample deployment pack.",
