@@ -46,3 +46,26 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
 .files-learning-note{display:flex;align-items:flex-start;gap:7px;padding:9px;border-radius:6px;background:var(--accent-soft);font:9px/1.5 'DM Mono';color:var(--muted)}
 .files-learning-note svg{flex-shrink:0;margin-top:1px}
 @media(max-width:700px){.files-browser{grid-template-columns:112px minmax(0,1fr);max-height:520px}.file-preview pre{max-height:350px}.files-heading{align-items:center}}
+
+
+/* Files tab lives in the narrow component inspector: stack the explorer
+   vertically so the code preview always receives the full panel width. */
+.deployment-files{width:100%;max-width:100%;min-width:0;gap:9px}
+.files-heading{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+.files-heading>div{min-width:0}
+.files-heading b{display:block;line-height:1.45;overflow-wrap:anywhere}
+.files-heading p{max-width:100%;overflow-wrap:anywhere}
+.files-download-all{align-self:flex-start;max-width:100%}
+.files-browser{width:100%;min-width:0;min-height:0;height:min(58vh,620px);max-height:620px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(105px,34%) minmax(190px,1fr)}
+.files-tree{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px}
+.files-tree-title{position:sticky;top:-6px;z-index:1;background:var(--panel-alt);padding:5px 5px 7px}
+.file-row{flex:0 0 auto;min-width:0;white-space:normal;overflow-wrap:anywhere;padding:6px;font-size:9px}
+.file-preview{min-height:0;min-width:0}
+.file-preview-head{align-items:flex-start;flex-wrap:wrap;padding:8px;gap:7px}
+.file-preview-head>div{flex:1 1 100%;min-width:0}
+.file-preview-head b{overflow-wrap:anywhere;word-break:break-word}
+.file-preview-head small{overflow-wrap:anywhere}
+.file-preview-head button{align-self:flex-start}
+.file-preview pre{flex:1 1 auto;width:100%;min-width:0;max-height:none;min-height:0;overflow:auto;white-space:pre;font-size:9px}
+.files-learning-note{font-size:8px;overflow-wrap:anywhere}
+@media(max-width:700px){.files-browser{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(100px,32%) minmax(190px,1fr);height:520px;max-height:520px}.file-preview pre{max-height:none}.files-heading{align-items:stretch}}
