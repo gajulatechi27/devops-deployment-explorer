@@ -67,7 +67,7 @@ const scenarios:Scenario[]=[
 {id:"pods",name:"Application Pods",sub:"Workload replicas",kind:"workload",pos:[5,0,0],description:"AKS node pools run application containers. Readiness probes gate traffic and autoscaling can add replicas.",tech:["Node pools","HPA","Readiness probes"]},
 {id:"gateway",name:"Application Gateway",sub:"Ingress / WAF",kind:"network",pos:[7,0,0],description:"An Azure ingress integration or Application Gateway routes HTTPS requests to healthy Kubernetes services.",tech:["Ingress","WAF","TLS"]},
 {id:"users",name:"Customers",sub:"HTTPS traffic",kind:"source",pos:[9,0,0],description:"Customers reach the deployed application through its public DNS endpoint.",tech:["DNS","HTTPS"]}
-],links:[["dev","git"],["git","azureci"],["azureci","acr"],["acr","aks"],["aks","pods"],["pods","gateway"],["users","gateway"]],stages:[
+],links:[["dev","git"],["git","azureci"],["azureci","azureci"],["azureci","acr"],["acr","aks"],["aks","pods"],["pods","gateway"],["gateway","users"]],stages:[
 {title:"Push application changes",detail:"A reviewed commit reaches GitHub and triggers the release workflow.",command:"git push origin main",node:"git",from:"dev",to:"git",kind:"request"},
 {title:"Run CI validation",detail:"GitHub Actions checks out the commit, runs tests and scans dependencies and the container image.",command:"npm ci && npm test",node:"azureci",from:"git",to:"azureci",kind:"request"},
 {title:"Authenticate to Azure",detail:"GitHub Actions exchanges its OIDC identity for short-lived Microsoft Entra credentials instead of storing a long-lived client secret.",command:"azure/login@v2 (OIDC)",node:"azureci",from:"azureci",to:"azureci",kind:"success"},
@@ -86,7 +86,7 @@ const scenarios:Scenario[]=[
 {id:"gke",name:"Google Kubernetes Engine",sub:"Managed Kubernetes",kind:"cluster",pos:[5,0,0],description:"GKE manages the Kubernetes control plane and reconciles workloads onto cluster nodes.",tech:["GKE","Control plane","Workload Identity"]},
 {id:"pods",name:"Application Pods",sub:"GKE workloads",kind:"workload",pos:[7,0,0],description:"Pods run across GKE nodes with probes, resource requests, autoscaling and Kubernetes Services.",tech:["Pods","HPA","Services"]},
 {id:"users",name:"External users",sub:"HTTPS traffic",kind:"source",pos:[9,0,0],description:"Users access the application through an external load balancer or Gateway.",tech:["Cloud Load Balancing","DNS","TLS"]}
-],links:[["dev","git"],["git","cloudbuild"],["cloudbuild","gar"],["gar","deploy"],["deploy","gke"],["gke","pods"],["pods","users"]],stages:[
+],links:[["dev","git"],["git","cloudbuild"],["cloudbuild","cloudbuild"],["cloudbuild","gar"],["gar","deploy"],["deploy","gke"],["gke","pods"],["pods","users"]],stages:[
 {title:"Commit application and config",detail:"The developer pushes application changes to the source repository.",command:"git push origin main",node:"git",from:"dev",to:"git",kind:"request"},
 {title:"Cloud Build trigger starts",detail:"A repository trigger starts a build that checks out the source and validates the application.",command:"gcloud builds submit --config=cloudbuild.yaml",node:"cloudbuild",from:"git",to:"cloudbuild",kind:"request"},
 {title:"Test and build container",detail:"Cloud Build runs tests and creates an OCI container image from the Dockerfile.",command:"docker build -t web:$COMMIT_SHA .",node:"cloudbuild",from:"cloudbuild",to:"cloudbuild",kind:"request"},
@@ -106,7 +106,7 @@ const scenarios:Scenario[]=[
 {id:"data",name:"Data Platform",sub:"SQL · Cache · Search",kind:"database",pos:[7,0,0],description:"Services use fit-for-purpose data stores: relational transactions, cache for hot reads and search indexes for product discovery.",tech:["PostgreSQL","Redis","OpenSearch / Elasticsearch"]},
 {id:"edge",name:"CDN + API Gateway",sub:"WAF · Routing",kind:"network",pos:[9,0,0],description:"An edge layer terminates TLS, applies WAF/rate limits and routes API traffic to the correct service.",tech:["CDN","WAF","API Gateway"]},
 {id:"users",name:"Shoppers",sub:"Web · Mobile apps",kind:"source",pos:[11,0,0],description:"Customers browse products, manage carts and place orders through web and mobile clients.",tech:["Web","Mobile","HTTPS"]}
-],links:[["dev","ci"],["ci","registry"],["registry","market"],["market","services"],["services","events"],["events","data"],["data","edge"],["users","edge"]],stages:[
+],links:[["dev","ci"],["ci","registry"],["registry","market"],["market","services"],["services","events"],["events","data"],["data","edge"],["edge","users"]],stages:[
 {title:"Commit a domain service change",detail:"A team updates one independently deployable service, such as Catalog or Cart, and opens a reviewed change.",command:"git push origin feature/catalog-search",node:"dev",from:"dev",to:"ci",kind:"request"},
 {title:"Run service CI checks",detail:"The pipeline runs unit, contract and integration tests, dependency checks and static analysis for the changed service.",command:"npm ci && npm test && npm run build",node:"ci",from:"ci",to:"ci",kind:"request"},
 {title:"Build and sign immutable image",detail:"The service image is built once, scanned and tagged with a commit identifier and digest.",command:"docker buildx build --tag marketplace/catalog:$GIT_SHA .",node:"ci",from:"ci",to:"registry",kind:"request"},
