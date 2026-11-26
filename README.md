@@ -1,21 +1,19 @@
-# DeployLab — 3D DevOps Deployment Explorer
+# DeployLab — Interactive DevOps Simulation & Learning Platform
 
-DeployLab is an interactive, simulation-only platform for understanding how real-world software deployment architectures work. Users explore an isometric 3D topology, play deployment stages, inspect infrastructure components and learn the commands involved.
+DeployLab is a simulation-only environment for learning how software is built, deployed, monitored and recovered. It combines architecture maps, deterministic deployment events, infrastructure labs, troubleshooting exercises and learning paths.
 
-**No cloud accounts, credentials or infrastructure connections are required.** This project does not deploy real applications or execute commands.
+**Safety by design:** DeployLab does not connect to AWS, Azure, GCP, Kubernetes clusters or on-premises infrastructure. It does not execute shell commands, provision resources, request credentials or send telemetry. Every output is simulated in the browser.
 
-## Current experience
+## Workspaces
 
-- Interactive 3D architecture built with Three.js, React Three Fiber and Drei
-- Orbit, pan and zoom around the deployment topology
-- Animated deployment stages with play, pause, next and reset controls
-- Clickable infrastructure components with explanations and technology tags
-- Deployment sequence timeline and illustrative commands
-- Three distinct architecture scenarios:
-  - GitHub Actions → Amazon EKS
-  - Jenkins → Amazon EC2
-  - GitLab CI → Docker on an on-premises Linux server
-- Responsive layout with cream / isometric visual language
+- **Architectures** — explore GitHub Actions → Amazon EKS, Jenkins → Amazon EC2 and GitLab CI → Docker on Linux. Inspect components, follow deployment stages and view illustrative commands.
+- **Kubernetes** — step through an EKS release lifecycle, inspect control-plane responsibilities, and adjust a simulated replica count across worker nodes.
+- **Troubleshoot** — inject ImagePullBackOff, CrashLoopBackOff, readiness-probe and Service-selector incidents; inspect symptoms and apply a simulated recovery.
+- **Terminal** — practise a safe allow-listed subset of kubectl, Docker and Terraform commands. Unknown commands return a simulated error; commands never reach the host.
+- **Monitoring** — inspect synthetic CPU, memory, request and error metrics; trigger a traffic spike and see alert thresholds change.
+- **Strategies** — compare rolling, blue/green, canary and A/B release strategies by risk, downtime and rollout speed.
+- **Terraform** — preview a simulated plan/apply and learn the infrastructure lifecycle without configuring a provider.
+- **Learn** — complete short lessons and knowledge checks on CI/CD, Kubernetes reconciliation, probes and Infrastructure as Code.
 
 ## Run locally
 
@@ -26,37 +24,47 @@ npm install
 npm run dev
 ```
 
-## Production build
+## Tests and production build
 
 ```bash
+npm test
 npm run build
 npm run preview
 ```
 
-## Technology
+The simulation engine has Node's built-in test runner coverage for ordered event progression, fault injection/recovery, reset behavior and empty event lists. CI runs tests before the TypeScript/Vite production build.
 
-- React 18 + TypeScript + Vite
-- Three.js + React Three Fiber + Drei
-- Tailwind CSS
-- Lucide icons
+## Architecture
+
+- React 18, TypeScript and Vite
+- Data-driven architecture scenarios in `src/App.tsx`
+- Shared simulation state transitions in `src/simulation/engine.ts`
+- Interactive labs in `src/LabWorkspace.tsx`
+- Node built-in tests in `src/simulation/engine.test.mjs`
+
+The simulation engine is deterministic and local. New scenarios should define events and component metadata rather than implementing their own playback state machines.
 
 ## Product principles
 
-1. Teach deployment architecture through visuals, not cloud account integrations.
-2. Every scenario has its own topology, sequence, components and explanations.
-3. Deployment animations are simulations; commands are illustrative and never executed.
-4. Keep architecture content data-driven so additional deployment patterns can be added without rebuilding the 3D engine.
+1. Teach how systems behave, not only what components are called.
+2. Keep architecture content and simulation events data-driven.
+3. Make failure and recovery first-class learning activities.
+4. Clearly label all commands, logs and metrics as simulated.
+5. Never silently connect to or mutate real infrastructure.
 
 ## Roadmap
 
-- [x] 3D deployment visualization engine
-- [x] EKS, EC2 and on-premises Docker scenarios
-- [x] Component inspector and deployment timeline
-- [ ] More scenarios: ECS, Lambda, AKS, GKE, Terraform, Ansible, Argo CD and microservices
-- [ ] Failure simulations: CrashLoopBackOff, ImagePullBackOff, failed health checks and rollback
-- [ ] Deep-dive component lessons and architecture comparisons
-- [ ] More accurate 3D service-specific assets and traffic packet animations
+- [x] Responsive 2D architecture maps and component inspector
+- [x] Shared deterministic simulation engine and unit tests
+- [x] EKS lifecycle walkthrough and cluster replica visualizer
+- [x] Troubleshooting fault injection and recovery exercises
+- [x] Safe terminal command simulator
+- [x] Synthetic monitoring and alert thresholds
+- [x] Terraform plan/apply simulator
+- [x] Deployment strategy comparison
+- [x] Learning modules and quizzes
+- [ ] Expand architecture library: ECS, Lambda, AKS, GKE, Helm, Ansible, Argo CD and GitOps
+- [ ] Add more scenario-specific branching, rollback and dependency graphs
+- [ ] Add persistent local learning progress and richer guided challenges
+- [ ] Add accessible keyboard-first terminal history and command completion
 
-## Safety
-
-All current flows are educational simulations. They do not connect to AWS, Azure, GCP, Kubernetes clusters or on-premises servers. No cloud credentials are requested or stored.
