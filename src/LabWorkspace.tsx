@@ -1,5 +1,5 @@
-import { useMemo,useState } from "react";
-import { Activity,AlertTriangle,BookOpen,CheckCircle2,ChevronRight,Code2,Container,GitBranch,Play,RotateCcw,Server,ShieldCheck,Terminal,TriangleAlert,Wrench } from "lucide-react";
+import { useState } from "react";
+import { Activity,AlertTriangle,BookOpen,CheckCircle2,Code2,Container,GitBranch,Play,RotateCcw,ShieldCheck,TriangleAlert,Wrench } from "lucide-react";
 import { advanceRuntime,initialRuntime,injectFault,progressPercent,resolveFault,type Fault,type RuntimeState,type SimulationEvent } from "./simulation/engine.js";
 
 type Mode="troubleshoot"|"terminal"|"monitoring"|"strategies"|"learning"|"kubernetes"|"iac";
@@ -35,7 +35,7 @@ export default function LabWorkspace({mode}:{mode:Mode}){
  const [revealed,setRevealed]=useState<number[]>([]);
  const [replicas,setReplicas]=useState(3);
  const fault=faults.find(f=>f.id===faultId)!;
- const selectedFault=runtime.failed.length?faults.find(f=>f.id===runtime.failed[runtime.failed.length-1]):fault;
+
  const event=eksEvents[runtime.currentEvent];
  const progress=progressPercent(runtime,eksEvents.length);
  const runCommand=()=>{const input=command.trim();if(!input)return;const output=input==="clear"?"":commands[input]??(input.startsWith("kubectl get pods")?commands["kubectl get pods"]:input.startsWith("kubectl logs")?commands["kubectl logs deploy/web"]:"command not found in this simulated environment. Type help.");setHistory(h=>[...h,"> "+input,...(output?[output]:[])]);setCommand("");};
