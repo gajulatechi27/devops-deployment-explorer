@@ -1,0 +1,43 @@
+import { useEffect,useMemo,useState } from "react";
+import { Activity, ArrowDown, ArrowRight, Check, CheckCircle2, Circle, Clock3, Cloud, Code2, Play, Radio, RotateCcw, ShieldCheck, SkipForward, Square, Terminal, Zap } from "lucide-react";
+import Architecture from "./components/Architecture";
+import Inspector from "./components/Inspector";
+import Sidebar from "./components/Sidebar";
+import { createLog,getStepOutput,type LogEntry } from "./engine/simulator";
+import { scenarios } from "./data/scenarios";
+import type { ScenarioId,StepStatus } from "./types";
+
+export default function App() {
+ const [scenarioId,setScenarioId]=useState<ScenarioId>("eks");
+ const scenario=useMemo(()=>scenarios.find(s=>s.id===scenarioId)!,[scenarioId]);
+ const [currentStep,setCurrentStep]=useState(-1);
+ const [running,setRunning]=useState(false);
+ const [statuses,setStatuses]=useState<Record<string,StepStatus>>({});
+ const [logs,setLogs]=useState<LogEntry[]>([]);
+ const [selectedId,setSelectedId]=useState<string|null>("eks");
+ const [tab,setTab]=useState<"events"|"terminal">("events");
+ const [speed,setSpeed]=useState(1);
+ const [elapsed,setElapsed]=useState(0);
+ const completed=Object.values(statuses).filter(v=>v==="success").length;
+ const progress=Math.round(completed/scenario.steps.length*100);
+ const activeStep=scenario.steps[currentStep];
+ const activeNodeIds=activeStep&&running?activeStep.nodeIds:[];
+ const completedNodeIds=Array.from(new Set(scenario.steps.filter(s=>statuses[s.id]==="success").flatMap(s=>s.nodeIds)));
+ useEffect(()=>{if(!running||!activeStep)return;const timer=window.setTimeout(()=>{setStatuses(s=>({...s,[activeStep.id]:"success"}));setLogs(l=>[...l,createLog("success",`Completed: ${activeStep.title}`)]);setElapsed(t=>t+activeStep.duration/1000);if(currentStep+1>=scenario.steps.length)setRunning(false);else setCurrentStep(n=>n+1);},activeStep.duration/speed);return ()=>window.clearTimeout(timer);},[running,currentStep,scenario,speed]);
+ useEffect(()=>{if(running&&activeStep){setStatuses(s=>({...s,[activeStep.id]:"running"}));setLogs(l=>[...l,createLog("info",activeStep.title,activeStep.command)]);}},[currentStep,running]);
+ function reset(){setRunning(false);setCurrentStep(-1);setStatuses({});setLogs([]);setElapsed(0);}
+ function choose(id:ScenarioId){setScenarioId(id);setRunning(false);setCurrentStep(-1);setStatuses({});setLogs([]);setElapsed(0);setSelectedId(null);}
+ function start(){if(completed===scenario.steps.length)return;const next=scenario.steps.findIndex(s=>statuses[s.id]!=="success");if(next<0)return;setCurrentStep(next);setRunning(true);setLogs(l=>[...l,createLog("info","Deployment simulation started")]);}
+ function stepForward(){if(running)return;const next=scenario.steps.findIndex(s=>statuses[s.id]!=="success");if(next<0)return;const step=scenario.steps[next];setCurrentStep(next);setStatuses(s=>({...s,[step.id]:"success"}));setLogs(l=>[...l,createLog("success",`Completed: ${step.title}`,step.command)]);setElapsed(t=>t+step.duration/1000);}
+ const isComplete=completed===scenario.steps.length;
+ return <div className="app-shell"><Sidebar scenarios={scenarios} active={scenarioId} onSelect={choose}/><main className="main-content"><header className="topbar"><div className="breadcrumb">WORKSPACE <span>/</span> DEPLOYMENT EXPLORER <span>/</span> <b>{scenario.provider.toUpperCase()}</b></div><div className="topbar-right"><span className="safe-mode"><ShieldCheck size={14}/> SIMULATION MODE</span><span className="user-dot">PK</span></div></header>
+ <div className="page-content"><section className="page-heading"><div><div className="eyebrow"><span className="live-dot"/> INTERACTIVE LEARNING ENVIRONMENT</div><h1>Deployment <span>Explorer</span></h1><p>Understand how production systems are built, deployed and connected — one step at a time.</p></div><div className="heading-actions"><button className="outline-button" onClick={reset}><RotateCcw size={15}/> Reset lab</button><button className="primary-button" onClick={start} disabled={running||isComplete}><Play size={15} fill="currentColor"/> {isComplete?"Deployment complete":running?"Deploying…":"Run deployment"}</button></div></section>
+ <section className="scenario-banner"><div className="scenario-symbol"><Cloud size={22}/></div><div className="scenario-copy"><div><span className="scenario-kicker">{scenario.provider} CLOUD / {scenario.category.toUpperCase()}</span><span className="scenario-version">MVP SCENARIO</span></div><h2>{scenario.name}</h2><p>{scenario.description}</p></div><div className="scenario-meta"><span><Activity size={14}/>{scenario.durationLabel}</span><span><Clock3 size={14}/>{Math.round(scenario.steps.reduce((a,s)=>a+s.duration,0)/1000)} sec simulated</span></div></section>
+ <section className="metrics-grid"><div className="metric-card"><span>DEPLOYMENT PROGRESS</span><strong>{progress}<small>%</small></strong><div className="progress-track"><i style={{width:progress+"%"}}/></div></div><div className="metric-card"><span>PIPELINE STAGES</span><strong>{completed}<small> / {scenario.steps.length}</small></strong><div className="metric-caption">Stages completed</div></div><div className="metric-card"><span>ELAPSED SIMULATION</span><strong>{elapsed.toFixed(1)}<small> sec</small></strong><div className="metric-caption">Accelerated learning clock</div></div><div className="metric-card"><span>ENVIRONMENT STATUS</span><strong className={isComplete?"good-text":"neutral-text"}>{isComplete?"Healthy":running?"Deploying":"Idle"}</strong><div className="metric-caption"><span className="status-pip"/> No cloud resources created</div></div></section>
+ <div className="section-title"><div><h3>Infrastructure topology</h3><p>Follow the release path from commit to production traffic.</p></div><div className="canvas-actions"><span><Radio size={13}/> LIVE SIMULATION</span><button onClick={()=>setSpeed(s=>s===1?1.5:s===1.5?2:1)}>Speed {speed}×</button></div></div>
+ <section className="workspace-grid"><Architecture scenario={scenario} activeNodeIds={activeNodeIds} completedNodeIds={completedNodeIds} onSelect={setSelectedId} selectedId={selectedId}/><Inspector scenario={scenario} selectedId={selectedId} onClose={()=>setSelectedId(null)} activeNodeIds={activeNodeIds} completedNodeIds={completedNodeIds}/></section>
+ <section className="pipeline-section"><div className="section-title"><div><h3>Deployment pipeline</h3><p>Each stage represents an operation in the release workflow.</p></div><button className="text-action" onClick={stepForward} disabled={running||isComplete}><SkipForward size={14}/> Run next step</button></div><div className="pipeline-track">{scenario.steps.map((step,index)=>{const status=statuses[step.id]||"pending";return <button key={step.id} className={`pipeline-step ${status}`} onClick={()=>setSelectedId(step.nodeIds[0])}><span className="step-number">{status==="success"?<Check size={13}/>:index+1}</span><strong>{step.title}</strong><small>{status==="success"?"Completed":status==="running"?"In progress":"Waiting"}</small></button>;})}</div></section>
+ <section className="console-panel"><div className="console-header"><div className="console-tabs"><button className={tab==="events"?"active":""} onClick={()=>setTab("events")}><Activity size={14}/> Deployment events <span>{logs.length}</span></button><button className={tab==="terminal"?"active":""} onClick={()=>setTab("terminal")}><Terminal size={14}/> Command preview</button></div><div className="console-tools"><span><span className="live-dot"/> SIMULATED OUTPUT</span><button onClick={()=>setLogs([])}>Clear</button></div></div>
+ <div className="console-body">{tab==="events"?logs.length===0?<div className="console-empty"><Radio size={17}/><span>Deployment events will appear here. Start the simulation to watch each stage execute.</span></div>:logs.map(log=><div className="log-row" key={log.id}><span className="log-time">{log.time}</span><span className={`log-level ${log.level}`}>{log.level.toUpperCase()}</span><span>{log.message}</span>{log.command&&<code>{log.command}</code>}</div>):<div className="terminal-preview"><div><span className="terminal-prompt">deploylab $</span> {activeStep?.command||scenario.steps[0].command}</div><p>{activeStep?getStepOutput(activeStep).join("\n"):"Select a deployment step to preview its illustrative command."}</p><small>Illustrative command only — not executed.</small></div>}</div></section>
+ <footer className="page-footer"><span><Code2 size={14}/> DEPLOYLAB <b>v0.1.0</b></span><span><ShieldCheck size={14}/> Safe educational simulation · No cloud credentials required</span><span>Built for curious engineers <Zap size={13}/></span></footer></div></main></div>;
+}
