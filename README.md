@@ -6,7 +6,7 @@ DeployLab is a simulation-only environment for learning how software is built, d
 
 ## Workspaces
 
-- **Architectures** — explore GitHub Actions → Amazon EKS and Azure AKS, Cloud Build → Google GKE, Jenkins → Amazon EC2, GitLab CI → Docker on Linux, and a representative Flipkart-style marketplace microservices deployment. Inspect components, follow deployment stages and view illustrative commands.
+- **Architectures** — explore cloud and on-premises deployment flows plus application/deployment architecture pairs for retail, video streaming, food delivery, digital banking, instant payments and multi-tenant SaaS. Inspect components, follow deployment stages and view illustrative commands.
 - **Kubernetes** — step through an EKS release lifecycle, inspect control-plane responsibilities, and adjust a simulated replica count across worker nodes.
 - **Troubleshoot** — inject ImagePullBackOff, CrashLoopBackOff, readiness-probe and Service-selector incidents; inspect symptoms and apply a simulated recovery.
 - **Terminal** — practise a safe allow-listed subset of kubectl, Docker and Terraform commands. Unknown commands return a simulated error; commands never reach the host.
@@ -44,7 +44,7 @@ The simulation engine has Node's built-in test runner coverage for ordered event
 
 The simulation engine is deterministic and local. New scenarios should define events and component metadata rather than implementing their own playback state machines.
 
-## Architecture references and attribution\n\nThe AKS and GKE learning flows are educational representations based on public cloud reference guidance, not exact reproductions of any private production environment. The marketplace example is a fictional, Flipkart-style e-commerce reference architecture; it is **not** a claim about Flipkart's internal systems.\n\n- [Microsoft AKS baseline architecture](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks/baseline-aks)\n- [Microsoft AKS DevSecOps process](https://learn.microsoft.com/en-us/azure/architecture/guide/devsecops/devsecops-on-aks)\n- [Google Cloud modern CI/CD with GKE](https://docs.cloud.google.com/kubernetes-engine/docs/tutorials/modern-cicd-gke-reference-architecture)\n- [Google Cloud GKE CI/CD best practices](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/best-practices-continuous-integration-delivery-kubernetes)\n\n## Product principles
+## Architecture references and attribution\n\nThe AKS and GKE learning flows are educational representations based on public cloud reference guidance, not exact reproductions of any private production environment. The marketplace, retail, streaming, food delivery, banking, instant payment and SaaS examples are fictional reference architectures inspired by common industry patterns; they are **not** claims about the named companies' private internal systems. Each case study provides an application view and a separate deployment view.\n\n- [Microsoft AKS baseline architecture](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks/baseline-aks)\n- [Microsoft AKS DevSecOps process](https://learn.microsoft.com/en-us/azure/architecture/guide/devsecops/devsecops-on-aks)\n- [Google Cloud modern CI/CD with GKE](https://docs.cloud.google.com/kubernetes-engine/docs/tutorials/modern-cicd-gke-reference-architecture)\n- [Google Cloud GKE CI/CD best practices](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/best-practices-continuous-integration-delivery-kubernetes)\n\n## Product principles
 
 1. Teach how systems behave, not only what components are called.
 2. Keep architecture content and simulation events data-driven.
@@ -63,7 +63,10 @@ The simulation engine is deterministic and local. New scenarios should define ev
 - [x] Terraform plan/apply simulator
 - [x] Deployment strategy comparison
 - [x] Learning modules and quizzes
-- [x] Add Azure AKS deployment with GitHub Actions, ACR and federated identity\n- [x] Add Google GKE deployment with Cloud Build, Artifact Registry and Cloud Deploy\n- [x] Add a representative Flipkart-style marketplace microservices reference flow\n- [ ] Expand architecture library: ECS, Lambda, Helm, Ansible, Argo CD and GitOps
+- [x] Add Azure AKS deployment with GitHub Actions, ACR and federated identity\n- [x] Add Google GKE deployment with Cloud Build, Artifact Registry and Cloud Deploy\n- [x] Add a representative Flipkart-style marketplace microservices reference flow
+- [x] Add Amazon-style retail, Netflix-style streaming and Swiggy-style food delivery reference architectures
+- [x] Add digital banking, UPI-style payment and multi-tenant SaaS reference architectures
+- [x] Add switchable application and deployment architecture views to case studies\n- [ ] Expand architecture library: ECS, Lambda, Helm, Ansible, Argo CD and GitOps
 - [ ] Add more scenario-specific branching, rollback and dependency graphs
 - [ ] Add persistent local learning progress and richer guided challenges
 - [ ] Add accessible keyboard-first terminal history and command completion
