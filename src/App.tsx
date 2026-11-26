@@ -621,7 +621,13 @@ addDeployment({
 });
 
 
-const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
+// Keep one canonical flow per ID. Several flows have an early generic definition and a later detailed version;
+ // duplicate React keys caused stale AWS rows to remain visible after switching provider filters.
+ const canonicalFlows=new Map<string,Scenario>();
+ scenarios.forEach(flow=>canonicalFlows.set(flow.id,flow));
+ scenarios.splice(0,scenarios.length,...canonicalFlows.values());
+
+ const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
 const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,flowMode=false):[number,number]=>{
   if(flowMode){const index=Math.max(0,nodes.findIndex(n=>n.id===node.id));return [115+index*220,210];}
   const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
