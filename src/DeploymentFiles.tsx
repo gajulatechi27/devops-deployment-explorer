@@ -685,7 +685,7 @@ jobs:
   <groupId>com.example</groupId><artifactId>demo-db-migrations</artifactId><version>0.1.0</version>
   <properties><maven.compiler.release>21</maven.compiler.release><flyway.version>10.20.1</flyway.version></properties>
   <dependencies>
-    <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>${flyway.version}</version></dependency>
+    <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>\${flyway.version}</version></dependency>
     <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>42.7.4</version></dependency>
   </dependencies>
 </project>
