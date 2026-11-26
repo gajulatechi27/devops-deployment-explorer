@@ -58,33 +58,33 @@ const scenarios:Scenario[]=[
 ]}];
 
 const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
-const nodeXY=(node:NodeDef):[number,number]=>[92+(node.pos[0]+5.5)*74,92+(node.pos[2]+1)*76];
+const nodeXY=(node:NodeDef,nodes:NodeDef[]):[number,number]=>{const index=nodes.findIndex(n=>n.id===node.id);return [90+index*(1020/Math.max(1,nodes.length-1)),300];};
 function Scene({scenario,stageIndex,selected,playing,onSelect}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void}){
  const activeStage=scenario.stages[stageIndex];
  const doneStages=stageIndex<0?[]:scenario.stages.slice(0,stageIndex);
  const nodes=scenario.nodes;
  const nodeById=(id:string)=>nodes.find(n=>n.id===id)!;
  const route=(from:NodeDef,to:NodeDef)=>{
-  const [x1,y1]=nodeXY(from),[x2,y2]=nodeXY(to);
-  const mid=(x1+x2)/2;
-  return `M ${x1} ${y1} L ${mid} ${y1} L ${mid} ${y2} L ${x2} ${y2}`;
+  const [x1,y1]=nodeXY(from,nodes),[x2,y2]=nodeXY(to,nodes);
+  const direction=x2>=x1?1:-1;
+  return `M ${x1+direction*66} ${y1} L ${x2-direction*66} ${y2}`;
  };
  return <div className="architecture-2d">
-  <svg viewBox="0 0 1000 600" role="img" aria-label={scenario.name+" deployment architecture"}>
+  <svg viewBox="0 0 1200 600" role="img" aria-label={scenario.name+" deployment architecture"}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e9e0d2" strokeWidth="1"/></pattern>
     <marker id="route-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8b9388"/></marker>
     <filter id="card-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#554a38" floodOpacity=".12"/></filter>
    </defs>
-   <rect width="1000" height="600" fill="#f8f3e9"/><rect width="1000" height="600" fill="url(#map-grid)"/>
-   {scenario.links.map(([a,b],i)=>{const from=nodeById(a),to=nodeById(b),d=route(from,to);const active=activeStage?.from===a&&activeStage?.to===b;const done=doneStages.some(s=>s.from===a&&s.to===b);return <g key={i}><path d={d} fill="none" stroke={active?"#df913d":done?"#76a875":"#9aa094"} strokeWidth={active?3:2} strokeLinecap="round" strokeLinejoin="round" markerEnd="url(#route-arrow)"/>{active&&playing&&<circle r="6" fill="#e68f36" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})}
-   {nodes.map(n=>{const [x,y]=nodeXY(n);const active=n.id===activeStage?.node;const done=doneStages.some(s=>s.node===n.id);const icon=brandIcons[n.id];return <g key={n.id} transform={`translate(${x-76} ${y-39})`} onClick={()=>onSelect(n.id)} role="button" tabIndex={0} aria-label={"Select "+n.name} style={{cursor:"pointer"}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(n.id);}}}>
-    <rect x="0" y="0" width="152" height="78" rx="12" fill={selected===n.id?"#e7efdF":"#fffdf8"} stroke={active?"#d58a38":selected===n.id?"#8ca77a":"#d9cebc"} strokeWidth={active?3:1.5} filter="url(#card-shadow)"/>
-    <rect x="12" y="12" width="48" height="48" rx="10" fill={palette[n.kind]} opacity=".38"/>
-    {icon?<image href={icon} x="20" y="20" width="32" height="32" preserveAspectRatio="xMidYMid meet"/>:<text x="36" y="44" textAnchor="middle" fontSize="22" fontWeight="700" fill="#435541">{n.name.slice(0,1)}</text>}
-    <text x="70" y="31" fontSize="12" fontWeight="700" fill="#29271f">{n.name.length>15?n.name.slice(0,14)+"…":n.name}</text>
-    <text x="70" y="49" fontSize="9" fill="#827b70">{n.sub.length>17?n.sub.slice(0,16)+"…":n.sub}</text>
-    {(active||done)&&<circle cx="138" cy="13" r="5" fill={active?"#e59a43":"#6fa576"}/>}
+   <rect width="1200" height="600" fill="#f8f3e9"/><rect width="1200" height="600" fill="url(#map-grid)"/>
+   {scenario.links.map(([a,b],i)=>{const from=nodeById(a),to=nodeById(b),d=route(from,to);const active=activeStage?.from===a&&activeStage?.to===b;const done=doneStages.some(s=>s.from===a&&s.to===b);return <g key={i}><path d={d} fill="none" stroke={active?"#df913d":done?"#76a875":"#9aa094"} strokeWidth={active?3:2} strokeLinecap="round" markerEnd="url(#route-arrow)"/>{active&&playing&&<circle r="6" fill="#e68f36" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})}
+   {nodes.map(n=>{const [x,y]=nodeXY(n,nodes);const active=n.id===activeStage?.node;const done=doneStages.some(s=>s.node===n.id);const icon=brandIcons[n.id];return <g key={n.id} transform={`translate(${x-65} ${y-38})`} onClick={()=>onSelect(n.id)} role="button" tabIndex={0} aria-label={"Select "+n.name} style={{cursor:"pointer"}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(n.id);}}}>
+    <rect x="0" y="0" width="130" height="76" rx="11" fill={selected===n.id?"#e7efdf":"#fffdf8"} stroke={active?"#d58a38":selected===n.id?"#8ca77a":"#d9cebc"} strokeWidth={active?3:selected===n.id?2:1.3} filter="url(#card-shadow)"/>
+    <rect x="9" y="13" width="46" height="46" rx="9" fill={palette[n.kind]} opacity=".38"/>
+    {icon?<image href={icon} x="16" y="20" width="32" height="32" preserveAspectRatio="xMidYMid meet"/>:<text x="32" y="43" textAnchor="middle" fontSize="21" fontWeight="700" fill="#435541">{n.name.slice(0,1)}</text>}
+    <text x="62" y="31" fontSize="10.5" fontWeight="700" fill="#29271f">{n.name.length>12?n.name.slice(0,11)+"…":n.name}</text>
+    <text x="62" y="48" fontSize="8" fill="#827b70">{n.sub.length>12?n.sub.slice(0,11)+"…":n.sub}</text>
+    {(active||done)&&<circle cx="119" cy="12" r="4.5" fill={active?"#e59a43":"#6fa576"}/>}
    </g>})}
    {activeStage&&(()=>{const from=nodeById(activeStage.from),to=nodeById(activeStage.to),d=route(from,to);return <g><path d={d} fill="none" stroke="#e49a42" strokeWidth="5" strokeOpacity=".18" strokeLinecap="round"/>{playing&&<circle r="8" fill="#e58c35" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})()}
   </svg>
