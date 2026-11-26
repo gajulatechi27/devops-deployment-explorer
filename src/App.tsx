@@ -645,7 +645,7 @@ export default function App(){
  const stage=architectureView==="deployment"?scenario.stages[stageIndex]:undefined;const node=sceneScenario.nodes.find(n=>n.id===selected)||sceneScenario.nodes[0];const hasApplicationView=!!scenario.appNodes;
  useEffect(()=>{if(stage)setSelected(stage.node);},[stage?.node]);
  useEffect(()=>{if(!playing)return;const timer=window.setTimeout(()=>{if(stageIndex+1>=scenario.stages.length){setPlaying(false);return;}setStageIndex(stageIndex+1);},2600/speed);return()=>window.clearTimeout(timer);},[playing,stageIndex,scenario,speed]);
- useEffect(()=>{setArchitectureView("deployment");setTierMode(3);setStageIndex(-1);setPlaying(false);setSelected(scenario.nodes[0].id);},[scenarioId]);
+ useEffect(()=>{setArchitectureView("deployment");setTierMode(3);setStageIndex(-1);setPlaying(false);setSelected(scenario.nodes[0].id);setTab("overview");},[scenarioId]);
  useEffect(()=>{setPlaying(false);setStageIndex(-1);setSelected(sceneScenario.nodes[0].id);if(architectureView==="application"){setTab("overview");}},[architectureView]);
  const progress=architectureView==="application"?0:stageIndex<0?0:Math.round((stageIndex+1)/scenario.stages.length*100);
  const reset=()=>{setPlaying(false);setStageIndex(-1);};
