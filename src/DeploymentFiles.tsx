@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, FileCode2, Folder, Search } from "lucide-react";
 
 type LearningFile = { path: string; description: string; content: string };
-type Props = { scenarioId: string; scenarioName: string; provider: string };
+type Props = { scenarioId: string; scenarioName: string; provider: string; stageTitle?: string };
 
 const commonEnv = `# Dummy learning values only — never use real credentials
 APP_NAME=demo-web
@@ -1656,7 +1656,7 @@ All hostnames, addresses, account IDs and credentials in this pack are placehold
   ];
 }
 
-export default function DeploymentFiles({ scenarioId, scenarioName, provider }: Props) {
+export default function DeploymentFiles({ scenarioId, scenarioName, provider, stageTitle }: Props) {
   const files = useMemo(() => {
     const base = cloudSpecificFiles(scenarioId, provider) || pipelineFiles(scenarioId === "lambda-sam" ? "lambda-serverless" : scenarioId);
     const intro: LearningFile = {
@@ -1683,7 +1683,20 @@ Never commit real secrets. The secret example is intentionally fake and must be 
     return [intro, ...base];
   }, [scenarioId, scenarioName, provider]);
   const [selected, setSelected] = useState(files[0]?.path || "");
-  useEffect(() => { setSelected(files[0]?.path || ""); }, [scenarioId]);
+  useEffect(() => {
+    if (!stageTitle) { setSelected(files[0]?.path || ""); return; }
+    const title = stageTitle.toLowerCase();
+    const preferred = title.includes("checkout") || title.includes("source") || title.includes("commit") ? ["jenkinsfile", ".gitlab-ci", "workflows", "azure-pipelines", "cloudbuild"] :
+      title.includes("build") || title.includes("package") || title.includes("compile") ? ["pom.xml", "build.gradle", "package.json", "gradle"] :
+      title.includes("test") || title.includes("quality") || title.includes("sonar") ? ["sonar", "test", "pom.xml", "build.gradle"] :
+      title.includes("image") || title.includes("container") || title.includes("docker") ? ["dockerfile", ".dockerignore"] :
+      title.includes("registry") || title.includes("publish") || title.includes("push") ? ["ecr", "registry", "dockerfile"] :
+      title.includes("deploy") || title.includes("release") || title.includes("apply") || title.includes("sync") ? ["deployment.yaml", "task-definition", "template.yaml", "serverless", ".tf", "deploy.sh", "helm"] :
+      title.includes("database") || title.includes("schema") || title.includes("migration") || title.includes("rds") ? ["sql", "migration", "database", "rds"] :
+      title.includes("verify") || title.includes("health") || title.includes("monitor") ? ["health", "monitor", "prometheus", "grafana", "nginx"] : [];
+    const match = files.find(file => preferred.some(term => file.path.toLowerCase().includes(term)));
+    setSelected(match?.path || files[0]?.path || "");
+  }, [scenarioId, stageTitle, files]);
   const active = files.find(file => file.path === selected) || files[0];
   const download = (file: LearningFile) => {
     const blob = new Blob([file.content], { type: "text/plain;charset=utf-8" });
