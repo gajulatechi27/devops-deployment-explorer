@@ -1,0 +1,12 @@
+import { Activity, BookOpen, Boxes, Cloud, GitBranch, Gauge, Layers3, Server, Settings2, TerminalSquare } from "lucide-react";
+import type { Scenario,ScenarioId } from "../types";
+export default function Sidebar({scenarios,active,onSelect}:{scenarios:Scenario[];active:ScenarioId;onSelect:(id:ScenarioId)=>void}) {
+ return <aside className="sidebar"><div className="brand"><div className="brand-mark"><Boxes size={21}/></div><div><strong>DEPLOY<span>LAB</span></strong><small>ENGINEERING PLAYGROUND</small></div></div>
+ <div className="side-section"><span className="side-heading">WORKSPACE</span><button className="side-link selected"><Gauge size={16}/> Overview</button><button className="side-link"><Activity size={16}/> Deployment explorer <span className="side-count">3</span></button><button className="side-link"><Layers3 size={16}/> Architecture library</button></div>
+ <div className="side-section scenarios-section"><span className="side-heading">DEPLOYMENT SCENARIOS</span><div className="provider-label"><Cloud size={14}/> AWS CLOUD</div>
+ {scenarios.filter(s=>s.provider==="AWS").map(s=><button key={s.id} onClick={()=>onSelect(s.id)} className={`scenario-link ${active===s.id?"active":""}`}><span className="scenario-dot"/>{s.id==="eks"?"Amazon EKS":"Amazon EC2"}<small>{s.id==="eks"?"Kubernetes":"Virtual machine"}</small></button>)}
+ <div className="provider-label"><Server size={14}/> ON-PREMISES</div>{scenarios.filter(s=>s.provider!=="AWS").map(s=><button key={s.id} onClick={()=>onSelect(s.id)} className={`scenario-link ${active===s.id?"active":""}`}><span className="scenario-dot"/>Docker on Linux<small>Containers</small></button>)}
+ <div className="provider-label muted"><GitBranch size={14}/> COMING NEXT</div><button className="scenario-link disabled"><span className="scenario-dot"/>Azure AKS<small>Planned</small></button><button className="scenario-link disabled"><span className="scenario-dot"/>Google GKE<small>Planned</small></button><button className="scenario-link disabled"><span className="scenario-dot"/>Hybrid cloud<small>Planned</small></button></div>
+ <div className="side-section"><span className="side-heading">LEARN</span><button className="side-link"><BookOpen size={16}/> Learning paths</button><button className="side-link"><TerminalSquare size={16}/> Terminal lab</button></div>
+ <div className="sidebar-bottom"><div className="avatar">PK</div><div><strong>Engineering workspace</strong><small>Simulation mode</small></div><Settings2 size={16}/></div></aside>;
+}
