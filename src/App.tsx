@@ -6,6 +6,7 @@ import { Activity,ArrowRight,Box,Check,ChevronDown,Cloud,GitBranch,Layers,Moon,P
 
 type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"server"|"database";
 type NodeDef={id:string;name:string;sub:string;kind:NodeKind;pos:[number,number,number];description:string;tech:string[]};
+const brandIcons:Record<string,string>={git:"https://cdn.simpleicons.org/github/181717",ci:"https://cdn.simpleicons.org/githubactions/2088FF",ecr:"https://cdn.simpleicons.org/amazonecr/FF9900",eks:"https://cdn.simpleicons.org/amazoneks/FF9900",pods:"https://cdn.simpleicons.org/kubernetes/326CE5",alb:"https://cdn.simpleicons.org/awselasticloadbalancing/FF9900",jenkins:"https://cdn.simpleicons.org/jenkins/D24939",registry:"https://cdn.simpleicons.org/docker/2496ED",gitlab:"https://cdn.simpleicons.org/gitlab/FC6D26",runner:"https://cdn.simpleicons.org/gitlab/FC6D26",host:"https://cdn.simpleicons.org/linux/FCC624",ec2:"https://cdn.simpleicons.org/amazonec2/FF9900",nginx:"https://cdn.simpleicons.org/nginx/009639",container:"https://cdn.simpleicons.org/docker/2496ED"};
 type Stage={title:string;detail:string;command:string;node:string;from:string;to:string;kind:"request"|"response"|"success"};
 type Scenario={id:string;name:string;provider:string;category:string;summary:string;nodes:NodeDef[];links:[string,string][];stages:Stage[]};
 const scenarios:Scenario[]=[
@@ -62,16 +63,18 @@ const scenarios:Scenario[]=[
 const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
 function Block({node,active,done,selected,onClick}:{node:NodeDef;active:boolean;done:boolean;selected:boolean;onClick:()=>void}){
  const color=palette[node.kind];
+ const icon=brandIcons[node.id];
  return <group position={node.pos} onClick={e=>{e.stopPropagation();onClick();}}>
-  <Float speed={active?2:0.8} rotationIntensity={0.025} floatIntensity={active ? 0.08 : 0.025}>
-   <RoundedBox args={[1.35,.72,.95]} radius={.12} smoothness={4} position={[0,.28,0]} castShadow receiveShadow>
-    <meshStandardMaterial color={active?"#f8d68c":selected?"#f0dfaa":color} roughness={.82} metalness={.02} emissive={selected?"#b79a4c":"#000000"} emissiveIntensity={selected ? 0.12 : 0}/>
+  <Float speed={active?1.5:0.45} rotationIntensity={0.012} floatIntensity={active?0.055:0.018}>
+   <RoundedBox args={[1.55,.2,1.18]} radius={.12} smoothness={5} position={[0,.02,0]} castShadow receiveShadow>
+    <meshStandardMaterial color={active?"#fff0c9":selected?"#f4edda":"#fffaf0"} roughness={.78} metalness={.03} emissive={selected?"#d8c99f":"#000000"} emissiveIntensity={selected?.08:0}/>
    </RoundedBox>
-   <mesh position={[0,.66,0]} rotation={[-Math.PI/2,0,0]} receiveShadow><circleGeometry args={[.48,6]}/><meshStandardMaterial color={active?"#ffe7ae":color} roughness={.9}/></mesh>
-   <mesh position={[0,-.12,0]}><boxGeometry args={[.12,.14,.12]}/><meshStandardMaterial color="#55504a"/></mesh>
-   <mesh position={[0,.66,.491]}><boxGeometry args={[.35,.025,.012]}/><meshStandardMaterial color={done?"#27845b":active?"#c56d27":"#7b756d"}/></mesh>
-   <Html position={[0,-.45,0]} center distanceFactor={11} style={{pointerEvents:"none"}}><div className="scene-label"><b>{node.name}</b><span>{node.sub}</span></div></Html>
-   {(active||done||selected)&&<mesh position={[0,1.03,0]}><sphereGeometry args={[.095,16,16]}/><meshBasicMaterial color={done?"#43a879":active?"#e89c39":"#8b7a42"}/></mesh>}
+   <RoundedBox args={[1.42,.12,1.05]} radius={.1} smoothness={5} position={[0,.18,0]} castShadow receiveShadow>
+    <meshStandardMaterial color={active?"#f4d99c":color} roughness={.72} metalness={.02}/>
+   </RoundedBox>
+   {icon?<Html position={[0,.62,0]} center distanceFactor={9} style={{pointerEvents:"none"}}><div className="brand-mark"><img src={icon} alt="" /></div></Html>:<Html position={[0,.58,0]} center distanceFactor={9} style={{pointerEvents:"none"}}><div className="brand-mark brand-mark-fallback"><span>{node.name.slice(0,1)}</span></div></Html>}
+   <Html position={[0,-.32,0]} center distanceFactor={10} style={{pointerEvents:"none"}}><div className="scene-label"><b>{node.name}</b><span>{node.sub}</span></div></Html>
+   {(active||done||selected)&&<mesh position={[0,.92,0]}><sphereGeometry args={[.07,16,16]}/><meshBasicMaterial color={done?"#43a879":active?"#e89c39":"#8b7a42"}/></mesh>}
   </Float>
  </group>
 }
@@ -85,14 +88,14 @@ function Scene({scenario,stageIndex,selected,playing,onSelect}:{scenario:Scenari
  const active=scenario.stages[stageIndex]?.node;
  const done=(stageIndex<0?[]:scenario.stages.slice(0,stageIndex)).map(s=>s.node);
  const nodes=scenario.nodes;
- return <Canvas shadows camera={{position:[8,8,11],fov:34}} dpr={[1,1.7]} onPointerMissed={()=>onSelect("")}>
+ return <Canvas shadows camera={{position:[7,9,10],fov:31}} dpr={[1,1.7]} onPointerMissed={()=>onSelect("")}>
   <color attach="background" args={["#f6f1e8"]}/><ambientLight intensity={1.3}/><directionalLight position={[5,9,6]} intensity={2.1} castShadow shadow-mapSize={[1024,1024]}/><directionalLight position={[-6,5,-5]} intensity={.7}/>
-  <gridHelper args={[22,44,"#d9d0c1","#e9e2d7"]} position={[0,-.65,0]}/>
+  <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.58,0]} receiveShadow><planeGeometry args={[24,18]}/><meshStandardMaterial color="#f3ecdf" roughness={1}/></mesh>
   {scenario.links.map(([a,b],i)=>{const from=nodes.find(n=>n.id===a)!,to=nodes.find(n=>n.id===b)!;const p1=new THREE.Vector3(from.pos[0],from.pos[1]+.25,from.pos[2]),p2=new THREE.Vector3(to.pos[0],to.pos[1]+.25,to.pos[2]);return <group key={i}><Line points={[p1,p2]} color="#6f766e" lineWidth={1.4}/><mesh position={p2.clone().lerp(p1,.08)} rotation={[0,0,Math.atan2(p2.y-p1.y,p2.x-p1.x)]}><coneGeometry args={[.075,.18,3]}/><meshStandardMaterial color="#6f766e"/></mesh></group>})}
   {nodes.map(n=><Block key={n.id} node={n} active={n.id===active} done={done.includes(n.id)} selected={n.id===selected} onClick={()=>onSelect(n.id)}/>)}
   {stageIndex>=0&&stageIndex<scenario.stages.length&&(()=>{const s=scenario.stages[stageIndex];const from=nodes.find(n=>n.id===s.from);const to=nodes.find(n=>n.id===s.to);if(!from||!to)return null;return <Packet key={scenario.id+"-"+stageIndex} from={from} to={to} playing={playing} color={s.kind==="response"?"#69a66f":s.kind==="success"?"#e5a43c":"#e58a42"}/>})()}
   <ContactShadows position={[0,-.64,0]} opacity={.24} scale={18} blur={2.4} far={5}/>
-  <OrbitControls makeDefault enableDamping dampingFactor={.08} minDistance={7} maxDistance={19} maxPolarAngle={Math.PI/2.05} target={[0,0,0]}/>
+  <OrbitControls makeDefault enableDamping dampingFactor={.08} minDistance={7} maxDistance={19} maxPolarAngle={Math.PI/2.05} target={[0,.05,0]}/>
  </Canvas>
 }
 export default function App(){
