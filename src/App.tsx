@@ -67,7 +67,7 @@ function Block({node,active,done,selected,onClick}:{node:NodeDef;active:boolean;
  return <group position={node.pos} onClick={e=>{e.stopPropagation();onClick();}}>
   <Float speed={active?1.5:0.45} rotationIntensity={0.012} floatIntensity={active?0.055:0.018}>
    <RoundedBox args={[1.55,.2,1.18]} radius={.12} smoothness={5} position={[0,.02,0]} castShadow receiveShadow>
-    <meshStandardMaterial color={active?"#fff0c9":selected?"#f4edda":"#fffaf0"} roughness={.78} metalness={.03} emissive={selected?"#d8c99f":"#000000"} emissiveIntensity={selected?.08:0}/>
+    <meshStandardMaterial color={active?"#fff0c9":selected?"#f4edda":"#fffaf0"} roughness={.78} metalness={.03} emissive={selected?"#d8c99f":"#000000"} emissiveIntensity={selected ? 0.08 : 0}/>
    </RoundedBox>
    <RoundedBox args={[1.42,.12,1.05]} radius={.1} smoothness={5} position={[0,.18,0]} castShadow receiveShadow>
     <meshStandardMaterial color={active?"#f4d99c":color} roughness={.72} metalness={.02}/>
