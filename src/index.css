@@ -142,3 +142,11 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
  .right-panel>.right-tabs{height:48px;margin-top:0;margin-bottom:18px;padding-right:42px}
  .panel-title{justify-content:flex-start}
 }
+
+
+/* Align the Explore flows heading with the top of the workspace. */
+@media(min-width:701px){
+ .app:not(.left-collapsed) .left-panel{padding-top:12px}
+ .app:not(.left-collapsed) .left-panel>.left-collapse{position:absolute;top:10px;right:12px;align-self:auto;margin:0;z-index:3}
+ .app:not(.left-collapsed) .left-panel .panel-title{margin-top:0;padding-right:38px}
+}
