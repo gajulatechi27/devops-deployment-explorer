@@ -70,7 +70,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect}:{scenario:Scenari
   return `M ${x1+direction*66} ${y1} L ${x2-direction*66} ${y2}`;
  };
  return <div className="architecture-2d">
-  <svg viewBox="0 0 1200 600" role="img" aria-label={scenario.name+" deployment architecture"}>
+  <svg viewBox="0 0 1200 600" preserveAspectRatio="none" role="img" aria-label={scenario.name+" deployment architecture"}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e9e0d2" strokeWidth="1"/></pattern>
     <marker id="route-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8b9388"/></marker>
