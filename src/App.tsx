@@ -632,7 +632,8 @@ const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,flowMode=false):[numbe
  };
  
 function wrapNodeLabel(value:string,maxChars:number,maxLines=2):string[]{
- const words=value.split(/\\s+/);const lines:string[]=[];let line="";
+ const words=value.trim().split(/\s+/).flatMap(word=>{const parts:string[]=[];for(let i=0;i<word.length;i+=maxChars)parts.push(word.slice(i,i+maxChars));return parts;});
+ const lines:string[]=[];let line="";
  for(const word of words){const next=line?line+" "+word:word;if(next.length>maxChars&&line){lines.push(line);line=word;}else line=next;}
  if(line)lines.push(line);
  if(lines.length>maxLines){const kept=lines.slice(0,maxLines);kept[maxLines-1]=kept[maxLines-1].replace(/[.,;:]?$/,"")+"…";return kept;}
@@ -658,19 +659,19 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
   return `M ${startX} ${y1} H ${midX} V ${y2} H ${endX}`;
  };
  return <div className="architecture-2d">
-  <svg viewBox={`0 0 ${flowMode?Math.max(1400,245+nodes.length*220):1400} ${flowMode?420:600}`} preserveAspectRatio="xMinYMid meet" style={flowMode?{width:`${Math.max(1400,230+nodes.length*205)}px`,height:"100%"}:undefined} role="img" aria-label={scenario.name+" deployment architecture"}>
+  <svg viewBox={`0 0 ${flowMode?Math.max(1400,245+nodes.length*220):1400} ${flowMode?420:600}`} preserveAspectRatio="xMinYMid meet" style={flowMode?{width:`${Math.max(1400,245+nodes.length*220)}px`,height:"100%"}:undefined} role="img" aria-label={scenario.name+" deployment architecture"}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e9e0d2" strokeWidth="1"/></pattern>
     <marker id="route-arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b9388"/></marker>
     <filter id="card-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#554a38" floodOpacity=".12"/></filter>
    </defs>
-   <rect width={flowMode?Math.max(1400,230+nodes.length*205):1400} height={flowMode?420:600} fill="#f8f3e9"/><rect width={flowMode?Math.max(1400,230+nodes.length*205):1400} height={flowMode?420:600} fill="url(#map-grid)"/>
+   <rect width={flowMode?Math.max(1400,245+nodes.length*220):1400} height={flowMode?420:600} fill="#f8f3e9"/><rect width={flowMode?Math.max(1400,230+nodes.length*205):1400} height={flowMode?420:600} fill="url(#map-grid)"/>
    {flowMode?<g><rect x="14" y="24" width={Math.max(1372,231+nodes.length*220)} height="372" rx="14" fill="#edf1f3" opacity=".32" stroke="#d4dadd"/></g>:tierMode===2?<><rect x="14" y="92" width="1372" height="190" rx="14" fill="#e7eee5" opacity=".65" stroke="#c7d5c2"/><rect x="14" y="315" width="1372" height="265" rx="14" fill="#e9edf4" opacity=".72" stroke="#c9d2e2"/><text x="34" y="120" fontSize="13" fontWeight="700" fill="#526c50">TIER 1 · PRESENTATION / CLIENT</text><text x="34" y="343" fontSize="13" fontWeight="700" fill="#52617a">TIER 2 · APPLICATION + DATA</text></>:<><rect x="14" y="20" width="1372" height="165" rx="14" fill="#e7eee5" opacity=".65" stroke="#c7d5c2"/><rect x="14" y="205" width="1372" height="165" rx="14" fill="#e9edf4" opacity=".72" stroke="#c9d2e2"/><rect x="14" y="390" width="1372" height="190" rx="14" fill="#f3eadc" opacity=".72" stroke="#dfd0b8"/><text x="34" y="47" fontSize="13" fontWeight="700" fill="#526c50">TIER 1 · PRESENTATION</text><text x="34" y="232" fontSize="13" fontWeight="700" fill="#52617a">TIER 2 · APPLICATION / SERVICES</text><text x="34" y="417" fontSize="13" fontWeight="700" fill="#86683f">TIER 3 · DATA</text></>}
    {scenario.links.map(([a,b],i)=>{const from=nodeById(a),to=nodeById(b),d=route(from,to);const active=activeStage?.from===a&&activeStage?.to===b;const done=doneStages.some(s=>s.from===a&&s.to===b);return <g key={i}><path d={d} fill="none" stroke={active?"#df913d":done?"#76a875":"#9aa094"} strokeWidth={active?3:2} strokeLinecap="round" markerEnd="url(#route-arrow)"/>{active&&playing&&<circle r="6" fill="#e68f36" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})}
    {nodes.map(n=>{const [x,y]=nodeXY(n,nodes,tierMode,flowMode);const active=n.id===activeStage?.node;const done=doneStages.some(s=>s.node===n.id);const icon=iconForNode(n);const titleLines=wrapNodeLabel(n.name,19,2);const subLines=wrapNodeLabel(n.sub,22,2);return <g key={n.id} transform={`translate(${x-87} ${y-35})`} onClick={()=>onSelect(n.id)} role="button" tabIndex={0} aria-label={"Select "+n.name} style={{cursor:"pointer"}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(n.id);}}}>
     <rect x="0" y="0" width="174" height="70" rx="11" fill={selected===n.id?"#e7efdf":"#fffdf8"} stroke={active?"#d58a38":selected===n.id?"#8ca77a":"#d9cebc"} strokeWidth={active?3:selected===n.id?2:1.3} filter="url(#card-shadow)"/>
     <rect x="9" y="12" width="44" height="46" rx="9" fill={palette[n.kind]} opacity=".38"/>
-    <text x="31" y="41" textAnchor="middle" fontSize="21" fontWeight="700" fill="#435541">{n.name.slice(0,1)}</text>{icon&&<image href={icon} x="15" y="19" width="32" height="32" preserveAspectRatio="xMidYMid meet" onError={e=>{e.currentTarget.style.display="none";}}/>}
+    {!icon&&<text x="31" y="41" textAnchor="middle" fontSize="21" fontWeight="700" fill="#435541">{n.name.slice(0,1)}</text>}{icon&&<image href={icon} x="15" y="19" width="32" height="32" preserveAspectRatio="xMidYMid meet" onError={e=>{e.currentTarget.style.display="none";}}/>}
     <text x="60" y={titleLines.length>1?21:29} fontSize="8.5" fontWeight="700" fill="#29271f">{titleLines.map((line,i)=><tspan key={i} x="60" dy={i===0?0:10}>{line}</tspan>)}</text>
     <text x="60" y={titleLines.length>1?48:44} fontSize="7.1" fill="#827b70">{subLines.map((line,i)=><tspan key={i} x="60" dy={i===0?0:9}>{line}</tspan>)}</text>
     {(active||done)&&<circle cx="162" cy="10" r="4.5" fill={active?"#e59a43":"#6fa576"}/>}
