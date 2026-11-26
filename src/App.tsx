@@ -1,7 +1,4 @@
-import { useEffect,useRef,useState } from "react";
-import { Canvas,useFrame } from "@react-three/fiber";
-import { Html,OrbitControls,ContactShadows,Float,Line,RoundedBox } from "@react-three/drei";
-import * as THREE from "three";
+import { useEffect,useState } from "react";
 import { Activity,ArrowRight,Box,Check,ChevronDown,Cloud,GitBranch,Layers,Moon,Pause,Play,RotateCcw,Search,Server,ShieldCheck,SkipBack,SkipForward,Sun,Workflow } from "lucide-react";
 
 type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"server"|"database";
@@ -61,56 +58,37 @@ const scenarios:Scenario[]=[
 ]}];
 
 const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
-function Block({node,active,done,selected,onClick}:{node:NodeDef;active:boolean;done:boolean;selected:boolean;onClick:()=>void}){
- const color=palette[node.kind];
- const icon=brandIcons[node.id];
- return <group position={node.pos} onClick={e=>{e.stopPropagation();onClick();}}>
-  <group>
-   <RoundedBox args={[1.55,.2,1.18]} radius={.12} smoothness={5} position={[0,.02,0]} castShadow receiveShadow>
-    <meshStandardMaterial color={active?"#fff0c9":selected?"#f4edda":"#fffaf0"} roughness={.78} metalness={.03} emissive={selected?"#d8c99f":"#000000"} emissiveIntensity={selected ? 0.08 : 0}/>
-   </RoundedBox>
-   <RoundedBox args={[1.42,.12,1.05]} radius={.1} smoothness={5} position={[0,.18,0]} castShadow receiveShadow>
-    <meshStandardMaterial color={active?"#f4d99c":color} roughness={.72} metalness={.02}/>
-   </RoundedBox>
-   {icon?<Html position={[0,.62,0]} center distanceFactor={9} style={{pointerEvents:"none"}}><div className="brand-mark"><img src={icon} alt="" /></div></Html>:<Html position={[0,.58,0]} center distanceFactor={9} style={{pointerEvents:"none"}}><div className="brand-mark brand-mark-fallback"><span>{node.name.slice(0,1)}</span></div></Html>}
-   <Html position={[0,-.32,0]} center distanceFactor={10} style={{pointerEvents:"none"}}><div className="scene-label"><b>{node.name}</b><span>{node.sub}</span></div></Html>
-   {(active||done||selected)&&<mesh position={[0,.92,0]}><sphereGeometry args={[.07,16,16]}/><meshBasicMaterial color={done?"#43a879":active?"#e89c39":"#8b7a42"}/></mesh>}
-  </group>
- </group>
-}
-function Route({from,to,active,done}:{from:NodeDef;to:NodeDef;active:boolean;done:boolean}){
- const lift=.22;
- const a=new THREE.Vector3(from.pos[0],lift,from.pos[2]);
- const b=new THREE.Vector3(to.pos[0],lift,to.pos[2]);
- const midX=(a.x+b.x)/2;
- const points=[a,new THREE.Vector3(midX,lift,a.z),new THREE.Vector3(midX,lift,b.z),b];
- const curve=new THREE.CatmullRomCurve3(points,false,"centripetal",.1);
- const arrow=curve.getPoint(.94);
- const tangent=curve.getTangent(.94);
- const quat=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),tangent);
- return <group><Line points={points} color={active?"#e49a42":done?"#7eaa79":"#8e958d"} lineWidth={active?2.5:1.45} dashed={false}/><mesh position={arrow} quaternion={quat}><coneGeometry args={[.09,.22,4]}/><meshBasicMaterial color={active?"#df8e36":done?"#6d9d6b":"#788078"}/></mesh></group>
-}
-function Packet({from,to,color,playing}:{from:NodeDef;to:NodeDef;color:string;playing:boolean}){
- const ref=useRef<THREE.Mesh>(null);
- const progress=useRef(0);
- const curve=useRef<THREE.CatmullRomCurve3|null>(null);
- useEffect(()=>{const a=new THREE.Vector3(from.pos[0],.36,from.pos[2]),b=new THREE.Vector3(to.pos[0],.36,to.pos[2]);const mid=(a.x+b.x)/2;curve.current=new THREE.CatmullRomCurve3([a,new THREE.Vector3(mid,.36,a.z),new THREE.Vector3(mid,.36,b.z),b]);progress.current=0;},[from,to]);
- useFrame((_,delta)=>{if(playing)progress.current=(progress.current+delta*.24)%1;if(ref.current&&curve.current){const p=curve.current.getPoint(progress.current);ref.current.position.copy(p);}});
- return <mesh ref={ref}><sphereGeometry args={[.095,16,16]}/><meshBasicMaterial color={color}/></mesh>
-}
+const nodeXY=(node:NodeDef):[number,number]=>[92+(node.pos[0]+5.5)*74,92+(node.pos[2]+1)*76];
 function Scene({scenario,stageIndex,selected,playing,onSelect}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void}){
- const active=scenario.stages[stageIndex]?.node;
- const done=(stageIndex<0?[]:scenario.stages.slice(0,stageIndex)).map(s=>s.node);
+ const activeStage=scenario.stages[stageIndex];
+ const doneStages=stageIndex<0?[]:scenario.stages.slice(0,stageIndex);
  const nodes=scenario.nodes;
- return <Canvas shadows camera={{position:[9,11,12],fov:29}} dpr={[1,1.6]} onPointerMissed={()=>onSelect("")}>
-  <color attach="background" args={["#f8f3e9"]}/>
-  <ambientLight intensity={1.6}/><directionalLight position={[4,10,7]} intensity={1.8} castShadow/><directionalLight position={[-5,6,-4]} intensity={.55}/>
-  <gridHelper args={[20,40,"#e3dacb","#eee7dc"]} position={[0,-.08,0]}/>
-  {scenario.links.map(([a,b],i)=>{const from=nodes.find(n=>n.id===a)!,to=nodes.find(n=>n.id===b)!;return <Route key={i} from={from} to={to} active={scenario.stages[stageIndex]?.from===a&&scenario.stages[stageIndex]?.to===b} done={scenario.stages.slice(0,Math.max(0,stageIndex)).some(st=>st.from===a&&st.to===b)}/>})}
-  {nodes.map(n=><Block key={n.id} node={{...n,pos:[n.pos[0],0,n.pos[2]]}} active={n.id===active} done={done.includes(n.id)} selected={n.id===selected} onClick={()=>onSelect(n.id)}/>)}
-  {stageIndex>=0&&stageIndex<scenario.stages.length&&(()=>{const st=scenario.stages[stageIndex];const from=nodes.find(n=>n.id===st.from),to=nodes.find(n=>n.id===st.to);if(!from||!to)return null;return <Packet key={scenario.id+"-"+stageIndex} from={from} to={to} playing={playing} color={st.kind==="response"?"#69a66f":st.kind==="success"?"#d69a3c":"#e58a42"}/>})()}
-  <OrbitControls makeDefault enableDamping dampingFactor={.08} minDistance={8} maxDistance={18} maxPolarAngle={Math.PI/2.15} target={[0,0,1]}/>
- </Canvas>
+ const nodeById=(id:string)=>nodes.find(n=>n.id===id)!;
+ const route=(from:NodeDef,to:NodeDef)=>{
+  const [x1,y1]=nodeXY(from),[x2,y2]=nodeXY(to);
+  const mid=(x1+x2)/2;
+  return `M ${x1} ${y1} L ${mid} ${y1} L ${mid} ${y2} L ${x2} ${y2}`;
+ };
+ return <div className="architecture-2d">
+  <svg viewBox="0 0 1000 600" role="img" aria-label={scenario.name+" deployment architecture"}>
+   <defs>
+    <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e9e0d2" strokeWidth="1"/></pattern>
+    <marker id="route-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8b9388"/></marker>
+    <filter id="card-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#554a38" floodOpacity=".12"/></filter>
+   </defs>
+   <rect width="1000" height="600" fill="#f8f3e9"/><rect width="1000" height="600" fill="url(#map-grid)"/>
+   {scenario.links.map(([a,b],i)=>{const from=nodeById(a),to=nodeById(b),d=route(from,to);const active=activeStage?.from===a&&activeStage?.to===b;const done=doneStages.some(s=>s.from===a&&s.to===b);return <g key={i}><path d={d} fill="none" stroke={active?"#df913d":done?"#76a875":"#9aa094"} strokeWidth={active?3:2} strokeLinecap="round" strokeLinejoin="round" markerEnd="url(#route-arrow)"/>{active&&playing&&<circle r="6" fill="#e68f36" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})}
+   {nodes.map(n=>{const [x,y]=nodeXY(n);const active=n.id===activeStage?.node;const done=doneStages.some(s=>s.node===n.id);const icon=brandIcons[n.id];return <g key={n.id} transform={`translate(${x-76} ${y-39})`} onClick={()=>onSelect(n.id)} role="button" tabIndex={0} aria-label={"Select "+n.name} style={{cursor:"pointer"}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(n.id);}}}>
+    <rect x="0" y="0" width="152" height="78" rx="12" fill={selected===n.id?"#e7efdF":"#fffdf8"} stroke={active?"#d58a38":selected===n.id?"#8ca77a":"#d9cebc"} strokeWidth={active?3:1.5} filter="url(#card-shadow)"/>
+    <rect x="12" y="12" width="48" height="48" rx="10" fill={palette[n.kind]} opacity=".38"/>
+    {icon?<image href={icon} x="20" y="20" width="32" height="32" preserveAspectRatio="xMidYMid meet"/>:<text x="36" y="44" textAnchor="middle" fontSize="22" fontWeight="700" fill="#435541">{n.name.slice(0,1)}</text>}
+    <text x="70" y="31" fontSize="12" fontWeight="700" fill="#29271f">{n.name.length>15?n.name.slice(0,14)+"…":n.name}</text>
+    <text x="70" y="49" fontSize="9" fill="#827b70">{n.sub.length>17?n.sub.slice(0,16)+"…":n.sub}</text>
+    {(active||done)&&<circle cx="138" cy="13" r="5" fill={active?"#e59a43":"#6fa576"}/>}
+   </g>})}
+   {activeStage&&(()=>{const from=nodeById(activeStage.from),to=nodeById(activeStage.to),d=route(from,to);return <g><path d={d} fill="none" stroke="#e49a42" strokeWidth="5" strokeOpacity=".18" strokeLinecap="round"/>{playing&&<circle r="8" fill="#e58c35" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})()}
+  </svg>
+ </div>
 }
 export default function App(){
  const [scenarioId,setScenarioId]=useState("eks");const scenario=scenarios.find(s=>s.id===scenarioId)!;
@@ -127,9 +105,9 @@ export default function App(){
   <aside className="left-panel"><div className="panel-title"><div><small>DEPLOYMENT LIBRARY</small><h2>Explore flows</h2></div><span className="count">{scenarios.filter(s=>s.name.toLowerCase().includes(query.toLowerCase())||s.category.toLowerCase().includes(query.toLowerCase())).length}</span></div><div className="group-label">AVAILABLE ARCHITECTURES</div>{scenarios.filter(s=>s.name.toLowerCase().includes(query.toLowerCase())||s.category.toLowerCase().includes(query.toLowerCase())||s.summary.toLowerCase().includes(query.toLowerCase())).map(s=><button key={s.id} className={scenarioId===s.id?"scenario active":"scenario"} onClick={()=>setScenarioId(s.id)}><span className={"scenario-icon "+(s.id==="eks"?"aws":s.id==="ec2"?"ec2":"docker")}>{s.id==="eks"?<Cloud size={17}/>:s.id==="ec2"?<Server size={17}/>:<Box size={17}/>}</span><span><b>{s.id==="eks"?"Amazon EKS":s.id==="ec2"?"Amazon EC2":"Docker on Linux"}</b><small>{s.id==="eks"?"GitHub Actions · Kubernetes":s.id==="ec2"?"Jenkins · Linux server":"GitLab CI · Docker Compose"}</small></span><ArrowRight size={15}/></button>)}{scenarios.filter(s=>s.name.toLowerCase().includes(query.toLowerCase())||s.category.toLowerCase().includes(query.toLowerCase())||s.summary.toLowerCase().includes(query.toLowerCase())).length===0&&<p className="no-results">No architectures match “{query}”.</p>}<div className="sidebar-foot"><ShieldCheck size={15}/><span>Simulation only · No cloud access</span></div></aside>
   <main className="main"><div className="page-heading"><div><div className="eyebrow"><span className="pulse"/> INTERACTIVE 3D DEPLOYMENT</div><h1>{scenario.name}</h1><p>{scenario.summary}</p></div><div className="heading-tags"><span>{scenario.provider}</span><span>{scenario.category}</span></div></div>
   <div className="stats"><div><small><GitBranch size={13}/> DEPLOYMENT STAGES</small><b>{scenario.stages.length}</b></div><div><small><Layers size={13}/> INFRASTRUCTURE COMPONENTS</small><b>{scenario.nodes.length}</b></div><div><small><Activity size={13}/> SIMULATION PROGRESS</small><b>{progress}%</b><div className="progress"><i style={{width:progress+"%"}}/></div></div><div><small><ShieldCheck size={13}/> ENVIRONMENT</small><b className="safe">SAFE SIMULATION</b></div></div>
-  <section className="visual-card"><div className="visual-top"><div><b>3D ARCHITECTURE MAP</b><span>Drag to rotate · Scroll to zoom · Select a component</span></div><div className="view-actions"><button onClick={()=>setSpeed(s=>s===1?1.5:s===1.5?2:1)}>{speed}× speed <ChevronDown size={12}/></button><button onClick={reset}><RotateCcw size={14}/> Restart flow</button></div></div><div className="scene"><Scene scenario={scenario} stageIndex={stageIndex} selected={selected} playing={playing} onSelect={setSelected}/><div className="scene-legend"><span><i className="dot request"/> Request / build</span><span><i className="dot response"/> Response</span><span><i className="dot done"/> Completed</span></div><div className="scene-hint">3D · ISOMETRIC VIEW</div></div><div className="playbar"><div className="play-status"><span className={playing?"pulse":"status-dot"}/><b>{playing?"SIMULATION RUNNING":stage?"STAGE "+(stageIndex+1)+" OF "+scenario.stages.length:"READY TO EXPLORE"}</b></div><div className="play-controls"><button onClick={reset} title="Restart flow"><RotateCcw size={15}/></button><button onClick={()=>{setPlaying(false);setStageIndex(i=>Math.max(i-1,0));}} title="Previous stage" disabled={stageIndex<=0}><SkipBack size={15}/></button><button className="play-button" onClick={()=>{if(stageIndex===scenario.stages.length-1)reset();setPlaying(!playing||stageIndex===scenario.stages.length-1);}}>{playing?<Pause size={15}/>:<Play size={15} fill="currentColor"/>}{playing?"Pause":"Play flow"}</button><button onClick={next} title="Next step"><SkipForward size={15}/></button></div><div className="play-progress"><i style={{width:progress+"%"}}/></div></div></section>
+  <section className="visual-card"><div className="visual-top"><div><b>2D ARCHITECTURE MAP</b><span>Select a component · Follow the deployment path</span></div><div className="view-actions"><button onClick={()=>setSpeed(s=>s===1?1.5:s===1.5?2:1)}>{speed}× speed <ChevronDown size={12}/></button><button onClick={reset}><RotateCcw size={14}/> Restart flow</button></div></div><div className="scene"><Scene scenario={scenario} stageIndex={stageIndex} selected={selected} playing={playing} onSelect={setSelected}/><div className="scene-legend"><span><i className="dot request"/> Request / build</span><span><i className="dot response"/> Response</span><span><i className="dot done"/> Completed</span></div><div className="scene-hint">2D · ARCHITECTURE VIEW</div></div><div className="playbar"><div className="play-status"><span className={playing?"pulse":"status-dot"}/><b>{playing?"SIMULATION RUNNING":stage?"STAGE "+(stageIndex+1)+" OF "+scenario.stages.length:"READY TO EXPLORE"}</b></div><div className="play-controls"><button onClick={reset} title="Restart flow"><RotateCcw size={15}/></button><button onClick={()=>{setPlaying(false);setStageIndex(i=>Math.max(i-1,0));}} title="Previous stage" disabled={stageIndex<=0}><SkipBack size={15}/></button><button className="play-button" onClick={()=>{if(stageIndex===scenario.stages.length-1)reset();setPlaying(!playing||stageIndex===scenario.stages.length-1);}}>{playing?<Pause size={15}/>:<Play size={15} fill="currentColor"/>}{playing?"Pause":"Play flow"}</button><button onClick={next} title="Next step"><SkipForward size={15}/></button></div><div className="play-progress"><i style={{width:progress+"%"}}/></div></div></section>
   <section className="timeline-card"><div className="timeline-head"><div><b>DEPLOYMENT SEQUENCE</b><span>Follow each stage from source to production</span></div><span className="stage-counter">{Math.max(stageIndex+1,0)} / {scenario.stages.length}</span></div><div className="timeline">{scenario.stages.map((s,i)=><button key={s.title} className={i===stageIndex?"timeline-step current":i<stageIndex?"timeline-step done":"timeline-step"} onClick={()=>{setPlaying(false);setStageIndex(i);setSelected(scenario.nodes.find(n=>n.id===s.node)?.id||"");}}><span className="step-circle">{i<stageIndex?<Check size={13}/>:i+1}</span><b>{s.title}</b></button>)}</div><div className="stage-detail"><div className="stage-icon"><Workflow size={18}/></div><div className="stage-copy"><small>{stage?"CURRENT DEPLOYMENT STAGE":"READY · SELECT A STAGE"}</small><b>{stage?.title||"Start the deployment flow"}</b><p>{stage?.detail||"Press Play flow to watch the complete architecture animate, or select any step in the sequence below."}</p>{stage&&<code>{stage.command}</code>}</div><button className="next-button" onClick={next}>Next stage <ArrowRight size={14}/></button></div></section>
   <footer>DEPLOYLAB <span>·</span> Interactive deployment education <span>·</span> No real infrastructure is created</footer></main>
-  <aside className="right-panel"><div className="right-tabs"><button className={tab==="overview"?"selected":""} onClick={()=>setTab("overview")}>OVERVIEW</button><button className={tab==="steps"?"selected":""} onClick={()=>setTab("steps")}>STAGES</button><button className={tab==="commands"?"selected":""} onClick={()=>setTab("commands")}>COMMANDS</button></div>{tab==="overview"?<>{node?<><div className="inspector-kicker">COMPONENT INSPECTOR</div><div className="node-heading"><div className="node-glyph"><Box size={20}/></div><div><h2>{node.name}</h2><span>{node.sub}</span></div></div><div className="active-pill"><span/> ARCHITECTURE COMPONENT</div><div className="info-block"><label>WHAT DOES IT DO?</label><p>{node.description}</p></div><div className="info-block"><label>KEY TECHNOLOGIES</label><div className="chips">{node.tech.map(t=><span key={t}>{t}</span>)}</div></div><div className="info-block"><label>IN THIS DEPLOYMENT</label><p>{scenario.name} uses this component as part of its delivery architecture.</p></div></>:<div className="empty-inspector"><Box size={22}/><b>Select a 3D component</b><p>Click any block in the architecture to learn what it does.</p></div>}</>:tab==="steps"?<div className="right-content"><div className="inspector-kicker">DEPLOYMENT STAGES</div>{scenario.stages.map((s,i)=><button className="right-stage" key={s.title} onClick={()=>{setPlaying(false);setStageIndex(i);setSelected(s.node);}}><span>{i+1}</span><div><b>{s.title}</b><small>{s.detail}</small></div></button>)}</div>:<div className="right-content"><div className="inspector-kicker">ILLUSTRATIVE COMMANDS</div>{scenario.stages.map((s,i)=><div className="command-item" key={s.title}><b>{i+1}. {s.title}</b><code>{s.command}</code></div>)}</div>}<div className="right-note"><ShieldCheck size={15}/><span>Educational simulation. Commands are examples and are never executed.</span></div></aside>
+  <aside className="right-panel"><div className="right-tabs"><button className={tab==="overview"?"selected":""} onClick={()=>setTab("overview")}>OVERVIEW</button><button className={tab==="steps"?"selected":""} onClick={()=>setTab("steps")}>STAGES</button><button className={tab==="commands"?"selected":""} onClick={()=>setTab("commands")}>COMMANDS</button></div>{tab==="overview"?<>{node?<><div className="inspector-kicker">COMPONENT INSPECTOR</div><div className="node-heading"><div className="node-glyph"><Box size={20}/></div><div><h2>{node.name}</h2><span>{node.sub}</span></div></div><div className="active-pill"><span/> ARCHITECTURE COMPONENT</div><div className="info-block"><label>WHAT DOES IT DO?</label><p>{node.description}</p></div><div className="info-block"><label>KEY TECHNOLOGIES</label><div className="chips">{node.tech.map(t=><span key={t}>{t}</span>)}</div></div><div className="info-block"><label>IN THIS DEPLOYMENT</label><p>{scenario.name} uses this component as part of its delivery architecture.</p></div></>:<div className="empty-inspector"><Box size={22}/><b>Select a component</b><p>Click any block in the architecture to learn what it does.</p></div>}</>:tab==="steps"?<div className="right-content"><div className="inspector-kicker">DEPLOYMENT STAGES</div>{scenario.stages.map((s,i)=><button className="right-stage" key={s.title} onClick={()=>{setPlaying(false);setStageIndex(i);setSelected(s.node);}}><span>{i+1}</span><div><b>{s.title}</b><small>{s.detail}</small></div></button>)}</div>:<div className="right-content"><div className="inspector-kicker">ILLUSTRATIVE COMMANDS</div>{scenario.stages.map((s,i)=><div className="command-item" key={s.title}><b>{i+1}. {s.title}</b><code>{s.command}</code></div>)}</div>}<div className="right-note"><ShieldCheck size={15}/><span>Educational simulation. Commands are examples and are never executed.</span></div></aside>
  </div>
 }
