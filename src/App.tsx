@@ -270,7 +270,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=
   <svg viewBox="0 0 1200 600" preserveAspectRatio="none" role="img" aria-label={scenario.name+" deployment architecture"}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e9e0d2" strokeWidth="1"/></pattern>
-    <marker id="route-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8b9388"/></marker>
+    <marker id="route-arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b9388"/></marker>
     <filter id="card-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#554a38" floodOpacity=".12"/></filter>
    </defs>
    <rect width="1200" height="600" fill="#f8f3e9"/><rect width="1200" height="600" fill="url(#map-grid)"/>
