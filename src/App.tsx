@@ -57,7 +57,7 @@ const scenarios:Scenario[]=[
 {title:"Pull image on server",detail:"The on-premises Linux host pulls the exact image version from the private registry.",command:"docker pull registry.local/web:$CI_COMMIT_SHA",node:"host",from:"registry",to:"host",kind:"request"},
 {title:"Start container",detail:"Docker Compose starts the updated container and checks its health before the service is considered ready.",command:"docker compose up -d && docker compose ps",node:"container",from:"host",to:"container",kind:"success"},
 {title:"Application receives traffic",detail:"Internal users can now access the application through the private network endpoint.",command:"curl http://app.internal/health",node:"staff",from:"container",to:"staff",kind:"response"}
-]}
+]},
 {id:"aks",name:"GitHub Actions → Azure AKS",provider:"MICROSOFT AZURE",category:"KUBERNETES",summary:"Build and release a container to Azure Kubernetes Service using Azure Container Registry, federated identity and Azure ingress.",nodes:[
 {id:"dev",name:"Developer",sub:"Git commit",kind:"source",pos:[-5,0,0],description:"A developer pushes reviewed application changes to GitHub.",tech:["Git","Pull request"]},
 {id:"git",name:"GitHub",sub:"Source repository",kind:"source",pos:[-3,0,0],description:"GitHub stores application source, tests, Dockerfile and Kubernetes manifests.",tech:["Git","Actions workflow"]},
