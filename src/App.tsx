@@ -238,7 +238,7 @@ const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,drMode=false):[number,
  const isDr=node.id.startsWith("dr-");const baseId=node.id.replace(/^dr-/,"");const base=nodes.find(n=>n.id===baseId)||node;
  const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
  const tier=tierFor(base);const sameTier=nodes.filter(n=>!n.id.startsWith("dr-")&&tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===baseId));
- const column=inTier%2;const row=Math.floor(inTier/2);const x=(isDr?690:95)+column*255;const y=tierMode===2?(tier===1?145+row*72:390+row*72):(tier===1?80+row*62:tier===2?260+row*62:445+row*62);
+ const column=inTier%2;const row=Math.floor(inTier/2);const x=(isDr?690:95)+column*255;const y=tierMode===2?(tier===1?115+row*55:350+row*55):(tier===1?80+row*62:tier===2?260+row*62:445+row*62);
  return [x,y];
 };
 function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=false}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void;tierMode?:2|3;drMode?:boolean}){
