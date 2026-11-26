@@ -239,14 +239,19 @@ const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,flowMode=false,drLayou
  const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
  if(flowMode){
   const originals=nodes.filter(n=>!n.id.startsWith("dr-"));
-  const xs=originals.map(n=>n.pos?.[0]??0),zs=originals.map(n=>n.pos?.[2]??0);
-  const minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs);
-  const px=base.pos?.[0]??0,pz=base.pos?.[2]??0;
+  const xs=originals.map(n=>n.pos?.[0]??0);
+  const minX=Math.min(...xs),maxX=Math.max(...xs);
+  const px=base.pos?.[0]??0;
   const spanX=drLayout?430:960;
   const left=drLayout?(isDr?735:45):120;
   const nx=maxX===minX?.5:(px-minX)/(maxX-minX);
-  const ny=maxZ===minZ?.5:(pz-minZ)/(maxZ-minZ);
-  return [left+75+nx*spanX,190+ny*245];
+  // Keep deployment stages readable: place component classes on intentional lanes.
+  // Source-control actors stay above runtime infrastructure; workload/data stay below it.
+  const laneY:Record<NodeKind,number>={source:145,pipeline:265,registry:365,cluster:265,server:265,workload:445,network:145,database:485};
+  const peers=originals.filter(n=>n.kind===base.kind).sort((a,b)=>(a.pos?.[0]??0)-(b.pos?.[0]??0));
+  const peerIndex=Math.max(0,peers.findIndex(n=>n.id===baseId));
+  const peerOffset=peers.length>1?(peerIndex-(peers.length-1)/2)*54:0;
+  return [left+75+nx*spanX,laneY[base.kind]+peerOffset];
  }
  const tier=tierFor(base);const sameTier=nodes.filter(n=>!n.id.startsWith("dr-")&&tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===baseId));
  const column=inTier%3;const row=Math.floor(inTier/3);
