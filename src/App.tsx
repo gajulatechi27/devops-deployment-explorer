@@ -11,14 +11,14 @@ type Stage={title:string;detail:string;command:string;node:string;from:string;to
 type Scenario={id:string;name:string;provider:string;category:string;summary:string;nodes:NodeDef[];links:[string,string][];stages:Stage[]};
 const scenarios:Scenario[]=[
 {id:"eks",name:"GitHub Actions → Amazon EKS",provider:"AWS CLOUD",category:"KUBERNETES",summary:"Follow a container release from a Git commit through CI, Amazon ECR, Kubernetes scheduling and production traffic.",nodes:[
-{id:"dev",name:"Developer",sub:"Code commit",kind:"source",pos:[-5,0,0],description:"A developer commits application changes and pushes them to the remote Git repository.",tech:["Git","GitHub"]},
-{id:"git",name:"GitHub",sub:"Source repository",kind:"source",pos:[-3,1.2,0],description:"The repository stores application source, Dockerfile, manifests and the workflow definition.",tech:["Repository","Webhook","Workflow YAML"]},
-{id:"ci",name:"GitHub Actions",sub:"CI / CD pipeline",kind:"pipeline",pos:[-1,0,0],description:"A workflow checks out source, runs tests, builds the image and authenticates to AWS using short-lived OIDC credentials.",tech:["Actions runner","OIDC","Docker build"]},
-{id:"ecr",name:"Amazon ECR",sub:"Container registry",kind:"registry",pos:[1,1.2,0],description:"Amazon Elastic Container Registry stores versioned container images. Worker nodes pull the image when Pods are scheduled.",tech:["Image repository","Tags","IAM"]},
-{id:"eks",name:"Amazon EKS",sub:"Kubernetes control plane",kind:"cluster",pos:[3,0,0],description:"EKS provides a managed Kubernetes control plane. The API server receives the desired Deployment state.",tech:["Kubernetes API","Deployment","ReplicaSet"]},
-{id:"pods",name:"Application Pods",sub:"3 running replicas",kind:"workload",pos:[5,1.2,0],description:"The scheduler places Pods onto worker nodes. Readiness probes determine when each replica can receive traffic.",tech:["Pods","Containers","Readiness probes"]},
-{id:"alb",name:"Load Balancer",sub:"Ingress / HTTPS",kind:"network",pos:[5,-1.2,0],description:"The AWS Load Balancer Controller provisions an ALB and routes external requests to healthy application targets.",tech:["ALB","Ingress","Target groups"]},
-{id:"users",name:"End users",sub:"HTTPS requests",kind:"source",pos:[3,-2.2,0],description:"Clients resolve the application hostname and send HTTPS requests to the public load balancer.",tech:["DNS","TLS","HTTPS"]}
+{id:"dev",name:"Developer",sub:"Code commit",kind:"source",pos:[-5,0,1],description:"A developer commits application changes and pushes them to the remote Git repository.",tech:["Git","GitHub"]},
+{id:"git",name:"GitHub",sub:"Source repository",kind:"source",pos:[-3,0,-1],description:"The repository stores application source, Dockerfile, manifests and the workflow definition.",tech:["Repository","Webhook","Workflow YAML"]},
+{id:"ci",name:"GitHub Actions",sub:"CI / CD pipeline",kind:"pipeline",pos:[-1,0,1],description:"A workflow checks out source, runs tests, builds the image and authenticates to AWS using short-lived OIDC credentials.",tech:["Actions runner","OIDC","Docker build"]},
+{id:"ecr",name:"Amazon ECR",sub:"Container registry",kind:"registry",pos:[1,0,-1],description:"Amazon Elastic Container Registry stores versioned container images. Worker nodes pull the image when Pods are scheduled.",tech:["Image repository","Tags","IAM"]},
+{id:"eks",name:"Amazon EKS",sub:"Kubernetes control plane",kind:"cluster",pos:[3,0,1],description:"EKS provides a managed Kubernetes control plane. The API server receives the desired Deployment state.",tech:["Kubernetes API","Deployment","ReplicaSet"]},
+{id:"pods",name:"Application Pods",sub:"3 running replicas",kind:"workload",pos:[5,0,-1],description:"The scheduler places Pods onto worker nodes. Readiness probes determine when each replica can receive traffic.",tech:["Pods","Containers","Readiness probes"]},
+{id:"alb",name:"Load Balancer",sub:"Ingress / HTTPS",kind:"network",pos:[3,0,3],description:"The AWS Load Balancer Controller provisions an ALB and routes external requests to healthy application targets.",tech:["ALB","Ingress","Target groups"]},
+{id:"users",name:"End users",sub:"HTTPS requests",kind:"source",pos:[5,0,4],description:"Clients resolve the application hostname and send HTTPS requests to the public load balancer.",tech:["DNS","TLS","HTTPS"]}
 ],links:[["dev","git"],["git","ci"],["ci","ecr"],["ecr","eks"],["eks","pods"],["pods","alb"],["users","alb"]],stages:[
 {title:"Developer pushes code",detail:"A new commit is pushed to the GitHub repository. The configured workflow trigger starts the release pipeline.",command:"git push origin main",node:"git",from:"dev",to:"git",kind:"request"},
 {title:"CI workflow starts",detail:"GitHub Actions checks out the selected commit and prepares an isolated runner for the build.",command:"actions/checkout@v4",node:"ci",from:"git",to:"ci",kind:"request"},
@@ -30,11 +30,11 @@ const scenarios:Scenario[]=[
 ]},
 {id:"ec2",name:"Jenkins → Amazon EC2",provider:"AWS CLOUD",category:"VIRTUAL MACHINE",summary:"See a traditional server deployment: Jenkins builds an artifact, transfers it to a Linux EC2 instance and restarts the application service.",nodes:[
 {id:"repo",name:"Git Repository",sub:"Application source",kind:"source",pos:[-4,0,0],description:"Source code and release history are maintained in Git.",tech:["Git","Branches"]},
-{id:"jenkins",name:"Jenkins",sub:"Build pipeline",kind:"pipeline",pos:[-1.8,0,0],description:"Jenkins checks out source, executes tests, packages the application and orchestrates deployment.",tech:["Jenkinsfile","Pipeline","Agents"]},
-{id:"artifact",name:"Build Artifact",sub:"Versioned package",kind:"registry",pos:[.5,1,0],description:"The immutable release package is archived so deployments are traceable and rollback is possible.",tech:["JAR / ZIP","Artifact version"]},
-{id:"ec2",name:"Amazon EC2",sub:"Linux instance",kind:"server",pos:[2.8,0,0],description:"An EC2 virtual machine runs Linux. Security groups control permitted network access.",tech:["EC2","Linux","Security groups"]},
-{id:"nginx",name:"Nginx + App",sub:"systemd service",kind:"workload",pos:[5,0,0],description:"Nginx reverse-proxies requests to the application process supervised by systemd.",tech:["Nginx","systemd","Health check"]},
-{id:"users",name:"Users",sub:"Web traffic",kind:"source",pos:[5,-2,0],description:"Users access the application through its DNS name and HTTP or HTTPS endpoint.",tech:["DNS","HTTP","TLS"]}
+{id:"jenkins",name:"Jenkins",sub:"Build pipeline",kind:"pipeline",pos:[-1.5,0,-1],description:"Jenkins checks out source, executes tests, packages the application and orchestrates deployment.",tech:["Jenkinsfile","Pipeline","Agents"]},
+{id:"artifact",name:"Build Artifact",sub:"Versioned package",kind:"registry",pos:[1,0,1],description:"The immutable release package is archived so deployments are traceable and rollback is possible.",tech:["JAR / ZIP","Artifact version"]},
+{id:"ec2",name:"Amazon EC2",sub:"Linux instance",kind:"server",pos:[3.5,0,-1],description:"An EC2 virtual machine runs Linux. Security groups control permitted network access.",tech:["EC2","Linux","Security groups"]},
+{id:"nginx",name:"Nginx + App",sub:"systemd service",kind:"workload",pos:[5.5,0,1],description:"Nginx reverse-proxies requests to the application process supervised by systemd.",tech:["Nginx","systemd","Health check"]},
+{id:"users",name:"Users",sub:"Web traffic",kind:"source",pos:[5.5,0,3],description:"Users access the application through its DNS name and HTTP or HTTPS endpoint.",tech:["DNS","HTTP","TLS"]}
 ],links:[["repo","jenkins"],["jenkins","artifact"],["artifact","ec2"],["ec2","nginx"],["users","nginx"]],stages:[
 {title:"Source checkout",detail:"Jenkins checks out the release commit from the Git repository.",command:"git checkout $GIT_COMMIT",node:"jenkins",from:"repo",to:"jenkins",kind:"request"},
 {title:"Build and test",detail:"The Jenkins agent installs dependencies, runs automated tests and packages the application.",command:"./gradlew clean test build",node:"artifact",from:"jenkins",to:"artifact",kind:"request"},
@@ -45,11 +45,11 @@ const scenarios:Scenario[]=[
 ]},
 {id:"docker",name:"GitLab CI → Docker on Linux",provider:"ON-PREMISES",category:"CONTAINER DEPLOYMENT",summary:"Trace a container deployment to an on-premises Linux VM using GitLab Runner and a private container registry.",nodes:[
 {id:"gitlab",name:"GitLab",sub:"Source repository",kind:"source",pos:[-4,0,0],description:"GitLab stores application code and the .gitlab-ci.yml pipeline definition.",tech:["Git","GitLab CI"]},
-{id:"runner",name:"GitLab Runner",sub:"CI pipeline",kind:"pipeline",pos:[-1.7,0,0],description:"The runner executes lint, test and Docker image build jobs.",tech:["Runner","CI jobs","Docker"]},
-{id:"registry",name:"Private Registry",sub:"OCI images",kind:"registry",pos:[.7,1,0],description:"The private registry stores the tagged image so the target host can pull the exact release.",tech:["OCI registry","Image tags"]},
-{id:"host",name:"Linux Server",sub:"On-premises VM",kind:"server",pos:[3,0,0],description:"An on-premises Linux virtual machine runs Docker Engine and retrieves the release image.",tech:["Ubuntu","Docker Engine","Firewall"]},
-{id:"container",name:"App Container",sub:"Docker Compose",kind:"workload",pos:[5.4,0,0],description:"Docker Compose starts the application container with ports, environment configuration, restart policy and health check.",tech:["Docker Compose","Container","Healthcheck"]},
-{id:"staff",name:"Internal users",sub:"Private network",kind:"source",pos:[5.4,-2,0],description:"Internal users reach the application over the organization's private network.",tech:["LAN","DNS","HTTP"]}
+{id:"runner",name:"GitLab Runner",sub:"CI pipeline",kind:"pipeline",pos:[-1.5,0,-1],description:"The runner executes lint, test and Docker image build jobs.",tech:["Runner","CI jobs","Docker"]},
+{id:"registry",name:"Private Registry",sub:"OCI images",kind:"registry",pos:[1,0,1],description:"The private registry stores the tagged image so the target host can pull the exact release.",tech:["OCI registry","Image tags"]},
+{id:"host",name:"Linux Server",sub:"On-premises VM",kind:"server",pos:[3.5,0,-1],description:"An on-premises Linux virtual machine runs Docker Engine and retrieves the release image.",tech:["Ubuntu","Docker Engine","Firewall"]},
+{id:"container",name:"App Container",sub:"Docker Compose",kind:"workload",pos:[5.5,0,1],description:"Docker Compose starts the application container with ports, environment configuration, restart policy and health check.",tech:["Docker Compose","Container","Healthcheck"]},
+{id:"staff",name:"Internal users",sub:"Private network",kind:"source",pos:[5.5,0,3],description:"Internal users reach the application over the organization's private network.",tech:["LAN","DNS","HTTP"]}
 ],links:[["gitlab","runner"],["runner","registry"],["registry","host"],["host","container"],["staff","container"]],stages:[
 {title:"Commit triggers pipeline",detail:"A developer pushes a commit. GitLab evaluates the pipeline configuration and schedules jobs on a runner.",command:"git push origin main",node:"gitlab",from:"gitlab",to:"runner",kind:"request"},
 {title:"Run tests",detail:"The runner installs dependencies and executes the project's automated test suite.",command:"npm ci && npm test",node:"runner",from:"runner",to:"runner",kind:"request"},
@@ -78,24 +78,38 @@ function Block({node,active,done,selected,onClick}:{node:NodeDef;active:boolean;
   </Float>
  </group>
 }
+function Route({from,to,active,done}:{from:NodeDef;to:NodeDef;active:boolean;done:boolean}){
+ const lift=.22;
+ const a=new THREE.Vector3(from.pos[0],lift,from.pos[2]);
+ const b=new THREE.Vector3(to.pos[0],lift,to.pos[2]);
+ const midX=(a.x+b.x)/2;
+ const points=[a,new THREE.Vector3(midX,lift,a.z),new THREE.Vector3(midX,lift,b.z),b];
+ const curve=new THREE.CatmullRomCurve3(points,false,"centripetal",.1);
+ const arrow=curve.getPoint(.94);
+ const tangent=curve.getTangent(.94);
+ const quat=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),tangent);
+ return <group><Line points={points} color={active?"#e49a42":done?"#7eaa79":"#8e958d"} lineWidth={active?2.5:1.45} dashed={false}/><mesh position={arrow} quaternion={quat}><coneGeometry args={[.09,.22,4]}/><meshBasicMaterial color={active?"#df8e36":done?"#6d9d6b":"#788078"}/></mesh></group>
+}
 function Packet({from,to,color,playing}:{from:NodeDef;to:NodeDef;color:string;playing:boolean}){
  const ref=useRef<THREE.Mesh>(null);
  const progress=useRef(0);
- useFrame((_,delta)=>{if(playing)progress.current=(progress.current+delta*.32)%1;if(ref.current){const t=progress.current;if(from.id===to.id){const angle=t*Math.PI*2;ref.current.position.set(from.pos[0]+Math.cos(angle)*.48,from.pos[1]+.85+Math.sin(angle*2)*.12,from.pos[2]+Math.sin(angle)*.48);}else{ref.current.position.set(THREE.MathUtils.lerp(from.pos[0],to.pos[0],t),THREE.MathUtils.lerp(from.pos[1]+.55,to.pos[1]+.55,t)+Math.sin(t*Math.PI)*.25,THREE.MathUtils.lerp(from.pos[2],to.pos[2],t));}}});
- return <mesh ref={ref}><sphereGeometry args={[.105,18,18]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={.65}/></mesh>
+ const curve=useRef<THREE.CatmullRomCurve3|null>(null);
+ useEffect(()=>{const a=new THREE.Vector3(from.pos[0],.36,from.pos[2]),b=new THREE.Vector3(to.pos[0],.36,to.pos[2]);const mid=(a.x+b.x)/2;curve.current=new THREE.CatmullRomCurve3([a,new THREE.Vector3(mid,.36,a.z),new THREE.Vector3(mid,.36,b.z),b]);progress.current=0;},[from,to]);
+ useFrame((_,delta)=>{if(playing)progress.current=(progress.current+delta*.24)%1;if(ref.current&&curve.current){const p=curve.current.getPoint(progress.current);ref.current.position.copy(p);}});
+ return <mesh ref={ref}><sphereGeometry args={[.095,16,16]}/><meshBasicMaterial color={color}/></mesh>
 }
 function Scene({scenario,stageIndex,selected,playing,onSelect}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void}){
  const active=scenario.stages[stageIndex]?.node;
  const done=(stageIndex<0?[]:scenario.stages.slice(0,stageIndex)).map(s=>s.node);
  const nodes=scenario.nodes;
- return <Canvas shadows camera={{position:[7,9,10],fov:31}} dpr={[1,1.7]} onPointerMissed={()=>onSelect("")}>
-  <color attach="background" args={["#f6f1e8"]}/><ambientLight intensity={1.3}/><directionalLight position={[5,9,6]} intensity={2.1} castShadow shadow-mapSize={[1024,1024]}/><directionalLight position={[-6,5,-5]} intensity={.7}/>
-  <gridHelper args={[22,44,"#d9d0c1","#e9e2d7"]} position={[0,-.58,0]}/>
-  {scenario.links.map(([a,b],i)=>{const from=nodes.find(n=>n.id===a)!,to=nodes.find(n=>n.id===b)!;const p1=new THREE.Vector3(from.pos[0],from.pos[1]+.25,from.pos[2]),p2=new THREE.Vector3(to.pos[0],to.pos[1]+.25,to.pos[2]);return <group key={i}><Line points={[p1,p2]} color="#6f766e" lineWidth={1.4}/><mesh position={p2.clone().lerp(p1,.08)} rotation={[0,0,Math.atan2(p2.y-p1.y,p2.x-p1.x)]}><coneGeometry args={[.075,.18,3]}/><meshStandardMaterial color="#6f766e"/></mesh></group>})}
-  {nodes.map(n=><Block key={n.id} node={n} active={n.id===active} done={done.includes(n.id)} selected={n.id===selected} onClick={()=>onSelect(n.id)}/>)}
-  {stageIndex>=0&&stageIndex<scenario.stages.length&&(()=>{const s=scenario.stages[stageIndex];const from=nodes.find(n=>n.id===s.from);const to=nodes.find(n=>n.id===s.to);if(!from||!to)return null;return <Packet key={scenario.id+"-"+stageIndex} from={from} to={to} playing={playing} color={s.kind==="response"?"#69a66f":s.kind==="success"?"#e5a43c":"#e58a42"}/>})()}
-  <ContactShadows position={[0,-.64,0]} opacity={.24} scale={18} blur={2.4} far={5}/>
-  <OrbitControls makeDefault enableDamping dampingFactor={.08} minDistance={7} maxDistance={19} maxPolarAngle={Math.PI/2.05} target={[0,.05,0]}/>
+ return <Canvas shadows camera={{position:[9,11,12],fov:29}} dpr={[1,1.6]} onPointerMissed={()=>onSelect("")}>
+  <color attach="background" args={["#f8f3e9"]}/>
+  <ambientLight intensity={1.6}/><directionalLight position={[4,10,7]} intensity={1.8} castShadow/><directionalLight position={[-5,6,-4]} intensity={.55}/>
+  <gridHelper args={[20,40,"#e3dacb","#eee7dc"]} position={[0,-.08,0]}/>
+  {scenario.links.map(([a,b],i)=>{const from=nodes.find(n=>n.id===a)!,to=nodes.find(n=>n.id===b)!;return <Route key={i} from={from} to={to} active={scenario.stages[stageIndex]?.from===a&&scenario.stages[stageIndex]?.to===b} done={scenario.stages.slice(0,Math.max(0,stageIndex)).some(st=>st.from===a&&st.to===b)}/>})}
+  {nodes.map(n=><Block key={n.id} node={{...n,pos:[n.pos[0],0,n.pos[2]]}} active={n.id===active} done={done.includes(n.id)} selected={n.id===selected} onClick={()=>onSelect(n.id)}/>)}
+  {stageIndex>=0&&stageIndex<scenario.stages.length&&(()=>{const st=scenario.stages[stageIndex];const from=nodes.find(n=>n.id===st.from),to=nodes.find(n=>n.id===st.to);if(!from||!to)return null;return <Packet key={scenario.id+"-"+stageIndex} from={from} to={to} playing={playing} color={st.kind==="response"?"#69a66f":st.kind==="success"?"#d69a3c":"#e58a42"}/>})()}
+  <OrbitControls makeDefault enableDamping dampingFactor={.08} minDistance={8} maxDistance={18} maxPolarAngle={Math.PI/2.15} target={[0,0,1]}/>
  </Canvas>
 }
 export default function App(){
