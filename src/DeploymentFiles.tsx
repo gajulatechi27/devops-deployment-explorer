@@ -19,14 +19,15 @@ IMAGE_TAG=demo-0.1.0
 `;
 
 const dockerfile = `# Example multi-stage Docker build for a Java Spring Boot application
-FROM eclipse-temurin:21-jdk AS build
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
-COPY . .
-RUN ./gradlew clean bootJar
+COPY pom.xml .
+COPY src ./src
+RUN mvn -B -DskipTests package
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /workspace/build/libs/*.jar app.jar
+COPY --from=build /workspace/target/*.jar app.jar
 EXPOSE 8080
 USER 10001
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
@@ -80,6 +81,9 @@ build
 *.log
 ` },
   { path: ".env.example", description: "Dummy local environment variables.", content: commonEnv },
+  { path: "pom.xml", description: "Maven build file that produces the runnable JAR.", content: `<?xml version="1.0" encoding="UTF-8"?>\n<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>com.example</groupId><artifactId>demo-web</artifactId><version>0.1.0</version>\n  <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>3.3.5</version><relativePath/></parent>\n  <properties><java.version>21</java.version></properties>\n  <dependencies><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency></dependencies>\n  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>\n</project>\n` },
+  { path: "src/main/java/com/example/DemoApplication.java", description: "Tiny Spring Boot app used to create the sample JAR.", content: `package com.example;\n\nimport org.springframework.boot.SpringApplication;\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\n\n@SpringBootApplication\npublic class DemoApplication {\n  public static void main(String[] args) { SpringApplication.run(DemoApplication.class, args); }\n}\n` },
+  { path: "src/main/resources/application.properties", description: "Application runtime port and health endpoint settings.", content: `server.port=8080\nmanagement.endpoints.web.exposure.include=health,info\n` },
   { path: "k8s/namespace.yaml", description: "Creates an isolated Kubernetes namespace.", content: `apiVersion: v1
 kind: Namespace
 metadata:
@@ -173,9 +177,9 @@ function pipelineFiles(id: string): LearningFile[] {
   }
   stages {
     stage('Checkout') { steps { checkout scm } }
-    stage('Test') { steps { sh './gradlew test' } }
-    stage('Build JAR') { steps { sh './gradlew bootJar' } }
-    stage('Archive') { steps { archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true } }
+    stage('Test') { steps { sh 'mvn -B test' } }
+    stage('Build JAR') { steps { sh 'mvn -B package' } }
+    stage('Archive') { steps { archiveArtifacts artifacts: 'target/*.jar', fingerprint: true } }
     stage('Deploy') {
       steps {
         sh 'scp build/libs/*.jar \${APP_USER}@\${APP_HOST}:\${APP_DIR}/app.jar'
