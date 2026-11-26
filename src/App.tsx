@@ -239,7 +239,7 @@ const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3):[number,number]=>{
  const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
  const tier=tierFor(base);const sameTier=nodes.filter(n=>!n.id.startsWith("dr-")&&tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===baseId));
  const column=inTier%3;const row=Math.floor(inTier/3);
- const x=(isDr?760:100)+column*180;
+ const x=(isDr?700:100)+column*220;
  const y=tierMode===2?(tier===1?132+row*74:400+row*74):(tier===1?92+row*74:tier===2?277+row*74:462+row*62);
  return [x,y];
 };
@@ -250,8 +250,15 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=
  const nodeById=(id:string)=>nodes.find(n=>n.id===id)!;
  const route=(from:NodeDef,to:NodeDef)=>{
   const [x1,y1]=nodeXY(from,nodes,tierMode),[x2,y2]=nodeXY(to,nodes,tierMode);
-  const direction=x2>=x1?1:-1;
-  return `M ${x1+direction*76} ${y1} L ${x2-direction*76} ${y2}`;
+  const dx=x2-x1,dy=y2-y1;
+  if(Math.abs(dx)<24){
+   const direction=dy>=0?1:-1;
+   return `M ${x1} ${y1+direction*32} C ${x1} ${y1+direction*72}, ${x2} ${y2-direction*72}, ${x2} ${y2-direction*32}`;
+  }
+  const direction=dx>=0?1:-1;
+  const startX=x1+direction*76,endX=x2-direction*76;
+  const bend=Math.max(34,Math.min(100,Math.abs(dx)*0.38));
+  return `M ${startX} ${y1} C ${startX+direction*bend} ${y1}, ${endX-direction*bend} ${y2}, ${endX} ${y2}`;
  };
  return <div className="architecture-2d">
   <svg viewBox="0 0 1200 600" preserveAspectRatio="none" role="img" aria-label={scenario.name+" deployment architecture"}>
