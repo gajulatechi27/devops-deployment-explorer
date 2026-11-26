@@ -1,0 +1,6 @@
+export const initialRuntime = () => ({status:"pending",currentEvent:-1,completed:[],failed:[],logs:[],version:0});
+export function advanceRuntime(state,events){if(events.length===0||state.status==="succeeded")return state;const next=state.currentEvent+1;if(next>=events.length)return {...state,status:"succeeded",version:state.version+1,logs:[...state.logs,"Deployment completed successfully."]};const event=events[next];return {...state,status:next===events.length-1?"succeeded":"running",currentEvent:next,completed:[...state.completed,event.id],version:state.version+1,logs:[...state.logs,`[SIM] ${event.component}: ${event.title}`,event.description]};}
+export function resetRuntime(){return initialRuntime();}
+export function injectFault(state,fault){return {...state,status:"failed",failed:[...state.failed,fault.id],version:state.version+1,logs:[...state.logs,`[FAULT] ${fault.title}`,fault.symptom]};}
+export function resolveFault(state,fault){return {...state,status:"running",failed:state.failed.filter(id=>id!==fault.id),version:state.version+1,logs:[...state.logs,`[RECOVERY] ${fault.fix}`]};}
+export function progressPercent(state,total){return total<=0?0:Math.min(100,Math.round(state.completed.length/total*100));}
