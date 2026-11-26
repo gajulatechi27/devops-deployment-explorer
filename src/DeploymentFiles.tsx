@@ -178,8 +178,8 @@ function pipelineFiles(id: string): LearningFile[] {
     stage('Archive') { steps { archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true } }
     stage('Deploy') {
       steps {
-        sh 'scp build/libs/*.jar ${APP_USER}@${APP_HOST}:${APP_DIR}/app.jar'
-        sh 'ssh ${APP_USER}@${APP_HOST} "sudo systemctl restart demo-app"'
+        sh 'scp build/libs/*.jar \${APP_USER}@\${APP_HOST}:\${APP_DIR}/app.jar'
+        sh 'ssh \${APP_USER}@\${APP_HOST} "sudo systemctl restart demo-app"'
       }
     }
     stage('Verify') { steps { sh 'curl -fsS http://192.0.2.25:8080/health' } }
@@ -304,7 +304,7 @@ Resources:
             Method: GET
 Outputs:
   ApiUrl:
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Value: !Sub "https://\${ServerlessHttpApi}.execute-api.\${AWS::Region}.amazonaws.com"
 ` },
     { path: "src/app.py", description: "Minimal Lambda handler.", content: `import json
 
@@ -480,7 +480,7 @@ build
     { path: "README-deployment.md", description: "Deployment notes and example commands.", content: `# ${id} deployment lab
 
 1. Review the application build and runtime requirements.
-2. Build the container: ` + "`docker build -t demo-app:0.1.0 .`" + `
+2. Build the container with docker build -t demo-app:0.1.0 .
 3. Tag and push to your demo registry.
 4. Update the deployment configuration with the image tag.
 5. Deploy to a non-production environment and verify /health.
