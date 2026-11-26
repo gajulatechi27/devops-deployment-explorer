@@ -82,3 +82,17 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
  .app.files-expanded{grid-template-columns:210px minmax(0,1fr) minmax(360px,40vw)}
  .app.files-expanded .main{padding-left:12px;padding-right:12px}
 }
+
+
+/* Keep the component inspector consistently expanded for every tab:
+   Overview, Stages, Commands and Files. */
+@media(min-width:1021px){
+ .app{grid-template-columns:292px minmax(0,1fr) minmax(390px,min(32vw,520px))}
+ .app .right-panel{padding-left:18px;padding-right:18px}
+ .app .files-browser{height:min(68vh,760px);grid-template-rows:minmax(130px,30%) minmax(260px,1fr)}
+ .app .file-preview pre{font-size:10px;line-height:1.6}
+}
+@media(min-width:1021px) and (max-width:1250px){
+ .app{grid-template-columns:210px minmax(0,1fr) minmax(360px,40vw)}
+ .app .main{padding-left:12px;padding-right:12px}
+}
