@@ -7,7 +7,7 @@ type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"ser
 type NodeDef={id:string;name:string;sub:string;kind:NodeKind;pos:[number,number,number];description:string;tech:string[]};
 const brandIcons:Record<string,string>={git:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg",ci:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-original.svg",ecr:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Containers/48/Arch_Amazon-Elastic-Container-Registry_48.svg",eks:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Containers/48/Arch_Amazon-Elastic-Kubernetes-Service_48.svg",pods:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg",alb:"https://raw.githubusercontent.com/icacho-dev/aws-architecture-icons/main/Architecture-Service-Icons_02072025/Arch_Networking-Content-Delivery/48/Arch_Elastic-Load-Balancing_48.svg",jenkins:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg",registry:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg",gitlab:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg",runner:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg",host:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg",ec2:"https://api.iconify.design/logos:aws-ec2.svg",nginx:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg",container:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg",aks:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",acr:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",azureci:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg",gke:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",gar:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",cloudbuild:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg",market:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",edge:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cloudflare/cloudflare-original.svg",gateway:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg",services:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",events:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apachekafka/apachekafka-original.svg",cache:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg",data:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg",observability:"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg"};
 type Stage={title:string;detail:string;command:string;node:string;from:string;to:string;kind:"request"|"response"|"success"};
-type Scenario={id:string;name:string;provider:string;category:string;summary:string;nodes:NodeDef[];links:[string,string][];stages:Stage[]};
+type Scenario={id:string;name:string;provider:string;category:string;summary:string;nodes:NodeDef[];links:[string,string][];stages:Stage[];appNodes?:NodeDef[];appLinks?:[string,string][]};
 const scenarios:Scenario[]=[
 {id:"eks",name:"GitHub Actions → Amazon EKS",provider:"AWS CLOUD",category:"KUBERNETES",summary:"Follow a container release from a Git commit through CI, Amazon ECR, Kubernetes scheduling and production traffic.",nodes:[
 {id:"dev",name:"Developer",sub:"Code commit",kind:"source",pos:[-5,0,1],description:"A developer commits application changes and pushes them to the remote Git repository.",tech:["Git","GitHub"]},
@@ -118,6 +118,105 @@ const scenarios:Scenario[]=[
 {title:"Shoppers use the marketplace",detail:"Web and mobile clients browse, add items to cart and submit orders. Payment authorization and order state changes are handled by separate services.",command:"curl -fsS https://shop.example.com/health",node:"users",from:"edge",to:"users",kind:"response"}
 ]}
 ];
+
+const caseStudies=[
+{id:"retail",name:"Amazon-style Retail Platform",provider:"REFERENCE ARCHITECTURE",category:"E-COMMERCE",summary:"A high-scale retail platform with product discovery, cart, checkout, orders, inventory, recommendations and asynchronous fulfillment.",app:[
+["shopper","Shoppers","Web and mobile","source","Customers browse, search, add products to carts and place orders.",["Web","Mobile","HTTPS"]],
+["edge","CDN + WAF","Edge delivery","network","Caches static assets, terminates TLS and filters malicious traffic before requests enter the platform.",["CDN","WAF","TLS"]],
+["gateway","API Gateway","Routing and auth","network","Routes client requests to domain services and enforces authentication, throttling and API policies.",["API Gateway","OAuth2","Rate limits"]],
+["catalog","Catalog + Search","Product discovery","workload","Serves product details, categories, pricing and search results.",["Search","OpenSearch","Product API"]],
+["cart","Cart + Checkout","Basket and checkout","workload","Maintains customer carts, validates prices and coordinates checkout.",["Cart API","Idempotency","Sessions"]],
+["orders","Order Service","Order lifecycle","workload","Creates orders and coordinates order state transitions.",["Order API","Saga","Outbox"]],
+["inventory","Inventory Service","Stock reservation","workload","Reserves stock and publishes inventory availability updates.",["Inventory","Reservations","Events"]],
+["payments","Payment Service","Payment orchestration","workload","Coordinates payment authorization and status without storing raw card data.",["Payment gateway","Tokenization","PCI boundaries"]],
+["events","Event Bus","Async fulfillment","pipeline","Distributes order and inventory events to fulfillment, notifications and analytics consumers.",["Kafka","Event consumers","DLQ"]],
+["data","Data Platform","SQL · Cache · Search","database","Uses transactional databases, cache and search indexes for distinct access patterns.",["Relational DB","Redis","Search index"]]
+],appLinks:[["shopper","edge"],["edge","gateway"],["gateway","catalog"],["gateway","cart"],["cart","orders"],["orders","payments"],["orders","inventory"],["orders","events"],["inventory","events"],["catalog","data"],["cart","data"],["orders","data"],["events","data"]]},
+{id:"streaming",name:"Netflix-style Streaming Platform",provider:"REFERENCE ARCHITECTURE",category:"VIDEO STREAMING",summary:"A video streaming reference design covering playback APIs, entitlement, encoding, origin storage, CDN delivery, recommendations and telemetry.",app:[
+["viewer","Viewers","TV · Web · Mobile","source","Viewers discover titles, request playback and stream adaptive-bitrate video.",["TV apps","Mobile","Web"]],
+["edge","Global CDN","Edge delivery","network","Delivers video segments from edge caches close to viewers.",["CDN","Edge cache","TLS"]],
+["gateway","Playback API","Session orchestration","network","Creates playback sessions and returns manifests and signed delivery URLs.",["API Gateway","Playback sessions","Token auth"]],
+["catalog","Content Catalog","Titles and metadata","database","Stores title metadata, artwork, availability windows and regional licensing.",["Catalog API","Metadata","SQL"]],
+["auth","Identity + Entitlement","Access decisions","workload","Checks identity, subscription status, profiles and content entitlements.",["OAuth2","Entitlements","Policy"]],
+["origin","Video Origin","Encoded assets","registry","Stores manifests and encoded video segments for CDN origin fetches.",["Object storage","HLS","MPEG-DASH"]],
+["encode","Encoding Pipeline","Transcode + package","pipeline","Transcodes source media into multiple codecs, resolutions and bitrates.",["Transcoding","Packaging","Queues"]],
+["recommend","Recommendation Engine","Personalization","workload","Uses viewing history and ranking models to personalize title discovery.",["Feature store","Ranking","ML inference"]],
+["events","Playback Telemetry","QoE events","pipeline","Collects playback starts, buffering, errors and completion events for analytics.",["Event streaming","Metrics","Analytics"]]
+],appLinks:[["viewer","edge"],["edge","gateway"],["gateway","auth"],["gateway","catalog"],["gateway","origin"],["origin","edge"],["encode","origin"],["catalog","recommend"],["viewer","events"],["events","recommend"]]},
+{id:"food-delivery",name:"Swiggy-style Food Delivery",provider:"REFERENCE ARCHITECTURE",category:"ON-DEMAND DELIVERY",summary:"A food delivery system connecting customer, restaurant, order, payment, dispatch, courier location and notifications.",app:[
+["customer","Customers","Consumer app","source","Customers browse restaurants, place orders and track deliveries.",["Android","iOS","Web"]],
+["edge","API Edge","WAF + routing","network","Authenticates mobile traffic, applies rate limits and routes API calls.",["API Gateway","WAF","JWT"]],
+["restaurant","Restaurant Service","Menus and availability","workload","Maintains restaurant profiles, menus, opening hours and order acceptance.",["Restaurant API","Menu","Availability"]],
+["orders","Order Service","Order state","workload","Coordinates order creation, confirmation, preparation and delivery state.",["Order API","Saga","State machine"]],
+["dispatch","Dispatch Engine","Courier matching","workload","Matches orders with available delivery partners using proximity and capacity.",["Geo queries","Matching","Optimization"]],
+["location","Location Service","Live tracking","workload","Ingests courier GPS updates and serves near-real-time tracking.",["Geospatial","WebSockets","Streams"]],
+["payments","Payment Service","Payment status","workload","Coordinates payment authorization, refunds and reconciliation with payment providers.",["Payment gateway","Idempotency","Ledger refs"]],
+["events","Event Bus","Order events","pipeline","Distributes order, restaurant and courier events to dispatch and notifications.",["Kafka","Pub/Sub","Retries"]],
+["notify","Notifications","Push · SMS","workload","Sends order updates and delivery notifications through external providers.",["Push","SMS","Templates"]],
+["data","Operational Stores","SQL · Geo · Cache","database","Persists orders and restaurant data while using geospatial indexes and cache for location and discovery.",["PostgreSQL","Redis","Geo index"]]
+],appLinks:[["customer","edge"],["edge","restaurant"],["edge","orders"],["orders","payments"],["orders","events"],["restaurant","events"],["events","dispatch"],["dispatch","location"],["location","customer"],["events","notify"],["orders","data"],["location","data"]]},
+{id:"banking",name:"Digital Banking Platform",provider:"REFERENCE ARCHITECTURE",category:"BANKING",summary:"A secure digital banking reference architecture with identity, API protection, account services, ledger, fraud controls, payments and audit.",app:[
+["customer","Bank customers","Mobile · Web","source","Customers authenticate, view accounts, transfer funds and review statements.",["Mobile banking","Web","MFA"]],
+["edge","WAF + API Gateway","Secure ingress","network","Applies DDoS protection, API authentication, quotas and request validation.",["WAF","API Gateway","mTLS"]],
+["identity","Identity Service","Authentication","workload","Manages customer identity, MFA, sessions and authorization scopes.",["OIDC","MFA","RBAC"]],
+["accounts","Account Service","Balances and accounts","workload","Serves account details and coordinates balance reads with ledger-backed data.",["Account API","CQRS","Read models"]],
+["payments","Payment Orchestrator","Transfers","workload","Validates and coordinates internal and external transfers with idempotency and limits.",["Payment rails","Idempotency","Limits"]],
+["ledger","Core Ledger","Double-entry journal","database","Records immutable balanced journal entries and authoritative transaction state.",["Double-entry","ACID","PostgreSQL"]],
+["fraud","Risk + Fraud Engine","Risk decisions","workload","Evaluates transactions against velocity, device, behavioral and risk rules.",["Rules engine","Risk scoring","ML"]],
+["events","Event Backbone","Audit + notifications","pipeline","Distributes transaction events to audit, statements, alerts and reconciliation consumers.",["Kafka","Schema registry","DLQ"]],
+["audit","Audit + Compliance","Evidence trail","database","Stores tamper-evident audit records and compliance evidence.",["Append-only logs","Retention","SIEM"]]
+],appLinks:[["customer","edge"],["edge","identity"],["edge","accounts"],["edge","payments"],["payments","fraud"],["payments","ledger"],["ledger","events"],["events","audit"],["events","accounts"]]},
+{id:"upi",name:"UPI-style Real-time Payments",provider:"REFERENCE ARCHITECTURE",category:"PAYMENT NETWORK",summary:"A conceptual instant-payment flow with payer and payee apps, participant bank systems, routing, risk checks, transaction state, reconciliation and notifications.",app:[
+["payer","Payer App","Payment request","source","The payer selects a payee, enters an amount and authorizes a payment.",["Mobile app","Device binding","PIN UX"]],
+["gateway","Payment Gateway","Participant ingress","network","Validates participant requests, authenticates channels and routes transactions.",["API gateway","mTLS","Rate limits"]],
+["switch","Payment Switch","Routing + orchestration","pipeline","Routes requests between participant institutions and coordinates transaction state.",["Message routing","Timeouts","Retries"]],
+["risk","Risk Controls","Fraud + limits","workload","Applies transaction limits, velocity checks, device signals and risk decisions.",["Risk engine","Velocity","Rules"]],
+["payerbank","Payer Bank","Debit authorization","workload","Validates the payer account and authorizes the debit through its core banking system.",["Core banking","Debit posting","Limits"]],
+["payeeBank","Payee Bank","Credit posting","workload","Validates the beneficiary and posts the credit to the receiving account.",["Core banking","Credit posting","Status"]],
+["ledger","Transaction Journal","State + references","database","Maintains transaction references, state transitions and idempotent processing records.",["Transaction journal","Idempotency","ACID"]],
+["recon","Reconciliation","Settlement + disputes","workload","Reconciles participant outcomes, handles exceptions and supports dispute workflows.",["Reconciliation","Exceptions","Settlement"]],
+["events","Notifications","Status updates","pipeline","Publishes transaction status for payer and payee notifications and audit.",["Event bus","Push","SMS"]],
+["payee","Payee App","Payment confirmation","source","The payee receives confirmation after the participant flow reaches a final state.",["Mobile app","Notifications"]]
+],appLinks:[["payer","gateway"],["gateway","switch"],["switch","risk"],["risk","payerbank"],["payerbank","switch"],["switch","payeeBank"],["payeeBank","ledger"],["payerbank","ledger"],["ledger","recon"],["ledger","events"],["events","payer"],["events","payee"]]},
+{id:"saas",name:"Multi-tenant SaaS Platform",provider:"REFERENCE ARCHITECTURE",category:"SAAS PLATFORM",summary:"A multi-tenant SaaS design with tenant-aware identity, API routing, application services, metering, asynchronous jobs, isolated data access and observability.",app:[
+["tenant","Tenant users","Browser · API clients","source","Users from multiple customer organizations access the same SaaS product.",["Web","API clients","SSO"]],
+["edge","Edge + WAF","Global ingress","network","Terminates TLS, filters traffic and routes requests to the SaaS control plane.",["CDN","WAF","TLS"]],
+["identity","Identity + Tenant","SSO · RBAC","workload","Resolves tenant identity, membership, roles and policy context for each request.",["OIDC","SAML","RBAC"]],
+["gateway","API Gateway","Tenant-aware routing","network","Enforces quotas and routes tenant-scoped requests to application services.",["API Gateway","Rate limits","Tenant context"]],
+["app","Product Services","Core SaaS features","workload","Runs independently deployable product domains with tenant-aware authorization.",["Microservices","REST / gRPC","Feature flags"]],
+["jobs","Async Workers","Background jobs","pipeline","Processes scheduled tasks, imports, exports, webhooks and long-running jobs.",["Queues","Workers","Retries"]],
+["metering","Usage + Billing","Metering events","workload","Aggregates tenant usage and produces billing and quota events.",["Usage events","Billing","Quotas"]],
+["data","Tenant Data Layer","Isolation policies","database","Enforces tenant data isolation using database-per-tenant, schema or row-level controls as appropriate.",["PostgreSQL","RLS","Encryption"]],
+["events","Event Backbone","Domain events","pipeline","Moves domain events between product services, workers, metering and integrations.",["Kafka / Pub/Sub","Outbox","DLQ"]],
+["observability","Observability","Logs · Metrics · Traces","workload","Correlates tenant-scoped traces, service metrics, audit logs and SLOs.",["OpenTelemetry","Prometheus","Grafana"]]
+],appLinks:[["tenant","edge"],["edge","identity"],["identity","gateway"],["gateway","app"],["app","data"],["app","events"],["events","jobs"],["jobs","data"],["events","metering"],["app","observability"],["jobs","observability"]]}
+];
+function caseNode(row:string[],index:number):NodeDef{return {id:row[0],name:row[1],sub:row[2],kind:row[3] as NodeKind,pos:[-5+index*2,0,0],description:row[4],tech:row[5].split("|")};}
+for(const spec of caseStudies){
+ const appNodes=spec.app.map((row:string[],i)=>caseNode(row,i));
+ const nodes=[
+ caseNode(["dev","Engineering team","Service source","source","Teams own application code, infrastructure definitions and release configuration.","Git|Pull requests|Code review"],0),
+ caseNode(["git","Git repository","Source + manifests","source","Versioned source, tests, Dockerfiles, Kubernetes manifests and GitOps configuration.","Git|Branch protection|Manifests"],1),
+ caseNode(["ci","CI / CD pipeline","Build · test · scan","pipeline","CI validates code, tests contracts, scans dependencies and builds immutable container images.","GitHub Actions|Jenkins|Security scans"],2),
+ caseNode(["registry","Container registry","Immutable images","registry","The registry stores versioned, scanned images identified by immutable digests.","ECR|ACR|Artifact Registry"],3),
+ caseNode(["cluster","Managed Kubernetes","Cluster + node pools","cluster","The managed Kubernetes platform reconciles workloads and schedules Pods across worker nodes.","EKS|AKS|GKE|Kubernetes"],4),
+ caseNode(["services","Application workloads","Domain services","workload","Independently deployable services run with probes, resource requests, autoscaling and progressive rollouts.","Deployments|Services|HPA"],5),
+ caseNode(["observe","Observability","Logs · Metrics · Traces","workload","Telemetry supports SLOs, alerting, distributed tracing and operational diagnosis.","OpenTelemetry|Prometheus|Grafana"],6),
+ caseNode(["users","End users","Production traffic","source","Clients reach the application through the edge, gateway or ingress endpoint.","DNS|TLS|HTTPS"],7)
+ ];
+ const links:[string,string][]=[["dev","git"],["git","ci"],["ci","registry"],["registry","cluster"],["cluster","services"],["services","observe"],["users","services"]];
+ const stages:Stage[]=[
+ {title:"Commit service and infrastructure changes",detail:"The team merges reviewed application and deployment changes into the protected source branch.",command:"git push origin main",node:"git",from:"dev",to:"git",kind:"request"},
+ {title:"Run CI validation and security checks",detail:"The pipeline runs unit and contract tests, dependency checks, static analysis and policy validation.",command:"npm ci && npm test && npm run build",node:"ci",from:"git",to:"ci",kind:"request"},
+ {title:"Build immutable service images",detail:"The pipeline builds the changed service images and records commit identifiers and image digests.",command:"docker buildx build --tag service:$GIT_SHA .",node:"ci",from:"ci",to:"registry",kind:"request"},
+ {title:"Publish signed images",detail:"Scanned, versioned images are published to the private registry for deployment.",command:"docker push registry.example.com/service:$GIT_SHA",node:"registry",from:"ci",to:"registry",kind:"success"},
+ {title:"Promote desired state",detail:"The release updates Kubernetes manifests or GitOps configuration to reference the approved image digest.",command:"kubectl apply -f deploy/ && kubectl diff -f deploy/",node:"cluster",from:"registry",to:"cluster",kind:"request"},
+ {title:"Roll out application workloads",detail:"Kubernetes reconciles Deployments, schedules Pods and waits for readiness before shifting traffic.",command:"kubectl rollout status deployment/service",node:"services",from:"cluster",to:"services",kind:"success"},
+ {title:"Verify SLOs and production health",detail:"Metrics, traces and logs are checked against service objectives before the release is considered healthy.",command:"kubectl get pods,svc && check-slo --service service",node:"observe",from:"services",to:"observe",kind:"success"},
+ {title:"Serve customer traffic",detail:"The edge and ingress layers route requests to healthy service endpoints. Rollback remains available if health checks fail.",command:"curl -fsS https://app.example.com/health",node:"users",from:"observe",to:"users",kind:"response"}
+ ];
+ scenarios.push({id:spec.id,name:spec.name,provider:spec.provider,category:spec.category,summary:spec.summary,nodes,links,stages,appNodes,appLinks:spec.appLinks as [string,string][]});
+}
 
 const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
 const nodeXY=(node:NodeDef,nodes:NodeDef[]):[number,number]=>{const index=nodes.findIndex(n=>n.id===node.id);return [90+index*(1020/Math.max(1,nodes.length-1)),300];};
