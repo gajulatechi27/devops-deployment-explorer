@@ -19,7 +19,7 @@ const scenarios:Scenario[]=[
 {id:"alb",name:"Load Balancer",sub:"Ingress / HTTPS",kind:"network",pos:[5,-1.2,0],description:"The AWS Load Balancer Controller provisions an ALB and routes external requests to healthy application targets.",tech:["ALB","Ingress","Target groups"]},
 {id:"users",name:"End users",sub:"HTTPS requests",kind:"source",pos:[3,-2.2,0],description:"Clients resolve the application hostname and send HTTPS requests to the public load balancer.",tech:["DNS","TLS","HTTPS"]}
 ],links:[["dev","git"],["git","ci"],["ci","ecr"],["ecr","eks"],["eks","pods"],["pods","alb"],["users","alb"]],stages:[
-{title:"Developer pushes code",detail:"A new commit is pushed to the GitHub repository. The configured workflow trigger starts the release pipeline.",command:"git push origin main",node:"runner",from:"gitlab",to:"runner",kind:"request"},
+{title:"Developer pushes code",detail:"A new commit is pushed to the GitHub repository. The configured workflow trigger starts the release pipeline.",command:"git push origin main",node:"git",from:"dev",to:"git",kind:"request"},
 {title:"CI workflow starts",detail:"GitHub Actions checks out the selected commit and prepares an isolated runner for the build.",command:"actions/checkout@v4",node:"ci",from:"git",to:"ci",kind:"request"},
 {title:"Test and build image",detail:"The workflow runs automated tests, then packages the application into a container image tagged with the commit SHA.",command:"docker build -t web:$GITHUB_SHA .",node:"ci",from:"ci",to:"ci",kind:"request"},
 {title:"Push image to ECR",detail:"The workflow obtains temporary AWS credentials using OIDC and pushes the image to Amazon ECR.",command:"docker push $ECR_REPOSITORY:$GITHUB_SHA",node:"ecr",from:"ci",to:"ecr",kind:"request"},
@@ -50,7 +50,7 @@ const scenarios:Scenario[]=[
 {id:"container",name:"App Container",sub:"Docker Compose",kind:"workload",pos:[5.4,0,0],description:"Docker Compose starts the application container with ports, environment configuration, restart policy and health check.",tech:["Docker Compose","Container","Healthcheck"]},
 {id:"staff",name:"Internal users",sub:"Private network",kind:"source",pos:[5.4,-2,0],description:"Internal users reach the application over the organization's private network.",tech:["LAN","DNS","HTTP"]}
 ],links:[["gitlab","runner"],["runner","registry"],["registry","host"],["host","container"],["staff","container"]],stages:[
-{title:"Commit triggers pipeline",detail:"A developer pushes a commit. GitLab evaluates the pipeline configuration and schedules jobs on a runner.",command:"git push origin main",node:"gitlab",kind:"request"},
+{title:"Commit triggers pipeline",detail:"A developer pushes a commit. GitLab evaluates the pipeline configuration and schedules jobs on a runner.",command:"git push origin main",node:"gitlab",from:"gitlab",to:"runner",kind:"request"},
 {title:"Run tests",detail:"The runner installs dependencies and executes the project's automated test suite.",command:"npm ci && npm test",node:"runner",from:"runner",to:"runner",kind:"request"},
 {title:"Build container image",detail:"Docker packages the application and its runtime dependencies into an OCI image.",command:"docker build -t registry.local/web:$CI_COMMIT_SHA .",node:"registry",from:"runner",to:"registry",kind:"request"},
 {title:"Push image to registry",detail:"The runner authenticates to the private registry and publishes the commit-tagged image.",command:"docker push registry.local/web:$CI_COMMIT_SHA",node:"registry",from:"runner",to:"registry",kind:"success"},
