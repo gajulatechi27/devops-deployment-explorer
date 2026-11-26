@@ -191,7 +191,7 @@ const caseStudies=[
 ["observability","Observability","Logs · Metrics · Traces","workload","Correlates tenant-scoped traces, service metrics, audit logs and SLOs.",["OpenTelemetry","Prometheus","Grafana"]]
 ],appLinks:[["tenant","edge"],["edge","identity"],["identity","gateway"],["gateway","app"],["app","data"],["app","events"],["events","jobs"],["jobs","data"],["events","metering"],["app","observability"],["jobs","observability"]]}
 ];
-function caseNode(row:string[],index:number):NodeDef{return {id:row[0],name:row[1],sub:row[2],kind:row[3] as NodeKind,pos:[-5+index*2,0,0],description:row[4],tech:row[5].split("|")};}
+function caseNode(row:(string|string[])[],index:number):NodeDef{return {id:String(row[0]),name:String(row[1]),sub:String(row[2]),kind:String(row[3]) as NodeKind,pos:[-5+index*2,0,0],description:String(row[4]),tech:Array.isArray(row[5])?row[5]:String(row[5]).split("|")};}
 for(const spec of caseStudies){
  const appNodes=spec.app.map((row:string[],i)=>caseNode(row,i));
  const nodes=[
