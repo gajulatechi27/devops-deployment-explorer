@@ -133,3 +133,12 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
 .stage-learning-actions button{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:6px;padding:7px 8px;background:var(--panel);color:var(--ink);font:8px 'DM Mono'}
 .stage-learning-actions button:hover{background:var(--accent-soft)}
 @media(max-width:700px){.stage-learning-actions button{flex:1;justify-content:center}.stage-detail{align-items:flex-start;flex-wrap:wrap}.stage-detail .next-button{margin-left:46px}}
+
+
+/* Keep inspector tabs aligned to the top; float the collapse control out of their row. */
+@media(min-width:701px){
+ .right-panel{position:sticky}
+ .right-panel>.panel-collapse{position:absolute;top:8px;right:14px;z-index:3;margin:0}
+ .right-panel>.right-tabs{height:48px;margin-top:0;margin-bottom:18px;padding-right:42px}
+ .panel-title{justify-content:flex-start}
+}
