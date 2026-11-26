@@ -65,7 +65,7 @@ function Block({node,active,done,selected,onClick}:{node:NodeDef;active:boolean;
  const color=palette[node.kind];
  const icon=brandIcons[node.id];
  return <group position={node.pos} onClick={e=>{e.stopPropagation();onClick();}}>
-  <Float speed={active?1.5:0.45} rotationIntensity={0.012} floatIntensity={active?0.055:0.018}>
+  <group>
    <RoundedBox args={[1.55,.2,1.18]} radius={.12} smoothness={5} position={[0,.02,0]} castShadow receiveShadow>
     <meshStandardMaterial color={active?"#fff0c9":selected?"#f4edda":"#fffaf0"} roughness={.78} metalness={.03} emissive={selected?"#d8c99f":"#000000"} emissiveIntensity={selected ? 0.08 : 0}/>
    </RoundedBox>
@@ -75,7 +75,7 @@ function Block({node,active,done,selected,onClick}:{node:NodeDef;active:boolean;
    {icon?<Html position={[0,.62,0]} center distanceFactor={9} style={{pointerEvents:"none"}}><div className="brand-mark"><img src={icon} alt="" /></div></Html>:<Html position={[0,.58,0]} center distanceFactor={9} style={{pointerEvents:"none"}}><div className="brand-mark brand-mark-fallback"><span>{node.name.slice(0,1)}</span></div></Html>}
    <Html position={[0,-.32,0]} center distanceFactor={10} style={{pointerEvents:"none"}}><div className="scene-label"><b>{node.name}</b><span>{node.sub}</span></div></Html>
    {(active||done||selected)&&<mesh position={[0,.92,0]}><sphereGeometry args={[.07,16,16]}/><meshBasicMaterial color={done?"#43a879":active?"#e89c39":"#8b7a42"}/></mesh>}
-  </Float>
+  </group>
  </group>
 }
 function Route({from,to,active,done}:{from:NodeDef;to:NodeDef;active:boolean;done:boolean}){
