@@ -261,6 +261,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=
  const nodeById=(id:string)=>nodes.find(n=>n.id===id)!;
  const route=(from:NodeDef,to:NodeDef)=>{
   const [x1,y1]=nodeXY(from,nodes,tierMode,flowMode,drMode),[x2,y2]=nodeXY(to,nodes,tierMode,flowMode,drMode);
+  if(from.id===to.id)return `M ${x1+48} ${y1-24} C ${x1+112} ${y1-78}, ${x1+112} ${y1+78}, ${x1+48} ${y1+24}`;
   const dx=x2-x1,dy=y2-y1;
   if(Math.abs(dx)<165){
    const direction=dy>=0?1:-1;
