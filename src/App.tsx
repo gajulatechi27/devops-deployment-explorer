@@ -2,7 +2,7 @@ import { useEffect,useState } from "react";
 import LabWorkspace from "./LabWorkspace";
 import DeploymentFiles from "./DeploymentFiles";
 import "./labs.css";
-import { Activity,ArrowRight,Box,Check,ChevronDown,Cloud,GitBranch,Layers,Moon,Pause,Play,RotateCcw,Search,ShieldCheck,SkipBack,SkipForward,Sun,Workflow } from "lucide-react";
+import { ArrowRight,Box,Check,ChevronDown,Cloud,Layers,Moon,Pause,Play,RotateCcw,Search,ShieldCheck,SkipBack,SkipForward,Sun,Workflow } from "lucide-react";
 
 type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"server"|"database";
 type NodeDef={id:string;name:string;sub:string;kind:NodeKind;pos:[number,number,number];description:string;tech:string[]};
