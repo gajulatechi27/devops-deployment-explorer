@@ -234,7 +234,7 @@ marketplaceCase.appLinks=[["shoppers","edge"],["edge","gateway"],["gateway","cat
 
 
 const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
-const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,drMode=false):[number,number]=>{
+const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3):[number,number]=>{
  const isDr=node.id.startsWith("dr-");const baseId=node.id.replace(/^dr-/,"");const base=nodes.find(n=>n.id===baseId)||node;
  const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
  const tier=tierFor(base);const sameTier=nodes.filter(n=>!n.id.startsWith("dr-")&&tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===baseId));
@@ -247,7 +247,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=
  const nodes=scenario.nodes;
  const nodeById=(id:string)=>nodes.find(n=>n.id===id)!;
  const route=(from:NodeDef,to:NodeDef)=>{
-  const [x1,y1]=nodeXY(from,nodes,tierMode,drMode),[x2,y2]=nodeXY(to,nodes,tierMode,drMode);
+  const [x1,y1]=nodeXY(from,nodes,tierMode),[x2,y2]=nodeXY(to,nodes,tierMode);
   const direction=x2>=x1?1:-1;
   return `M ${x1+direction*66} ${y1} L ${x2-direction*66} ${y2}`;
  };
