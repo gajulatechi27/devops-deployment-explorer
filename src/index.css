@@ -21,4 +21,4 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
 
 .view-actions .view-selected{background:var(--accent);color:#fff;border-color:var(--accent)}.view-actions button:disabled{opacity:.35;cursor:not-allowed}.application-note>p{margin:14px 0 4px;color:var(--muted);font-size:12px;line-height:1.7}.application-note>p b{color:var(--ink)}
 
-.dr-explainer{position:absolute;left:14px;right:14px;bottom:12px;display:flex;gap:12px;align-items:center;padding:9px 12px;border:1px solid #d9b99a;border-radius:9px;background:#fff8ef;color:#76583d;font-size:10px;z-index:2}.dr-explainer b{white-space:nowrap;font-size:11px}.dr-explainer span{line-height:1.45}.scene-hint{z-index:3}
+.dr-explainer b{white-space:nowrap;font-size:11px}.dr-explainer span{line-height:1.45}.scene-hint{z-index:3}
