@@ -63,7 +63,7 @@ const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",regis
 function Block({node,active,done,selected,onClick}:{node:NodeDef;active:boolean;done:boolean;selected:boolean;onClick:()=>void}){
  const color=palette[node.kind];
  return <group position={node.pos} onClick={e=>{e.stopPropagation();onClick();}}>
-  <Float speed={active?2:0.8} rotationIntensity={0.025} floatIntensity={active?.08:.025}>
+  <Float speed={active?2:0.8} rotationIntensity={0.025} floatIntensity={active ? 0.08 : 0.025}>
    <RoundedBox args={[1.35,.72,.95]} radius={.12} smoothness={4} position={[0,.28,0]} castShadow receiveShadow>
     <meshStandardMaterial color={active?"#f8d68c":selected?"#f0dfaa":color} roughness={.82} metalness={.02} emissive={selected?"#b79a4c":"#000000"} emissiveIntensity={selected ? 0.12 : 0}/>
    </RoundedBox>
