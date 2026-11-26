@@ -82,7 +82,7 @@ function Packet({from,to,color}:{from:NodeDef;to:NodeDef;color:string}){
 }
 function Scene({scenario,stageIndex,onSelect}:{scenario:Scenario;stageIndex:number;onSelect:(id:string)=>void}){
  const active=scenario.stages[stageIndex]?.node;
- const done=scenario.stages.slice(0,stageIndex).map(s=>s.node);
+ const done=(stageIndex<0?[]:scenario.stages.slice(0,stageIndex)).map(s=>s.node);
  const nodes=scenario.nodes;
  return <Canvas shadows camera={{position:[8,8,11],fov:34}} dpr={[1,1.7]} onPointerMissed={()=>onSelect("")}>
   <color attach="background" args={["#f6f1e8"]}/><ambientLight intensity={1.3}/><directionalLight position={[5,9,6]} intensity={2.1} castShadow shadow-mapSize={[1024,1024]}/><directionalLight position={[-6,5,-5]} intensity={.7}/>
@@ -98,7 +98,7 @@ export default function App(){
  const [scenarioId,setScenarioId]=useState("eks");const scenario=scenarios.find(s=>s.id===scenarioId)!;
  const [stageIndex,setStageIndex]=useState(-1);const [playing,setPlaying]=useState(false);const [selected,setSelected]=useState("git");const [tab,setTab]=useState<"overview"|"steps"|"commands">("overview");const [speed,setSpeed]=useState(1);const [dark,setDark]=useState(false);
  const stage=scenario.stages[stageIndex];const node=scenario.nodes.find(n=>n.id===selected);
- useEffect(()=>{if(!playing)return;const timer=window.setTimeout(()=>{setStageIndex(i=>{if(i+1>=scenario.stages.length){setPlaying(false);return i;}return i+1;});},2600/speed);return()=>window.clearTimeout(timer);},[playing,stageIndex,scenario,speed]);
+ useEffect(()=>{if(!playing)return;const timer=window.setTimeout(()=>{if(stageIndex+1>=scenario.stages.length){setPlaying(false);return;}setStageIndex(stageIndex+1);},2600/speed);return()=>window.clearTimeout(timer);},[playing,stageIndex,scenario,speed]);
  useEffect(()=>{setStageIndex(-1);setPlaying(false);setSelected(scenario.nodes[0].id);},[scenarioId]);
  const progress=stageIndex<0?0:Math.round((stageIndex+1)/scenario.stages.length*100);
  const reset=()=>{setPlaying(false);setStageIndex(-1);};
