@@ -69,3 +69,16 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
 .file-preview pre{flex:1 1 auto;width:100%;min-width:0;max-height:none;min-height:0;overflow:auto;white-space:pre;font-size:9px}
 .files-learning-note{font-size:8px;overflow-wrap:anywhere}
 @media(max-width:700px){.files-browser{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(100px,32%) minmax(190px,1fr);height:520px;max-height:520px}.file-preview pre{max-height:none}.files-heading{align-items:stretch}}
+
+
+/* Give deployment file learning a wider editor-like inspector on desktop. */
+@media(min-width:1021px){
+ .app.files-expanded{grid-template-columns:292px minmax(0,1fr) minmax(390px, min(32vw,520px))}
+ .app.files-expanded .right-panel{padding-left:18px;padding-right:18px}
+ .app.files-expanded .files-browser{height:min(68vh,760px);grid-template-rows:minmax(130px,30%) minmax(260px,1fr)}
+ .app.files-expanded .file-preview pre{font-size:10px;line-height:1.6}
+}
+@media(min-width:1021px) and (max-width:1250px){
+ .app.files-expanded{grid-template-columns:210px minmax(0,1fr) minmax(360px,40vw)}
+ .app.files-expanded .main{padding-left:12px;padding-right:12px}
+}
