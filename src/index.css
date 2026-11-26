@@ -12,3 +12,7 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
 
 /* Isometric brand tiles */
 .brand-mark{width:42px;height:42px;border-radius:11px;background:#fffdf8;border:1px solid #d8cebd;box-shadow:0 3px 8px #54463220;display:grid;place-items:center;padding:7px}.brand-mark img{width:100%;height:100%;object-fit:contain;display:block}.brand-mark-fallback{background:#fff8e9;color:#3d5140;font:700 20px "Space Grotesk"}.scene-label{min-width:120px;padding:3px 7px;border-radius:5px;background:#f8f3e9dd;border:1px solid #ded4c3;box-shadow:0 2px 5px #54463212}.scene-label b{font-size:9px}.scene-label span{font-size:7px}
+
+/* Flat 2D deployment architecture map */
+.architecture-2d{height:clamp(340px,42vw,520px);min-height:320px;width:100%;overflow:hidden;background:#f8f3e9}.architecture-2d svg{display:block;width:100%;height:100%;outline:none}.architecture-2d g[role="button"]:focus rect{stroke:#527a4d;stroke-width:3;outline:none}.scene{height:auto;min-height:0;background:#f8f3e9}.scene canvas{display:none}
+@media(max-width:700px){.architecture-2d{height:350px;min-height:320px}.architecture-2d svg{width:900px;max-width:none}.scene{overflow-x:auto}}
