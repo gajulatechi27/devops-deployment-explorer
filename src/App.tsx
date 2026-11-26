@@ -238,10 +238,15 @@ const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,flowMode=false,drLayou
  const isDr=node.id.startsWith("dr-");const baseId=node.id.replace(/^dr-/,"");const base=nodes.find(n=>n.id===baseId)||node;
  const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
  if(flowMode){
-  const originals=nodes.filter(n=>!n.id.startsWith("dr-"));const index=Math.max(0,originals.findIndex(n=>n.id===baseId));
-  const columns=drLayout?3:4;
-  const col=index%columns,row=Math.floor(index/columns);
-  return [(isDr?700:90)+col*(drLayout?165:270),drLayout?150+row*145:190+row*210];
+  const originals=nodes.filter(n=>!n.id.startsWith("dr-"));
+  const xs=originals.map(n=>n.pos?.[0]??0),zs=originals.map(n=>n.pos?.[2]??0);
+  const minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs);
+  const px=base.pos?.[0]??0,pz=base.pos?.[2]??0;
+  const spanX=drLayout?430:960;
+  const left=drLayout?(isDr?735:45):120;
+  const nx=maxX===minX?.5:(px-minX)/(maxX-minX);
+  const ny=maxZ===minZ?.5:(pz-minZ)/(maxZ-minZ);
+  return [left+75+nx*spanX,190+ny*245];
  }
  const tier=tierFor(base);const sameTier=nodes.filter(n=>!n.id.startsWith("dr-")&&tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===baseId));
  const column=inTier%3;const row=Math.floor(inTier/3);
@@ -257,14 +262,15 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=
  const route=(from:NodeDef,to:NodeDef)=>{
   const [x1,y1]=nodeXY(from,nodes,tierMode,flowMode,drMode),[x2,y2]=nodeXY(to,nodes,tierMode,flowMode,drMode);
   const dx=x2-x1,dy=y2-y1;
-  if(Math.abs(dx)<24){
+  if(Math.abs(dx)<165){
    const direction=dy>=0?1:-1;
-   return `M ${x1} ${y1+direction*32} C ${x1} ${y1+direction*72}, ${x2} ${y2-direction*72}, ${x2} ${y2-direction*32}`;
+   const startY=y1+direction*33,endY=y2-direction*33,midY=(startY+endY)/2;
+   return `M ${x1} ${startY} V ${midY} H ${x2} V ${endY}`;
   }
   const direction=dx>=0?1:-1;
   const startX=x1+direction*76,endX=x2-direction*76;
-  const bend=Math.max(34,Math.min(100,Math.abs(dx)*0.38));
-  return `M ${startX} ${y1} C ${startX+direction*bend} ${y1}, ${endX-direction*bend} ${y2}, ${endX} ${y2}`;
+  const midX=(startX+endX)/2;
+  return `M ${startX} ${y1} H ${midX} V ${y2} H ${endX}`;
  };
  return <div className="architecture-2d">
   <svg viewBox="0 0 1200 600" preserveAspectRatio="none" role="img" aria-label={scenario.name+" deployment architecture"}>
@@ -280,8 +286,8 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=
     <rect x="0" y="0" width="150" height="64" rx="11" fill={selected===n.id?"#e7efdf":"#fffdf8"} stroke={active?"#d58a38":selected===n.id?"#8ca77a":"#d9cebc"} strokeWidth={active?3:selected===n.id?2:1.3} filter="url(#card-shadow)"/>
     <rect x="9" y="10" width="42" height="44" rx="9" fill={palette[n.kind]} opacity=".38"/>
     {icon?<image href={icon} x="14" y="16" width="32" height="32" preserveAspectRatio="xMidYMid meet"/>:<text x="30" y="38" textAnchor="middle" fontSize="21" fontWeight="700" fill="#435541">{n.name.slice(0,1)}</text>}
-    <text x="58" y="27" fontSize="8.6" fontWeight="700" fill="#29271f" textLength="84" lengthAdjust="spacingAndGlyphs">{n.name}</text>
-    <text x="58" y="43" fontSize="7" fill="#827b70" textLength="84" lengthAdjust="spacingAndGlyphs">{n.sub}</text>
+    <text x="58" y="27" fontSize="8.8" fontWeight="700" fill="#29271f">{n.name}</text>
+    <text x="58" y="43" fontSize="7.2" fill="#827b70">{n.sub}</text>
     {(active||done)&&<circle cx="137" cy="10" r="4.5" fill={active?"#e59a43":"#6fa576"}/>}
    </g>})}
    {activeStage&&(()=>{const from=nodeById(activeStage.from),to=nodeById(activeStage.to),d=route(from,to);return <g><path d={d} fill="none" stroke="#e49a42" strokeWidth="5" strokeOpacity=".18" strokeLinecap="round"/>{playing&&<circle r="8" fill="#e58c35" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})()}
