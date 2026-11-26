@@ -2,7 +2,7 @@ import { useEffect,useRef,useState } from "react";
 import { Canvas,useFrame } from "@react-three/fiber";
 import { Html,OrbitControls,ContactShadows,Float,Line,RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
-import { Activity,ArrowRight,BookOpen,Box,Check,ChevronDown,Cloud,GitBranch,Layers,Moon,Pause,Play,RotateCcw,Search,Server,ShieldCheck,SkipForward,Sun,Workflow } from "lucide-react";
+import { Activity,ArrowRight,Box,Check,ChevronDown,Cloud,GitBranch,Layers,Moon,Pause,Play,RotateCcw,Search,Server,ShieldCheck,SkipForward,Sun,Workflow } from "lucide-react";
 
 type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"server"|"database";
 type NodeDef={id:string;name:string;sub:string;kind:NodeKind;pos:[number,number,number];description:string;tech:string[]};
@@ -65,7 +65,7 @@ function Block({node,active,done,selected,onClick}:{node:NodeDef;active:boolean;
  return <group position={node.pos} onClick={e=>{e.stopPropagation();onClick();}}>
   <Float speed={active?2:0.8} rotationIntensity={0.025} floatIntensity={active?.08:.025}>
    <RoundedBox args={[1.35,.72,.95]} radius={.12} smoothness={4} position={[0,.28,0]} castShadow receiveShadow>
-    <meshStandardMaterial color={active?"#f8d68c":selected?"#f0dfaa":color} roughness={.82} metalness={.02} emissive={selected?"#b79a4c":"#000000"} emissiveIntensity={selected?.12:0}/>
+    <meshStandardMaterial color={active?"#f8d68c":selected?"#f0dfaa":color} roughness={.82} metalness={.02} emissive={selected?"#b79a4c":"#000000"} emissiveIntensity={selected ? 0.12 : 0}/>
    </RoundedBox>
    <mesh position={[0,.66,0]} rotation={[-Math.PI/2,0,0]} receiveShadow><circleGeometry args={[.48,6]}/><meshStandardMaterial color={active?"#ffe7ae":color} roughness={.9}/></mesh>
    <mesh position={[0,-.12,0]}><boxGeometry args={[.12,.14,.12]}/><meshStandardMaterial color="#55504a"/></mesh>
