@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Activity,AlertTriangle,BookOpen,CheckCircle2,Code2,Container,GitBranch,Play,RotateCcw,ShieldCheck,TriangleAlert,Wrench } from "lucide-react";
-import { advanceRuntime,initialRuntime,injectFault,progressPercent,resolveFault,type Fault,type RuntimeState,type SimulationEvent } from "./simulation/engine.js";
+import { advanceRuntime,initialRuntime,injectFault,progressPercent,resolveFault,type Fault,type RuntimeState,type SimulationEvent } from "./simulation/engine.ts";
 
 type Mode="troubleshoot"|"terminal"|"monitoring"|"strategies"|"learning"|"kubernetes"|"iac";
 const eksEvents:SimulationEvent[]=[
