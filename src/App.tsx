@@ -238,7 +238,9 @@ const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3):[number,number]=>{
  const isDr=node.id.startsWith("dr-");const baseId=node.id.replace(/^dr-/,"");const base=nodes.find(n=>n.id===baseId)||node;
  const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
  const tier=tierFor(base);const sameTier=nodes.filter(n=>!n.id.startsWith("dr-")&&tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===baseId));
- const column=inTier%2;const row=Math.floor(inTier/2);const x=(isDr?690:95)+column*255;const y=tierMode===2?(tier===1?115+row*55:350+row*55):(tier===1?80+row*62:tier===2?260+row*62:445+row*62);
+ const column=inTier%3;const row=Math.floor(inTier/3);
+ const x=(isDr?760:100)+column*180;
+ const y=tierMode===2?(tier===1?132+row*74:400+row*74):(tier===1?92+row*74:tier===2?277+row*74:462+row*62);
  return [x,y];
 };
 function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=false}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void;tierMode?:2|3;drMode?:boolean}){
@@ -249,7 +251,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=
  const route=(from:NodeDef,to:NodeDef)=>{
   const [x1,y1]=nodeXY(from,nodes,tierMode),[x2,y2]=nodeXY(to,nodes,tierMode);
   const direction=x2>=x1?1:-1;
-  return `M ${x1+direction*66} ${y1} L ${x2-direction*66} ${y2}`;
+  return `M ${x1+direction*76} ${y1} L ${x2-direction*76} ${y2}`;
  };
  return <div className="architecture-2d">
   <svg viewBox="0 0 1200 600" preserveAspectRatio="none" role="img" aria-label={scenario.name+" deployment architecture"}>
@@ -261,13 +263,13 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,drMode=
    <rect width="1200" height="600" fill="#f8f3e9"/><rect width="1200" height="600" fill="url(#map-grid)"/>
    {tierMode===2?<><rect x="14" y="92" width="1172" height="190" rx="14" fill="#e7eee5" opacity=".65" stroke="#c7d5c2"/><rect x="14" y="315" width="1172" height="265" rx="14" fill="#e9edf4" opacity=".72" stroke="#c9d2e2"/><text x="34" y="120" fontSize="13" fontWeight="700" fill="#526c50">TIER 1 · PRESENTATION / CLIENT</text><text x="34" y="343" fontSize="13" fontWeight="700" fill="#52617a">TIER 2 · APPLICATION + DATA</text></>:<><rect x="14" y="20" width="1172" height="165" rx="14" fill="#e7eee5" opacity=".65" stroke="#c7d5c2"/><rect x="14" y="205" width="1172" height="165" rx="14" fill="#e9edf4" opacity=".72" stroke="#c9d2e2"/><rect x="14" y="390" width="1172" height="190" rx="14" fill="#f3eadc" opacity=".72" stroke="#dfd0b8"/><text x="34" y="47" fontSize="13" fontWeight="700" fill="#526c50">TIER 1 · PRESENTATION</text><text x="34" y="232" fontSize="13" fontWeight="700" fill="#52617a">TIER 2 · APPLICATION / SERVICES</text><text x="34" y="417" fontSize="13" fontWeight="700" fill="#86683f">TIER 3 · DATA</text></>}{drMode&&<g><text x="690" y="18" fontSize="12" fontWeight="700" fill="#8a5b45">DISASTER RECOVERY · STANDBY REGION</text><text x="95" y="18" fontSize="12" fontWeight="700" fill="#526c50">PRIMARY REGION</text></g>}
    {scenario.links.map(([a,b],i)=>{const from=nodeById(a),to=nodeById(b),d=route(from,to);const active=activeStage?.from===a&&activeStage?.to===b;const done=doneStages.some(s=>s.from===a&&s.to===b);return <g key={i}><path d={d} fill="none" stroke={active?"#df913d":done?"#76a875":"#9aa094"} strokeWidth={active?3:2} strokeLinecap="round" markerEnd="url(#route-arrow)"/>{active&&playing&&<circle r="6" fill="#e68f36" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})}
-   {nodes.map(n=>{const [x,y]=nodeXY(n,nodes);const active=n.id===activeStage?.node;const done=doneStages.some(s=>s.node===n.id);const icon=brandIcons[n.id];return <g key={n.id} transform={`translate(${x-68} ${y-38})`} onClick={()=>onSelect(n.id)} role="button" tabIndex={0} aria-label={"Select "+n.name} style={{cursor:"pointer"}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(n.id);}}}>
-    <rect x="0" y="0" width="136" height="76" rx="11" fill={selected===n.id?"#e7efdf":"#fffdf8"} stroke={active?"#d58a38":selected===n.id?"#8ca77a":"#d9cebc"} strokeWidth={active?3:selected===n.id?2:1.3} filter="url(#card-shadow)"/>
-    <rect x="9" y="13" width="46" height="46" rx="9" fill={palette[n.kind]} opacity=".38"/>
-    {icon?<image href={icon} x="16" y="20" width="32" height="32" preserveAspectRatio="xMidYMid meet"/>:<text x="32" y="43" textAnchor="middle" fontSize="21" fontWeight="700" fill="#435541">{n.name.slice(0,1)}</text>}
-    <text x="62" y="31" fontSize="9.2" fontWeight="700" fill="#29271f">{n.name}</text>
-    <text x="62" y="48" fontSize="7.4" fill="#827b70">{n.sub}</text>
-    {(active||done)&&<circle cx="119" cy="12" r="4.5" fill={active?"#e59a43":"#6fa576"}/>}
+   {nodes.map(n=>{const [x,y]=nodeXY(n,nodes,tierMode);const active=n.id===activeStage?.node;const done=doneStages.some(s=>s.node===n.id);const icon=brandIcons[n.id];return <g key={n.id} transform={`translate(${x-75} ${y-32})`} onClick={()=>onSelect(n.id)} role="button" tabIndex={0} aria-label={"Select "+n.name} style={{cursor:"pointer"}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(n.id);}}}>
+    <rect x="0" y="0" width="150" height="64" rx="11" fill={selected===n.id?"#e7efdf":"#fffdf8"} stroke={active?"#d58a38":selected===n.id?"#8ca77a":"#d9cebc"} strokeWidth={active?3:selected===n.id?2:1.3} filter="url(#card-shadow)"/>
+    <rect x="9" y="10" width="42" height="44" rx="9" fill={palette[n.kind]} opacity=".38"/>
+    {icon?<image href={icon} x="14" y="16" width="32" height="32" preserveAspectRatio="xMidYMid meet"/>:<text x="30" y="38" textAnchor="middle" fontSize="21" fontWeight="700" fill="#435541">{n.name.slice(0,1)}</text>}
+    <text x="58" y="27" fontSize="8.6" fontWeight="700" fill="#29271f" textLength="84" lengthAdjust="spacingAndGlyphs">{n.name}</text>
+    <text x="58" y="43" fontSize="7" fill="#827b70" textLength="84" lengthAdjust="spacingAndGlyphs">{n.sub}</text>
+    {(active||done)&&<circle cx="137" cy="10" r="4.5" fill={active?"#e59a43":"#6fa576"}/>}
    </g>})}
    {activeStage&&(()=>{const from=nodeById(activeStage.from),to=nodeById(activeStage.to),d=route(from,to);return <g><path d={d} fill="none" stroke="#e49a42" strokeWidth="5" strokeOpacity=".18" strokeLinecap="round"/>{playing&&<circle r="8" fill="#e58c35" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})()}
   </svg>
