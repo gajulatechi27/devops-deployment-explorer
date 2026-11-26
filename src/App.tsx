@@ -209,7 +209,7 @@ for(const spec of caseStudies){
 }
 
 
-type DeploymentSpec={id:string;name:string;provider:string;category:string;summary:string;nodes:(string|string[])[];steps:[string,string,string,string,string,Stage["kind"]?][]};
+type DeploymentSpec={id:string;name:string;provider:string;category:string;summary:string;nodes:(string|string[])[][];steps:[string,string,string,string,string,Stage["kind"]?][]};
 function addDeployment(spec:DeploymentSpec){
  const nodes=spec.nodes.map((row,i)=>caseNode(row,i));
  const links=spec.steps.map(step=>[step[3],step[4]] as [string,string]);
