@@ -84,6 +84,31 @@ build
   { path: "pom.xml", description: "Maven build file that produces the runnable JAR.", content: `<?xml version="1.0" encoding="UTF-8"?>\n<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>com.example</groupId><artifactId>demo-web</artifactId><version>0.1.0</version>\n  <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>3.3.5</version><relativePath/></parent>\n  <properties><java.version>21</java.version></properties>\n  <dependencies><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency></dependencies>\n  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>\n</project>\n` },
   { path: "src/main/java/com/example/DemoApplication.java", description: "Tiny Spring Boot app used to create the sample JAR.", content: `package com.example;\n\nimport org.springframework.boot.SpringApplication;\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\n\n@SpringBootApplication\npublic class DemoApplication {\n  public static void main(String[] args) { SpringApplication.run(DemoApplication.class, args); }\n}\n` },
   { path: "src/main/resources/application.properties", description: "Application runtime port and health endpoint settings.", content: `server.port=8080\nmanagement.endpoints.web.exposure.include=health,info\n` },
+  { path: ".github/workflows/deploy.yml", description: "GitHub Actions example for test, image build, registry publish and Kubernetes rollout.", content: `name: Build and deploy demo
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: mvn -B test package
+      - run: docker build -t registry.example.invalid/demo/web:demo-0.1.0 .
+      - run: echo "Authenticate to your cloud registry using OIDC (placeholder)"
+      - run: echo "docker push registry.example.invalid/demo/web:demo-0.1.0"
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Configure kubectl context for the target cluster (placeholder)"
+      - run: kubectl apply -f k8s/
+      - run: kubectl rollout status deployment/demo-web -n demo
+` },
   { path: "k8s/namespace.yaml", description: "Creates an isolated Kubernetes namespace.", content: `apiVersion: v1
 kind: Namespace
 metadata:
@@ -471,7 +496,7 @@ spec:
   ];
   // Kubernetes-based managed-cloud and reference architecture deployments share a
   // practical Docker + Kubernetes starter pack, with provider-specific CI examples.
-  if (["aks", "gke"].includes(id) || ["marketplace", "retail", "netflix", "swiggy", "banking", "upi", "saas"].includes(id)) return k8sFiles;
+  if (["eks", "aks", "gke"].includes(id) || ["marketplace", "retail", "netflix", "swiggy", "banking", "upi", "saas"].includes(id)) return k8sFiles;
   return [
     { path: "Dockerfile", description: "Container image definition.", content: dockerfile },
     { path: ".dockerignore", description: "Excludes local build output and environment files.", content: `.git
