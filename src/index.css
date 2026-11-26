@@ -97,3 +97,26 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
  .app{grid-template-columns:210px minmax(0,1fr) minmax(360px,40vw)}
  .app .main{padding-left:12px;padding-right:12px}
 }
+
+
+/* Collapsible navigation and inspector rails */
+.panel-collapse{width:28px;height:30px;flex:0 0 28px;display:grid;place-items:center;border:1px solid var(--line);border-radius:7px;background:var(--panel-alt);color:var(--ink);font:20px/1 'DM Sans';padding:0}
+.left-panel>.panel-collapse{align-self:flex-end;margin:0 0 10px}
+.right-panel>.panel-collapse{align-self:flex-start;margin:8px 0 12px}
+.app.left-collapsed{grid-template-columns:46px minmax(0,1fr) 276px}
+.app.right-collapsed{grid-template-columns:292px minmax(0,1fr) 46px}
+.app.left-collapsed.right-collapsed{grid-template-columns:46px minmax(0,1fr) 46px}
+.app.left-collapsed .left-panel{align-items:center;padding:12px 5px}
+.app.left-collapsed .left-collapse{align-self:center;margin:0}
+.app.right-collapsed .right-panel{align-items:center;padding:8px 5px}
+.app.right-collapsed .right-collapse{align-self:center;margin:0}
+@media(min-width:1021px){
+ .app.left-collapsed{grid-template-columns:46px minmax(0,1fr) minmax(390px,min(32vw,520px))}
+ .app.right-collapsed{grid-template-columns:292px minmax(0,1fr) 46px}
+ .app.left-collapsed.right-collapsed{grid-template-columns:46px minmax(0,1fr) 46px}
+}
+@media(min-width:701px) and (max-width:1020px){
+ .app.left-collapsed{grid-template-columns:46px minmax(0,1fr) 240px}
+ .app.right-collapsed{grid-template-columns:240px minmax(0,1fr) 46px}
+ .app.left-collapsed.right-collapsed{grid-template-columns:46px minmax(0,1fr) 46px}
+}
