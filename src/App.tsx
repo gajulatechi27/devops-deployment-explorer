@@ -218,6 +218,21 @@ for(const spec of caseStudies){
  scenarios.push({id:spec.id,name:spec.name,provider:spec.provider,category:spec.category,summary:spec.summary,nodes,links,stages,appNodes,appLinks:spec.appLinks as [string,string][]});
 }
 
+const marketplaceCase=scenarios.find(s=>s.id==="marketplace")!;
+marketplaceCase.appNodes=[
+caseNode(["shoppers","Shoppers","Web · Mobile","source","Customers browse products, manage carts and place orders.","Web|Mobile"],0),
+caseNode(["edge","CDN + WAF","Edge protection","network","Caches assets and protects public endpoints before API traffic enters the platform.","CDN|WAF|TLS"],1),
+caseNode(["gateway","API Gateway","Routing + identity","network","Authenticates clients and routes requests to domain services.","OAuth2|Rate limits"],2),
+caseNode(["catalog","Catalog + Search","Product discovery","workload","Serves product listings, search, categories, pricing and recommendations.","Search API|OpenSearch"],3),
+caseNode(["cart","Cart Service","Basket management","workload","Maintains carts and validates product availability and pricing.","Cart API|Redis"],4),
+caseNode(["orders","Order Service","Order lifecycle","workload","Coordinates checkout, order state and fulfillment hand-off.","Order API|Saga"],5),
+caseNode(["payments","Payment Service","Payment orchestration","workload","Coordinates payment authorization and status with external payment providers.","Payment API|Idempotency"],6),
+caseNode(["events","Event Backbone","Kafka-style events","pipeline","Distributes order and inventory events to fulfillment, analytics and notifications.","Kafka|Consumers"],7),
+caseNode(["data","Data Platform","SQL · Cache · Search","database","Persists orders and catalog data with fit-for-purpose databases, cache and search indexes.","PostgreSQL|Redis|Search"],8)
+];
+marketplaceCase.appLinks=[["shoppers","edge"],["edge","gateway"],["gateway","catalog"],["gateway","cart"],["cart","orders"],["orders","payments"],["orders","events"],["events","data"],["catalog","data"]];
+
+
 const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
 const nodeXY=(node:NodeDef,nodes:NodeDef[]):[number,number]=>{const index=nodes.findIndex(n=>n.id===node.id);if(nodes.length>8){return [130+(index%5)*235,190+Math.floor(index/5)*220];}return [90+index*(1020/Math.max(1,nodes.length-1)),300];};
 function Scene({scenario,stageIndex,selected,playing,onSelect}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void}){
