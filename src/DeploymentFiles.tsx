@@ -798,6 +798,400 @@ test -s "$BACKUP_DIR/demo_db_$(date +%F).dump"
 - Monitor disk, connections, replication lag (if configured), WAL and slow queries.
 ` }
   ];
+
+  if (id === "maven-jfrog-vault") return [
+    { path: "Jenkinsfile", description: "Maven build, SonarQube gate, Artifactory publish, Vault secret retrieval and Ansible deployment.", content: `pipeline {
+  agent any
+  tools { maven 'Maven-3.9' }
+  environment {
+    ARTIFACTORY_URL = 'https://artifactory.example.invalid/artifactory'
+    APP_VERSION = '1.2.0'
+  }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Build and Test') { steps { sh 'mvn -B clean verify' } }
+    stage('SonarQube') {
+      steps { withSonarQubeEnv('DemoSonar') { sh 'mvn sonar:sonar -Dsonar.projectKey=demo-java' } }
+    }
+    stage('Quality Gate') {
+      steps { timeout(time: 5, unit: 'MINUTES') { waitForQualityGate abortPipeline: true } }
+    }
+    stage('Publish to Artifactory') {
+      steps { withCredentials([usernamePassword(credentialsId: 'artifactory-demo', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
+        sh 'mvn -B deploy'
+      } }
+    }
+    stage('Get deployment secret') {
+      steps { sh 'vault kv get -field=ssh_key kv/apps/demo/deploy > deploy_key' }
+    }
+    stage('Deploy') { steps { sh 'ansible-playbook -i ansible/inventory ansible/deploy.yml' } }
+  }
+}
+` },
+    { path: "pom.xml", description: "Maven coordinates, Java version, test and package plugins, and distribution repository ID.", content: `<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.example</groupId><artifactId>demo-java</artifactId><version>1.2.0</version>
+  <properties><maven.compiler.release>21</maven.compiler.release><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
+  <distributionManagement>
+    <repository><id>demo-artifactory</id><url>https://artifactory.example.invalid/artifactory/libs-release-local</url></repository>
+  </distributionManagement>
+  <build><plugins>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.2</version></plugin>
+  </plugins></build>
+</project>
+` },
+    { path: "settings.example.xml", description: "Maven server credential placeholders. Store real values in Jenkins Credentials, not Git.", content: `<settings>
+  <servers>
+    <server>
+      <id>demo-artifactory</id>
+      <username>CHANGE_ME_USER</username>
+      <password>CHANGE_ME_DUMMY_SECRET</password>
+    </server>
+  </servers>
+</settings>
+` },
+    { path: "sonar-project.properties", description: "SonarQube project and source settings.", content: `sonar.projectKey=demo-java
+sonar.projectName=Demo Java Service
+sonar.sources=src/main
+sonar.tests=src/test
+sonar.java.binaries=target/classes
+sonar.sourceEncoding=UTF-8
+` },
+    { path: "vault/policy.hcl", description: "Example Vault policy limited to one application's deployment secrets.", content: `path "kv/data/apps/demo/deploy" {
+  capabilities = ["read"]
+}
+path "kv/metadata/apps/demo/deploy" {
+  capabilities = ["read"]
+}
+` },
+    { path: "vault/agent.hcl", description: "Illustrative Vault Agent auto-auth and template configuration; auth method is a placeholder.", content: `vault {
+  address = "https://vault.example.invalid:8200"
+}
+auto_auth {
+  method "approle" {
+    mount_path = "auth/approle"
+    config = {
+      role_id_file_path = "/run/secrets/vault-role-id"
+      secret_id_file_path = "/run/secrets/vault-secret-id"
+    }
+  }
+}
+template {
+  source      = "/etc/vault/templates/app.env.ctmpl"
+  destination = "/run/demo/app.env"
+}
+` },
+    { path: "ansible/inventory.ini", description: "Dummy Linux deployment host and user.", content: `[app]
+192.0.2.70 ansible_user=deploy
+
+[app:vars]
+app_dir=/opt/demo-java
+app_service=demo-java
+` },
+    { path: "ansible/deploy.yml", description: "Copies the approved Maven artifact and restarts the application service.", content: `- name: Deploy Java release
+  hosts: app
+  become: true
+  tasks:
+    - name: Ensure application directory exists
+      ansible.builtin.file:
+        path: /opt/demo-java
+        state: directory
+        owner: deploy
+        mode: '0755'
+    - name: Install release artifact
+      ansible.builtin.copy:
+        src: ../target/demo-java-1.2.0.jar
+        dest: /opt/demo-java/app.jar
+        owner: deploy
+        mode: '0644'
+    - name: Restart service
+      ansible.builtin.systemd:
+        name: demo-java
+        state: restarted
+        enabled: true
+` },
+    { path: "README-artifact-secrets.md", description: "Explains Maven lifecycle, artifact immutability, Vault auth and least privilege.", content: `# Maven + Artifactory + Vault learning flow
+
+1. Run mvn clean verify: validate, compile, test and package.
+2. SonarQube evaluates source and the quality gate blocks unsafe promotion.
+3. Maven deploy publishes the JAR and POM to Artifactory.
+4. Promote an immutable build; do not rebuild a release artifact between environments.
+5. Jenkins authenticates to Vault using a workload identity or short-lived AppRole credentials.
+6. Read only the deployment secret path required by this job.
+7. Deploy the selected artifact and verify service health.
+
+All hosts and credentials are examples. Do not store tokens, passwords or private keys in source control or build logs.
+` }
+  ];
+  if (id === "gradle-helm-argocd") return [
+    { path: "settings.gradle", description: "Gradle project name and module inclusion.", content: `rootProject.name = 'demo-service'
+include 'app'
+` },
+    { path: "build.gradle", description: "Gradle plugins, Java toolchain, test and application packaging.", content: `plugins {
+    id 'java'
+    id 'application'
+}
+group = 'com.example'
+version = '1.2.0'
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+repositories { mavenCentral() }
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+}
+test { useJUnitPlatform() }
+application { mainClass = 'com.example.Main' }
+` },
+    { path: "gradle.properties", description: "Build performance and JVM settings for the Gradle wrapper.", content: `org.gradle.jvmargs=-Xmx1g -Dfile.encoding=UTF-8
+org.gradle.parallel=true
+org.gradle.caching=true
+` },
+    { path: "Dockerfile", description: "Packages the Gradle-built application into a minimal Java runtime image.", content: `FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY app/build/libs/app-1.2.0.jar app.jar
+USER 10001
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app/app.jar"]
+` },
+    { path: "charts/demo/Chart.yaml", description: "Helm chart metadata and version.", content: `apiVersion: v2
+name: demo
+description: Demo application chart for the learning lab
+type: application
+version: 0.1.0
+appVersion: "1.2.0"
+` },
+    { path: "charts/demo/values.yaml", description: "Default image, replica, service and resource values.", content: `replicaCount: 2
+image:
+  repository: registry.example.invalid/demo/web
+  tag: "demo-1.2.0"
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+` },
+    { path: "charts/demo/templates/deployment.yaml", description: "Helm template for the Kubernetes Deployment.", content: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+` },
+    { path: "charts/demo/templates/service.yaml", description: "Helm template for the Kubernetes Service.", content: `apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ .Release.Name }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+` },
+    { path: "environments/prod/values.yaml", description: "Production override with a pinned image tag and three replicas.", content: `replicaCount: 3
+image:
+  repository: registry.example.invalid/demo/web
+  tag: "REPLACE_WITH_APPROVED_GIT_SHA"
+` },
+    { path: "argocd/application.yaml", description: "Argo CD Application that points to the Helm chart and production values.", content: `apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/example/demo-gitops.git
+    targetRevision: main
+    path: charts/demo
+    helm:
+      valueFiles:
+        - ../../environments/prod/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+` },
+    { path: ".github/workflows/build-image.yml", description: "Gradle CI, image build and GitOps update handoff.", content: `name: Build and publish
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew clean test build
+      - run: docker build -t registry.example.invalid/demo/web:$GITHUB_SHA .
+      - run: echo "Authenticate and push image; update GitOps repo with approved tag"
+` },
+    { path: "README-gradle-helm-gitops.md", description: "Explains the separation between CI image creation and Argo CD deployment reconciliation.", content: `# Gradle + Helm + Argo CD
+
+- Gradle Wrapper makes the build reproducible; commit gradlew and gradle/wrapper files.
+- CI runs tests and creates the application artifact and image.
+- Helm templates Kubernetes resources from chart defaults and environment values.
+- The GitOps repository records the desired image tag and release configuration.
+- Argo CD watches Git and reconciles the cluster. CI does not need direct kubectl credentials.
+- Review Argo CD diff and health before promoting changes.
+
+All registry names and repositories are placeholders. Keep secrets in an external secret manager.
+` }
+  ];
+  if (id === "observability-prom-grafana-datadog") return [
+    { path: "otel-collector-config.yaml", description: "OpenTelemetry receiver, batch processor and Prometheus/OTLP exporters.", content: `receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+processors:
+  batch:
+    timeout: 5s
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:9464
+  debug:
+    verbosity: basic
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus, debug]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+` },
+    { path: "prometheus/prometheus.yml", description: "Scrape configuration for Prometheus and the application metrics endpoint.", content: `global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: demo-app
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['demo-app.demo.svc.cluster.local:8080']
+` },
+    { path: "prometheus/alerts.yml", description: "Example alert rules for high error ratio and elevated latency.", content: `groups:
+  - name: demo-service
+    rules:
+      - alert: DemoHigh5xxRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 1) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Demo service 5xx rate is above 5 percent
+      - alert: DemoTargetDown
+        expr: up{job="demo-app"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Demo application metrics target is down
+` },
+    { path: "grafana/datasources/prometheus.yaml", description: "Provisioned Grafana Prometheus datasource.", content: `apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus.monitoring.svc:9090
+    isDefault: true
+` },
+    { path: "grafana/dashboard-notes.md", description: "Suggested dashboard panels and useful PromQL queries.", content: `# Demo service dashboard
+
+Panels:
+- Request rate: sum(rate(http_server_requests_seconds_count[5m]))
+- 5xx error rate: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+- p95 latency: histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket[5m])))
+- Pod restarts: increase(kube_pod_container_status_restarts_total[1h])
+- CPU usage and memory working set by Pod
+
+Add service, environment, version and cluster labels so dashboards can be filtered consistently.
+` },
+    { path: "datadog/agent-values.example.yaml", description: "Helm values example for Datadog Agent, logs, APM and Prometheus integration. API key must come from a secret.", content: `datadog:
+  site: datadoghq.com
+  apiKeyExistingSecret: datadog-secret
+  logs:
+    enabled: true
+    containerCollectAll: true
+  apm:
+    portEnabled: true
+  processAgent:
+    processCollection: true
+clusterAgent:
+  enabled: true
+agents:
+  containers:
+    agent:
+      env:
+        - name: DD_ENV
+          value: demo
+        - name: DD_SERVICE
+          value: demo-web
+` },
+    { path: "kubernetes/servicemonitor.yaml", description: "Prometheus Operator ServiceMonitor example for a Kubernetes application.", content: `apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: demo-web
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: demo-web
+  namespaceSelector:
+    matchNames: [demo]
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 30s
+` },
+    { path: "README-observability.md", description: "Explains metrics, logs, traces, dashboards, alert routing and telemetry cardinality.", content: `# Prometheus + Grafana + Datadog learning pack
+
+1. Instrument the application and expose a metrics endpoint.
+2. Configure OpenTelemetry SDK/Collector pipelines for metrics, logs and traces.
+3. Configure Prometheus scrape targets and alert rules.
+4. Provision Grafana datasource and create RED (rate, errors, duration) dashboards.
+5. Install the Datadog Agent using a Kubernetes secret for the API key.
+6. Correlate service, environment, version and trace IDs across signals.
+7. Test alert routing with a disposable alert and document the runbook.
+
+Avoid high-cardinality labels such as raw user IDs or request IDs. Never put API keys in YAML committed to Git.
+` }
+  ];
   if (id === "argocd-gitops") return [
     { path: "Dockerfile", description: "Builds the container image consumed by the GitOps release.", content: dockerfile },
     ...k8sFiles.filter(f => f.path.startsWith("k8s/")),
