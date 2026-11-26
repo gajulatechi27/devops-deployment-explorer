@@ -440,6 +440,364 @@ jobs:
 }
 ` }
   ];
+
+  if (id === "azure-devops-aks") return [
+    { path: "azure-pipelines.yml", description: "Multi-stage Azure Pipeline: build, test, SonarQube quality gate, ACR push and AKS rollout.", content: `trigger:
+  branches:
+    include: [ main ]
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  imageRepository: demo-web
+  dockerfilePath: Dockerfile
+  tag: $(Build.BuildId)
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildTestScan
+    steps:
+    - checkout: self
+    - task: Maven@4
+      inputs:
+        mavenPomFile: pom.xml
+        goals: clean verify
+    - task: SonarQubePrepare@7
+      inputs:
+        SonarQube: DemoSonarConnection
+        scannerMode: Other
+        extraProperties: |
+          sonar.projectKey=demo-web
+    - task: Maven@4
+      inputs:
+        mavenPomFile: pom.xml
+        goals: sonar:sonar
+    - task: SonarQubePublish@7
+      inputs:
+        pollingTimeoutSec: '300'
+    - task: Docker@2
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: DemoACRConnection
+        tags: |
+          $(tag)
+
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - deployment: DeployAKS
+    environment: demo-aks
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@1
+            inputs:
+              action: deploy
+              kubernetesServiceConnection: DemoAKSConnection
+              namespace: demo
+              manifests: k8s/*.yaml
+              containers: demo.azurecr.io/demo-web:$(tag)
+` },
+    { path: "Dockerfile", description: "Builds the Java web application image.", content: dockerfile },
+    { path: "pom.xml", description: "Maven build and test configuration.", content: k8sFiles.find(f => f.path === "pom.xml")?.content || "" },
+    { path: "k8s/deployment.yaml", description: "AKS workload manifest with image placeholder and health probes.", content: appYaml },
+    { path: "k8s/service.yaml", description: "ClusterIP service for the application Pods.", content: k8sFiles.find(f => f.path === "k8s/service.yaml")?.content || "" },
+    { path: "sonar-project.properties", description: "SonarQube project key and source/test paths.", content: `sonar.projectKey=demo-web
+sonar.projectName=Demo Web
+sonar.sources=src
+sonar.tests=src/test
+sonar.java.binaries=target/classes
+sonar.sourceEncoding=UTF-8
+` },
+    { path: "README-azure-devops.md", description: "Explains Azure Pipeline service connections and deployment stages.", content: `# Azure DevOps → AKS learning pack
+
+1. Create an Azure Repos Git repository and commit this project.
+2. Create a SonarQube service connection and configure the quality gate.
+3. Create an Azure Container Registry service connection.
+4. Create an AKS Kubernetes service connection with namespace-scoped permissions.
+5. Run the Build stage and inspect test, scan and image-push output.
+6. Approve the demo environment and inspect the AKS rollout.
+
+All service connection names, endpoints and values are examples. Configure secrets through secure pipeline variables or workload identity; never commit credentials.
+` }
+  ];
+  if (id === "sonar-nexus-ec2") return [
+    { path: "Jenkinsfile", description: "Jenkins stages for Maven build, SonarQube gate, Nexus publish and Ansible deployment.", content: `pipeline {
+  agent any
+  tools { maven 'Maven-3.9' }
+  environment {
+    SONAR_PROJECT = 'demo-app'
+    NEXUS_URL = 'https://nexus.example.invalid/repository/releases/'
+    DEPLOY_HOST = '192.0.2.45'
+  }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Build and Test') { steps { sh 'mvn -B clean verify' } }
+    stage('SonarQube') {
+      steps {
+        withSonarQubeEnv('DemoSonar') {
+          sh 'mvn -B sonar:sonar -Dsonar.projectKey=$SONAR_PROJECT'
+        }
+      }
+    }
+    stage('Quality Gate') {
+      steps { timeout(time: 5, unit: 'MINUTES') { waitForQualityGate abortPipeline: true } }
+    }
+    stage('Publish to Nexus') {
+      steps { withCredentials([usernamePassword(credentialsId: 'nexus-demo', usernameVariable: 'NX_USER', passwordVariable: 'NX_PASS')]) {
+        sh 'mvn -B deploy -DskipTests'
+      } }
+    }
+    stage('Deploy to EC2') {
+      steps { sh 'ansible-playbook -i inventories/demo deploy.yml' }
+    }
+  }
+}
+` },
+    { path: "pom.xml", description: "Maven project with test, package and deploy lifecycle.", content: k8sFiles.find(f => f.path === "pom.xml")?.content || "" },
+    { path: "sonar-project.properties", description: "SonarQube source, test and coverage configuration.", content: `sonar.projectKey=demo-app
+sonar.projectName=Demo Java Application
+sonar.sources=src/main
+sonar.tests=src/test
+sonar.java.binaries=target/classes
+sonar.sourceEncoding=UTF-8
+` },
+    { path: "settings-nexus.example.xml", description: "Maven server ID placeholder. Put credentials in Jenkins Credentials, not this file.", content: `<settings>
+  <servers>
+    <server>
+      <id>demo-nexus</id>
+      <username>CHANGE_ME_USER</username>
+      <password>CHANGE_ME_DUMMY_SECRET</password>
+    </server>
+  </servers>
+</settings>
+` },
+    { path: "ansible/inventories/demo", description: "Dummy EC2 inventory address and SSH user.", content: `[app]
+192.0.2.45 ansible_user=deploy
+
+[app:vars]
+app_dir=/opt/demo-app
+app_service=demo-app
+` },
+    { path: "ansible/deploy.yml", description: "Downloads the release artifact and restarts the Linux service.", content: `- name: Deploy demo application
+  hosts: app
+  become: true
+  tasks:
+    - name: Ensure application directory exists
+      ansible.builtin.file:
+        path: /opt/demo-app
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: '0755'
+    - name: Copy built artifact
+      ansible.builtin.copy:
+        src: ../target/demo-app.jar
+        dest: /opt/demo-app/app.jar
+        owner: deploy
+        group: deploy
+        mode: '0644'
+    - name: Restart application
+      ansible.builtin.systemd:
+        name: demo-app
+        state: restarted
+        enabled: true
+` },
+    { path: "README-quality-artifacts.md", description: "Learning guide for quality gates and artifact repositories.", content: `# SonarQube + Nexus flow
+
+- Jenkins is the orchestrator.
+- SonarQube analyses source code; the quality gate decides whether promotion can continue.
+- Nexus stores immutable, versioned JAR/WAR artifacts.
+- The deployment stage retrieves the approved artifact and deploys it to the target host.
+
+Use Jenkins Credentials for Nexus and SSH credentials. The values in this pack are placeholders only.
+` }
+  ];
+  if (id === "s3-cloudfront") return [
+    { path: "package.json", description: "Frontend package scripts for install, test and production build.", content: `{
+  "name": "demo-static-site",
+  "version": "0.1.0",
+  "scripts": { "build": "vite build", "test": "echo demo tests passed" },
+  "devDependencies": { "vite": "5.4.10" }
+}
+` },
+    { path: "src/index.html", description: "Minimal static website entry point.", content: `<!doctype html>
+<html lang="en">
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Demo Static Site</title></head>
+  <body><h1>Deployed from a CI pipeline</h1><script type="module" src="/main.js"></script></body>
+</html>
+` },
+    { path: "src/main.js", description: "Small frontend entry module.", content: `document.querySelector("h1").textContent = "Hello from the S3 + CloudFront demo";
+` },
+    { path: ".github/workflows/deploy-s3.yml", description: "Builds static assets, syncs them to S3 and invalidates CloudFront. AWS auth is a placeholder.", content: `name: Deploy static site
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Configure AWS credentials
+        run: echo "Configure GitHub OIDC role for demo account"
+      - name: Upload site
+        run: aws s3 sync dist/ s3://demo-web-bucket --delete
+      - name: Invalidate CDN
+        run: aws cloudfront create-invalidation --distribution-id E123DEMO --paths '/*'
+` },
+    { path: "infra/bucket-policy.example.json", description: "Example bucket policy shape; adapt origin access to CloudFront OAC before use.", content: `{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "AllowCloudFrontReadOnly",
+    "Effect": "Allow",
+    "Principal": { "Service": "cloudfront.amazonaws.com" },
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::demo-web-bucket/*",
+    "Condition": { "StringEquals": { "AWS:SourceAccount": "111122223333" } }
+  }]
+}
+` },
+    { path: "infra/cloudfront-notes.md", description: "Cache behavior, TLS and origin access learning notes.", content: `# CloudFront configuration notes
+
+- Use an S3 REST origin with Origin Access Control (OAC); keep the bucket private.
+- Configure an ACM certificate in us-east-1 for a custom CloudFront hostname.
+- Use a short cache policy for index.html and long immutable caching for hashed assets.
+- Route 53 alias records point the website hostname to the distribution.
+- Invalidate only when necessary; content-hashed assets normally avoid broad invalidations.
+` }
+  ];
+  if (id === "rds-flyway") return [
+    { path: "pom.xml", description: "Adds Flyway migration support to the Java application.", content: `<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.example</groupId><artifactId>demo-db-migrations</artifactId><version>0.1.0</version>
+  <properties><maven.compiler.release>21</maven.compiler.release><flyway.version>10.20.1</flyway.version></properties>
+  <dependencies>
+    <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>${flyway.version}</version></dependency>
+    <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>42.7.4</version></dependency>
+  </dependencies>
+</project>
+` },
+    { path: "flyway.conf.example", description: "Dummy private RDS endpoint and environment-variable placeholders.", content: `flyway.url=jdbc:postgresql://demo-db.abcdefghijkl.ap-south-1.rds.amazonaws.com:5432/demo
+flyway.user=demo_migrator
+flyway.password=CHANGE_ME_DUMMY
+flyway.locations=filesystem:sql
+flyway.connectRetries=10
+flyway.validateMigrationNaming=true
+` },
+    { path: "sql/V1__create_customer_table.sql", description: "Initial versioned database schema migration.", content: `CREATE TABLE customer (
+  customer_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+` },
+    { path: "sql/V2__add_customer_status_index.sql", description: "Adds an index for common status-based queries.", content: `CREATE INDEX idx_customer_status ON customer(status);
+` },
+    { path: ".github/workflows/db-migrate.yml", description: "Runs Flyway validation and migration as a protected deployment job.", content: `name: Database migration
+on:
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Install Flyway CLI and validate against disposable database"
+      - run: flyway -configFiles=flyway.conf.example validate
+  migrate:
+    needs: validate
+    environment: database-change-approval
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Retrieve RDS credentials from a secret manager"
+      - run: flyway migrate
+` },
+    { path: "README-database-release.md", description: "Safe migration order, backup and rollback considerations.", content: `# RDS schema deployment
+
+1. Test migrations against a disposable database matching the RDS engine version.
+2. Review DDL lock duration and backward compatibility.
+3. Confirm a recent automated backup and point-in-time recovery settings.
+4. Validate pending migrations with Flyway.
+5. Apply migrations during the approved change window.
+6. Verify flyway_schema_history and application health.
+
+Do not store database passwords in Git. Use a secret manager and a least-privilege migration role. Prefer forward-fix migrations for production rollback planning.
+` }
+  ];
+  if (id === "postgres-ec2") return [
+    { path: "ansible/site.yml", description: "Installs and configures PostgreSQL on a Linux VM.", content: `- name: Configure PostgreSQL database host
+  hosts: db
+  become: true
+  vars:
+    postgres_version: 16
+    postgres_listen_addresses: "10.20.2.15"
+  roles:
+    - role: geerlingguy.postgresql
+      vars:
+        postgresql_databases:
+          - name: demo_db
+        postgresql_users:
+          - name: app_user
+            password: CHANGE_ME_DUMMY
+            db: demo_db
+            priv: CONNECT
+` },
+    { path: "ansible/inventory.ini", description: "Dummy private IP for the database host.", content: `[db]
+192.0.2.60 ansible_user=automation
+
+[db:vars]
+ansible_python_interpreter=/usr/bin/python3
+` },
+    { path: "postgresql/postgresql.conf", description: "Illustrative PostgreSQL listener, connection and WAL settings.", content: `listen_addresses = '10.20.2.15'
+port = 5432
+max_connections = 100
+shared_buffers = '256MB'
+wal_level = replica
+archive_mode = on
+archive_command = 'test ! -f /var/lib/postgresql/archive/%f && cp %p /var/lib/postgresql/archive/%f'
+` },
+    { path: "postgresql/pg_hba.conf", description: "Restricts database connections to the application subnet and local administration.", content: `# TYPE  DATABASE  USER      ADDRESS          METHOD
+local   all       postgres                   peer
+host    demo_db   app_user  10.20.3.0/24     scram-sha-256
+` },
+    { path: "sql/bootstrap.sql", description: "Creates the database schema and application role (dummy password only).", content: `CREATE ROLE app_user LOGIN PASSWORD 'CHANGE_ME_DUMMY';
+CREATE DATABASE demo_db OWNER app_user;
+\\connect demo_db
+CREATE SCHEMA app AUTHORIZATION app_user;
+CREATE TABLE app.deployment_check (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  checked_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+` },
+    { path: "backup/backup.sh", description: "Creates a compressed logical backup and checks that the file is non-empty.", content: `#!/usr/bin/env bash
+set -euo pipefail
+BACKUP_DIR=/var/backups/postgresql
+mkdir -p "$BACKUP_DIR"
+pg_dump -Fc -d demo_db -f "$BACKUP_DIR/demo_db_$(date +%F).dump"
+test -s "$BACKUP_DIR/demo_db_$(date +%F).dump"
+` },
+    { path: "README-db-host.md", description: "Explains OS, database, security, backup and recovery steps.", content: `# PostgreSQL on Linux VM learning flow
+
+- Provision the VM and encrypted data volume.
+- Restrict TCP/5432 to the application subnet only.
+- Install PostgreSQL and review postgresql.conf and pg_hba.conf.
+- Create database roles with least privilege.
+- Enable automated backups and test restore procedures.
+- Monitor disk, connections, replication lag (if configured), WAL and slow queries.
+` }
+  ];
   if (id === "argocd-gitops") return [
     { path: "Dockerfile", description: "Builds the container image consumed by the GitOps release.", content: dockerfile },
     ...k8sFiles.filter(f => f.path.startsWith("k8s/")),
