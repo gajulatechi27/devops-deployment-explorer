@@ -32,7 +32,7 @@ export default function LabWorkspace({mode}:{mode:Mode}){
  const [history,setHistory]=useState<string[]>(["DeployLab simulated shell v1.0","Type help to list supported commands."]);
  const [metrics,setMetrics]=useState({cpu:42,memory:58,requests:1240,errors:2});
  const [quiz,setQuiz]=useState<Record<number,number>>({});
- const [revealed,setRevealed]=useState<number[]>([]);
+
  const [replicas,setReplicas]=useState(3);
  const fault=faults.find(f=>f.id===faultId)!;
 
