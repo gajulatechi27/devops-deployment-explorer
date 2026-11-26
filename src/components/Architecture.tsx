@@ -1,0 +1,14 @@
+import { Background, Controls, Handle, MiniMap, Position, ReactFlow, type Edge, type Node } from "@xyflow/react";
+import { Box, Cloud, GitBranch, Globe, Layers, Server, Workflow } from "lucide-react";
+import type { Scenario } from "../types";
+const icons = {source:GitBranch,pipeline:Workflow,registry:Box,cluster:Cloud,workload:Layers,network:Globe,server:Server};
+function InfraNode({data}:{data:{label:string;sublabel:string;kind:keyof typeof icons;active:boolean;completed:boolean}}) {
+ const Icon=icons[data.kind];
+ return <div className={`infra-node ${data.active?"active":""} ${data.completed?"completed":""}`}><Handle type="target" position={Position.Left}/><div className="node-icon"><Icon size={17}/></div><div className="node-copy"><strong>{data.label}</strong><span>{data.sublabel}</span></div><div className="node-indicator"/><Handle type="source" position={Position.Right}/></div>;
+}
+const nodeTypes={infra:InfraNode};
+export default function Architecture({scenario,activeNodeIds,completedNodeIds,onSelect,selectedId}:{scenario:Scenario;activeNodeIds:string[];completedNodeIds:string[];onSelect:(id:string)=>void;selectedId:string|null}) {
+ const nodes:Node[]=scenario.architecture.map(item=>({id:item.id,type:"infra",position:{x:item.x,y:item.y},data:{label:item.label,sublabel:item.sublabel,kind:item.kind,active:activeNodeIds.includes(item.id),completed:completedNodeIds.includes(item.id)},selected:selectedId===item.id}));
+ const edges:Edge[]=scenario.connections.map((edge,index)=>({id:`e-${index}`,source:edge.source,target:edge.target,label:edge.label,animated:activeNodeIds.includes(edge.source)||activeNodeIds.includes(edge.target),style:{stroke:"#42516c",strokeWidth:1.5},labelStyle:{fill:"#8290a8",fontSize:10},labelBgStyle:{fill:"#101827"},labelBgPadding:[5,3]}));
+ return <div className="architecture-canvas"><div className="canvas-label"><span className="live-dot"/> DEPLOYMENT ARCHITECTURE <span className="canvas-hint">Select any component to inspect</span></div><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView fitViewOptions={{padding:.2}} minZoom={.25} maxZoom={1.5} onNodeClick={(_,node)=>onSelect(node.id)} proOptions={{hideAttribution:true}}><Background color="#273348" gap={22} size={1}/><Controls/><MiniMap nodeColor={node=>activeNodeIds.includes(node.id)?"#6b9cff":completedNodeIds.includes(node.id)?"#2dd4a3":"#35445c"} maskColor="rgba(5,10,20,.7)"/></ReactFlow><div className="canvas-footer"><span><i className="legend-dot done"/> Completed</span><span><i className="legend-dot active"/> In progress</span><span><i className="legend-dot idle"/> Not started</span></div></div>;
+}
