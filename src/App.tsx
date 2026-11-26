@@ -193,7 +193,7 @@ const caseStudies=[
 ];
 function caseNode(row:(string|string[])[],index:number):NodeDef{return {id:String(row[0]),name:String(row[1]),sub:String(row[2]),kind:String(row[3]) as NodeKind,pos:[-5+index*2,0,0],description:String(row[4]),tech:Array.isArray(row[5])?row[5]:String(row[5]).split("|")};}
 for(const spec of caseStudies){
- const appNodes=spec.app.map((row:string[],i)=>caseNode(row,i));
+ const appNodes:NodeDef[]=spec.app.map((row:(string|string[])[],i:number)=>caseNode(row,i));
  const nodes=[
  caseNode(["dev","Engineering team","Service source","source","Teams own application code, infrastructure definitions and release configuration.","Git|Pull requests|Code review"],0),
  caseNode(["git","Git repository","Source + manifests","source","Versioned source, tests, Dockerfiles, Kubernetes manifests and GitOps configuration.","Git|Branch protection|Manifests"],1),
