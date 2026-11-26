@@ -349,31 +349,14 @@ marketplaceCase.appLinks=[["shoppers","edge"],["edge","gateway"],["gateway","cat
 
 const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
 const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,flowMode=false):[number,number]=>{
- const base=node;
- const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
- if(flowMode){
-  const originals=nodes;
-  const xs=originals.map(n=>n.pos?.[0]??0);
-  const minX=Math.min(...xs),maxX=Math.max(...xs);
-  const px=base.pos?.[0]??0;
-  const spanX=960;
-  const left=120;
-  const nx=maxX===minX?.5:(px-minX)/(maxX-minX);
-  // Keep deployment stages readable: place component classes on intentional lanes.
-  // Source-control actors stay above runtime infrastructure; workload/data stay below it.
-  const laneY:Record<NodeKind,number>={source:145,pipeline:265,registry:365,cluster:265,server:265,workload:445,network:145,database:485};
-  const peers=originals.filter(n=>n.kind===base.kind).sort((a,b)=>(a.pos?.[0]??0)-(b.pos?.[0]??0));
-  const peerIndex=Math.max(0,peers.findIndex(n=>n.id===base.id));
-  const peerOffset=peers.length>1?(peerIndex-(peers.length-1)/2)*54:0;
-  return [left+75+nx*spanX,laneY[base.kind]+peerOffset];
- }
- const tier=tierFor(base);const sameTier=nodes.filter(n=>tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===base.id));
- const column=inTier%3;const row=Math.floor(inTier/3);
- const x=100+column*220;
- const y=tierMode===2?(tier===1?132+row*74:400+row*74):(tier===1?92+row*74:tier===2?277+row*74:462+row*62);
- return [x,y];
-};
-function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMode=false}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void;tierMode?:2|3;flowMode?:boolean}){
+  if(flowMode){const index=Math.max(0,nodes.findIndex(n=>n.id===node.id));return [115+index*205,210];}
+  const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
+  const tier=tierFor(node);const sameTier=nodes.filter(n=>tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===node.id));
+  const column=inTier%3;const row=Math.floor(inTier/3);const x=100+column*220;
+  const y=tierMode===2?(tier===1?132+row*74:400+row*74):(tier===1?92+row*74:tier===2?277+row*74:462+row*62);
+  return [x,y];
+ };
+ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMode=false}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void;tierMode?:2|3;flowMode?:boolean}){
  const activeStage=scenario.stages[stageIndex];
  const doneStages=stageIndex<0?[]:scenario.stages.slice(0,stageIndex);
  const nodes=scenario.nodes;
@@ -393,14 +376,14 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
   return `M ${startX} ${y1} H ${midX} V ${y2} H ${endX}`;
  };
  return <div className="architecture-2d">
-  <svg viewBox="0 0 1400 600" preserveAspectRatio="none" role="img" aria-label={scenario.name+" deployment architecture"}>
+  <svg viewBox={`0 0 ${flowMode?Math.max(1400,230+nodes.length*205):1400} ${flowMode?420:600}`} preserveAspectRatio="xMinYMid meet" style={flowMode?{width:`${Math.max(1400,230+nodes.length*205)}px`,height:"100%"}:undefined} role="img" aria-label={scenario.name+" deployment architecture"}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e9e0d2" strokeWidth="1"/></pattern>
     <marker id="route-arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b9388"/></marker>
     <filter id="card-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#554a38" floodOpacity=".12"/></filter>
    </defs>
-   <rect width="1400" height="600" fill="#f8f3e9"/><rect width="1400" height="600" fill="url(#map-grid)"/>
-   {flowMode?<g><rect x="14" y="24" width="1372" height="552" rx="14" fill="#edf1f3" opacity=".32" stroke="#d4dadd"/></g>:tierMode===2?<><rect x="14" y="92" width="1372" height="190" rx="14" fill="#e7eee5" opacity=".65" stroke="#c7d5c2"/><rect x="14" y="315" width="1372" height="265" rx="14" fill="#e9edf4" opacity=".72" stroke="#c9d2e2"/><text x="34" y="120" fontSize="13" fontWeight="700" fill="#526c50">TIER 1 · PRESENTATION / CLIENT</text><text x="34" y="343" fontSize="13" fontWeight="700" fill="#52617a">TIER 2 · APPLICATION + DATA</text></>:<><rect x="14" y="20" width="1372" height="165" rx="14" fill="#e7eee5" opacity=".65" stroke="#c7d5c2"/><rect x="14" y="205" width="1372" height="165" rx="14" fill="#e9edf4" opacity=".72" stroke="#c9d2e2"/><rect x="14" y="390" width="1372" height="190" rx="14" fill="#f3eadc" opacity=".72" stroke="#dfd0b8"/><text x="34" y="47" fontSize="13" fontWeight="700" fill="#526c50">TIER 1 · PRESENTATION</text><text x="34" y="232" fontSize="13" fontWeight="700" fill="#52617a">TIER 2 · APPLICATION / SERVICES</text><text x="34" y="417" fontSize="13" fontWeight="700" fill="#86683f">TIER 3 · DATA</text></>}
+   <rect width={flowMode?Math.max(1400,230+nodes.length*205):1400} height={flowMode?420:600} fill="#f8f3e9"/><rect width={flowMode?Math.max(1400,230+nodes.length*205):1400} height={flowMode?420:600} fill="url(#map-grid)"/>
+   {flowMode?<g><rect x="14" y="24" width={Math.max(1372,216+nodes.length*205)} height="372" rx="14" fill="#edf1f3" opacity=".32" stroke="#d4dadd"/></g>:tierMode===2?<><rect x="14" y="92" width="1372" height="190" rx="14" fill="#e7eee5" opacity=".65" stroke="#c7d5c2"/><rect x="14" y="315" width="1372" height="265" rx="14" fill="#e9edf4" opacity=".72" stroke="#c9d2e2"/><text x="34" y="120" fontSize="13" fontWeight="700" fill="#526c50">TIER 1 · PRESENTATION / CLIENT</text><text x="34" y="343" fontSize="13" fontWeight="700" fill="#52617a">TIER 2 · APPLICATION + DATA</text></>:<><rect x="14" y="20" width="1372" height="165" rx="14" fill="#e7eee5" opacity=".65" stroke="#c7d5c2"/><rect x="14" y="205" width="1372" height="165" rx="14" fill="#e9edf4" opacity=".72" stroke="#c9d2e2"/><rect x="14" y="390" width="1372" height="190" rx="14" fill="#f3eadc" opacity=".72" stroke="#dfd0b8"/><text x="34" y="47" fontSize="13" fontWeight="700" fill="#526c50">TIER 1 · PRESENTATION</text><text x="34" y="232" fontSize="13" fontWeight="700" fill="#52617a">TIER 2 · APPLICATION / SERVICES</text><text x="34" y="417" fontSize="13" fontWeight="700" fill="#86683f">TIER 3 · DATA</text></>}
    {scenario.links.map(([a,b],i)=>{const from=nodeById(a),to=nodeById(b),d=route(from,to);const active=activeStage?.from===a&&activeStage?.to===b;const done=doneStages.some(s=>s.from===a&&s.to===b);return <g key={i}><path d={d} fill="none" stroke={active?"#df913d":done?"#76a875":"#9aa094"} strokeWidth={active?3:2} strokeLinecap="round" markerEnd="url(#route-arrow)"/>{active&&playing&&<circle r="6" fill="#e68f36" stroke="#fff" strokeWidth="2"><animateMotion path={d} dur="2.2s" repeatCount="indefinite"/></circle>}</g>})}
    {nodes.map(n=>{const [x,y]=nodeXY(n,nodes,tierMode,flowMode);const active=n.id===activeStage?.node;const done=doneStages.some(s=>s.node===n.id);const icon=brandIcons[n.id];return <g key={n.id} transform={`translate(${x-75} ${y-32})`} onClick={()=>onSelect(n.id)} role="button" tabIndex={0} aria-label={"Select "+n.name} style={{cursor:"pointer"}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(n.id);}}}>
     <rect x="0" y="0" width="150" height="64" rx="11" fill={selected===n.id?"#e7efdf":"#fffdf8"} stroke={active?"#d58a38":selected===n.id?"#8ca77a":"#d9cebc"} strokeWidth={active?3:selected===n.id?2:1.3} filter="url(#card-shadow)"/>
