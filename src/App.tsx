@@ -193,29 +193,19 @@ const caseStudies=[
 ];
 function caseNode(row:(string|string[])[],index:number):NodeDef{return {id:String(row[0]),name:String(row[1]),sub:String(row[2]),kind:String(row[3]) as NodeKind,pos:[-5+index*2,0,0],description:String(row[4]),tech:Array.isArray(row[5])?row[5]:String(row[5]).split("|")};}
 for(const spec of caseStudies){
- const appNodes:NodeDef[]=spec.app.map((row:(string|string[])[],i:number)=>caseNode(row,i));
- const nodes=[
- caseNode(["dev","Engineering team","Service source","source","Teams own application code, infrastructure definitions and release configuration.","Git|Pull requests|Code review"],0),
- caseNode(["git","Git repository","Source + manifests","source","Versioned source, tests, Dockerfiles, Kubernetes manifests and GitOps configuration.","Git|Branch protection|Manifests"],1),
- caseNode(["ci","CI / CD pipeline","Build · test · scan","pipeline","CI validates code, tests contracts, scans dependencies and builds immutable container images.","GitHub Actions|Jenkins|Security scans"],2),
- caseNode(["registry","Container registry","Immutable images","registry","The registry stores versioned, scanned images identified by immutable digests.","ECR|ACR|Artifact Registry"],3),
- caseNode(["cluster","Managed Kubernetes","Cluster + node pools","cluster","The managed Kubernetes platform reconciles workloads and schedules Pods across worker nodes.","EKS|AKS|GKE|Kubernetes"],4),
- caseNode(["services","Application workloads","Domain services","workload","Independently deployable services run with probes, resource requests, autoscaling and progressive rollouts.","Deployments|Services|HPA"],5),
- caseNode(["observe","Observability","Logs · Metrics · Traces","workload","Telemetry supports SLOs, alerting, distributed tracing and operational diagnosis.","OpenTelemetry|Prometheus|Grafana"],6),
- caseNode(["users","End users","Production traffic","source","Clients reach the application through the edge, gateway or ingress endpoint.","DNS|TLS|HTTPS"],7)
- ];
- const links:[string,string][]=[["dev","git"],["git","ci"],["ci","registry"],["registry","cluster"],["cluster","services"],["services","observe"],["users","services"]];
- const stages:Stage[]=[
- {title:"Commit service and infrastructure changes",detail:"The team merges reviewed application and deployment changes into the protected source branch.",command:"git push origin main",node:"git",from:"dev",to:"git",kind:"request"},
- {title:"Run CI validation and security checks",detail:"The pipeline runs unit and contract tests, dependency checks, static analysis and policy validation.",command:"npm ci && npm test && npm run build",node:"ci",from:"git",to:"ci",kind:"request"},
- {title:"Build immutable service images",detail:"The pipeline builds the changed service images and records commit identifiers and image digests.",command:"docker buildx build --tag service:$GIT_SHA .",node:"ci",from:"ci",to:"registry",kind:"request"},
- {title:"Publish signed images",detail:"Scanned, versioned images are published to the private registry for deployment.",command:"docker push registry.example.com/service:$GIT_SHA",node:"registry",from:"ci",to:"registry",kind:"success"},
- {title:"Promote desired state",detail:"The release updates Kubernetes manifests or GitOps configuration to reference the approved image digest.",command:"kubectl apply -f deploy/ && kubectl diff -f deploy/",node:"cluster",from:"registry",to:"cluster",kind:"request"},
- {title:"Roll out application workloads",detail:"Kubernetes reconciles Deployments, schedules Pods and waits for readiness before shifting traffic.",command:"kubectl rollout status deployment/service",node:"services",from:"cluster",to:"services",kind:"success"},
- {title:"Verify SLOs and production health",detail:"Metrics, traces and logs are checked against service objectives before the release is considered healthy.",command:"kubectl get pods,svc && check-slo --service service",node:"observe",from:"services",to:"observe",kind:"success"},
- {title:"Serve customer traffic",detail:"The edge and ingress layers route requests to healthy service endpoints. Rollback remains available if health checks fail.",command:"curl -fsS https://app.example.com/health",node:"users",from:"observe",to:"users",kind:"response"}
- ];
- scenarios.push({id:spec.id,name:spec.name,provider:spec.provider,category:spec.category,summary:spec.summary,nodes,links,stages,appNodes,appLinks:spec.appLinks as [string,string][]});
+ const nodes:NodeDef[]=spec.app.map((row:(string|string[])[],i:number)=>caseNode(row,i));
+ const links=spec.appLinks as [string,string][];
+ const nodeById=(id:string)=>nodes.find(n=>n.id===id)!;
+ const stages:Stage[]=links.map(([fromId,toId],i)=>{
+  const from=nodeById(fromId),to=nodeById(toId);
+  return {
+   title:`Flow ${i+1}: ${from.name} → ${to.name}`,
+   detail:`${from.description} This step passes the relevant request, event or data to ${to.name.toLowerCase()}.`,
+   command:`trace --from "${from.name}" --to "${to.name}"`,
+   node:to.id,from:from.id,to:to.id,kind:"request"
+  };
+ });
+ scenarios.push({id:spec.id,name:spec.name,provider:spec.provider,category:spec.category,summary:spec.summary,nodes,links,stages,appNodes:nodes,appLinks:links});
 }
 
 const marketplaceCase=scenarios.find(s=>s.id==="marketplace")!;
