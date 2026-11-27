@@ -957,3 +957,102 @@ main>footer span{color:#4c8bd6}
 @media(prefers-reduced-motion:reduce){
   .app *, .app *:before, .app *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+
+/* Architecture canvas: motion, glow, depth and stage clarity */
+.route-flow-dash{
+  stroke-dasharray:10 13;
+  animation:deploy-route-flow 1.05s linear infinite;
+  filter:drop-shadow(0 0 3px rgba(57,120,232,.35));
+}
+@keyframes deploy-route-flow{to{stroke-dashoffset:-46}}
+.route-done-group path:first-child{filter:drop-shadow(0 0 3px rgba(32,164,122,.2))}
+.architecture-node{outline:none;transition:filter .2s ease}
+.architecture-node .node-card-bg{transition:stroke .2s ease,filter .2s ease}
+.architecture-node:hover .node-card-bg{
+  stroke:#5b94e8;
+  stroke-width:2;
+  filter:drop-shadow(0 7px 9px rgba(38,91,160,.2));
+}
+.architecture-node.is-active .node-card-bg{
+  stroke:#3978e8;
+  stroke-width:2.8;
+  filter:url(#node-glow);
+}
+.architecture-node.is-selected:not(.is-active) .node-card-bg{
+  stroke:#83aef0;
+  stroke-width:2;
+}
+.architecture-node:focus-visible .node-card-bg{
+  stroke:#1766d2;
+  stroke-width:3;
+}
+.node-halo{animation:node-halo-pulse 2s ease-in-out infinite}
+@keyframes node-halo-pulse{
+  0%,100%{opacity:.25;transform:scale(1)}
+  50%{opacity:.75;transform:scale(1.012)}
+}
+.scene-stage-overlay{
+  position:absolute;
+  top:14px;
+  right:16px;
+  z-index:2;
+  width:min(260px,42%);
+  padding:10px 12px 12px;
+  border:1px solid rgba(128,166,220,.55);
+  border-radius:12px;
+  background:rgba(255,255,255,.9);
+  box-shadow:0 8px 22px rgba(28,61,105,.12);
+  backdrop-filter:blur(10px);
+  pointer-events:none;
+  animation:stage-overlay-enter .24s ease-out both;
+}
+.scene-stage-overlay span{
+  display:block;
+  margin-bottom:5px;
+  color:#3978e8;
+  font:800 8px 'Inter',sans-serif;
+  letter-spacing:.1em;
+}
+.scene-stage-overlay b{
+  display:block;
+  color:#183354;
+  font:750 11px 'Inter',sans-serif;
+  line-height:1.4;
+}
+.scene-stage-overlay i{
+  display:block;
+  height:3px;
+  max-width:100%;
+  margin-top:9px;
+  border-radius:4px;
+  background:linear-gradient(90deg,#3978e8,#21b6c7);
+  box-shadow:0 0 8px rgba(57,120,232,.25);
+  transition:width .35s ease;
+}
+@keyframes stage-overlay-enter{
+  from{opacity:0;transform:translateY(-5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.app.dark .scene-stage-overlay{
+  background:rgba(13,31,55,.92);
+  border-color:rgba(88,139,203,.6);
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
+}
+.app.dark .scene-stage-overlay b{color:#e6f0ff}
+.app.dark .scene-stage-overlay span{color:#8dbdff}
+.timeline-step .step-circle{transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.timeline-step.current .step-circle{box-shadow:0 0 0 5px rgba(57,120,232,.12),0 4px 12px rgba(57,120,232,.2)}
+.timeline-step.done .step-circle{box-shadow:0 2px 8px rgba(32,164,122,.2)}
+.stage-detail{animation:stage-detail-enter .22s ease-out both}
+@keyframes stage-detail-enter{
+  from{opacity:.55;transform:translateY(4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(max-width:700px){
+  .scene-stage-overlay{top:9px;right:9px;width:min(220px,58%);padding:8px 9px}
+  .scene-stage-overlay b{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .route-flow-dash,.node-halo{animation:none!important}
+}
