@@ -1806,7 +1806,7 @@ Never commit real secrets. The secret example is intentionally fake and must be 
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   const downloadGuide = () => {
     const body = files.map(file => `# FILE: ${file.path}\n# ${file.description}\n\n${file.content}`).join("\n\n---\n\n");
