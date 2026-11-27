@@ -2,7 +2,7 @@ import { useEffect,useState } from "react";
 import LabWorkspace from "./LabWorkspace";
 import DeploymentFiles from "./DeploymentFiles";
 import "./labs.css";
-import { Activity,ArrowRight,BookOpen,Box,Calculator,Check,ChevronDown,Cloud,Container,Layers,LayoutDashboard,Moon,Pause,Play,RotateCcw,Search,ShieldCheck,SkipBack,SkipForward,Sun,Terminal,Workflow } from "lucide-react";
+import { Activity,ArrowRight,BookOpen,Box,Calculator,Check,ChevronDown,Cloud,Container,Layers,LayoutDashboard,Pause,Play,RotateCcw,Search,ShieldCheck,SkipBack,SkipForward,Terminal,Workflow } from "lucide-react";
 
 type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"server"|"database";
 type NodeDef={id:string;name:string;sub:string;kind:NodeKind;pos:[number,number,number];description:string;tech:string[]};
@@ -695,7 +695,7 @@ export default function App(){
  const [workspace,setWorkspace]=useState<"dashboard"|"architectures"|"terminal"|"iac"|"kubernetes"|"security"|"cost"|"runbooks"|"monitoring"|"troubleshoot"|"strategies"|"learning">("dashboard");
  const [scenarioId,setScenarioId]=useState("eks");const scenario=scenarios.find(s=>s.id===scenarioId)!;
  const [architectureView,setArchitectureView]=useState<"application"|"deployment">("deployment");const [tierMode,setTierMode]=useState<2|3>(3);
- const [stageIndex,setStageIndex]=useState(-1);const [playing,setPlaying]=useState(false);const [selected,setSelected]=useState("git");const [tab,setTab]=useState<"overview"|"steps"|"commands"|"files">("overview");const [speed,setSpeed]=useState(1);const [dark,setDark]=useState(false);const [query,setQuery]=useState("");const [libraryCategory,setLibraryCategory]=useState("all");const [leftCollapsed,setLeftCollapsed]=useState(false);const [rightCollapsed,setRightCollapsed]=useState(true);
+ const [stageIndex,setStageIndex]=useState(-1);const [playing,setPlaying]=useState(false);const [selected,setSelected]=useState("git");const [tab,setTab]=useState<"overview"|"steps"|"commands"|"files">("overview");const [speed,setSpeed]=useState(1);const dark=false;const [query,setQuery]=useState("");const [libraryCategory,setLibraryCategory]=useState("all");const [leftCollapsed,setLeftCollapsed]=useState(false);const [rightCollapsed,setRightCollapsed]=useState(true);
  const baseSceneScenario=architectureView==="application"&&scenario.appNodes?{...scenario,nodes:scenario.appNodes,links:scenario.appLinks||[]}:scenario;
  const sceneScenario=baseSceneScenario;
  const stage=architectureView==="deployment"?scenario.stages[stageIndex]:undefined;const node=sceneScenario.nodes.find(n=>n.id===selected)||sceneScenario.nodes[0];const hasApplicationView=!!scenario.appNodes;
