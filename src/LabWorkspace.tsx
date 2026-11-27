@@ -20,6 +20,16 @@ const eksEvents:SimulationEvent[]=[
 {id:"service",title:"Publish Service endpoints",component:"Service / EndpointSlice",description:"Ready Pods become endpoints selected by the Kubernetes Service.",command:"kubectl get svc,endpointslices",durationMs:800},
 {id:"traffic",title:"Route production traffic",component:"AWS Load Balancer Controller",description:"Ingress rules configure the ALB to send requests to healthy targets.",command:"kubectl get ingress",durationMs:900}
 ];
+const kubernetesEventsFor=(provider:string):SimulationEvent[]=>eksEvents.map(event=>{
+ const registry=provider==="MICROSOFT AZURE"?"Azure Container Registry":provider==="GOOGLE CLOUD"?"Artifact Registry":"Amazon ECR";
+ const ingress=provider==="MICROSOFT AZURE"?"Ingress / Application Gateway":provider==="GOOGLE CLOUD"?"Google Cloud Load Balancer":"AWS Load Balancer Controller";
+ const pushCommand=provider==="MICROSOFT AZURE"?"docker push $ACR_LOGIN_SERVER/web:$GITHUB_SHA":provider==="GOOGLE CLOUD"?"docker push REGION-docker.pkg.dev/PROJECT/REPOSITORY/web:$COMMIT_SHA":"docker push $ECR_REPOSITORY:$GITHUB_SHA";
+ return {...event,
+  component:event.component==="Amazon ECR"?registry:event.component==="AWS Load Balancer Controller"?ingress:event.component,
+  description:event.description.replaceAll("ECR",registry).replace("ALB",ingress),
+  command:event.id==="ecr-push"?pushCommand:event.command
+ };
+});
 const faults:Fault[]=[
 {id:"image-pull",title:"ImagePullBackOff",description:"A Pod cannot download its container image.",component:"Worker node / ECR",symptom:"Failed to pull image: manifest unknown. Back-off pulling image.",diagnosis:"The Deployment references a tag that is not present in ECR, or the node role cannot read the repository.",fix:"Use an existing immutable image tag and verify the worker-node IAM pull permissions.",command:"kubectl set image deployment/web web=123456789012.dkr.ecr.region.amazonaws.com/web:v1.2.0"},
 {id:"crash-loop",title:"CrashLoopBackOff",description:"The container starts and exits repeatedly.",component:"Application Pod",symptom:"Back-off restarting failed container. Restart count is increasing.",diagnosis:"The process exits on startup. Inspect previous container logs and environment configuration.",fix:"Correct the missing environment variable or startup command, then restart the rollout.",command:"kubectl logs deploy/web --previous"},
@@ -68,8 +78,9 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const [podRecovered,setPodRecovered]=useState(false);
  const fault=faults.find(f=>f.id===faultId)!;
 
- const event=eksEvents[runtime.currentEvent];
- const progress=progressPercent(runtime,eksEvents.length);
+ const kubernetesEvents=kubernetesEventsFor(deploymentProvider);
+ const event=kubernetesEvents[runtime.currentEvent];
+ const progress=progressPercent(runtime,kubernetesEvents.length);
  const selectedStrategy=strategies.find(s=>s.name===strategyName)!;
   const cloudResources=deploymentResources.map(resource=>({resource,estimate:estimateMonthlyResourceCost(resource,deploymentProvider)})).filter((item):item is {resource:DeploymentResource;estimate:NonNullable<ReturnType<typeof estimateMonthlyResourceCost>>}=>item.estimate!==null).map(({resource,estimate})=>({...resource,monthlyCost:estimate.monthlyUsd,costBasis:estimate.basis}));
   const monthlyTotal=deploymentCompleted?cloudResources.reduce((sum,r)=>sum+r.monthlyCost,0):0;
@@ -138,6 +149,6 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
       <div className="lab-panel terraform-lifecycle"><h3>Where Terraform fits in this deployment</h3><p><b>Provisioning:</b> Terraform creates or updates infrastructure only when your team owns that lifecycle.</p><p><b>Application release:</b> CI/CD builds the JAR or container, publishes the artifact and deploys it to the existing target.</p><p><b>Existing infrastructure:</b> If another team already manages the cluster or servers, use their outputs or approved data sources; do not create duplicate infrastructure with Terraform.</p></div>
     </>}
   </div>}
-  {mode==="kubernetes"&&hasKubernetesCluster&&<div className="lab-panel simulation-panel"><div className="simulation-title"><h3><GitBranch size={16}/> {kubernetesClusterName} release simulation</h3><b>{progress}%</b></div><div className="metric-track"><i style={{width:progress+"%"}}/></div><div className="simulation-events">{eksEvents.map((e,i)=><button key={e.id} className={i===runtime.currentEvent?"event active":runtime.completed.includes(e.id)?"event done":"event"} onClick={()=>setRuntime(s=>({...s,currentEvent:i,completed:eksEvents.slice(0,i+1).map(x=>x.id),status:i===eksEvents.length-1?"succeeded":"running"}))}><span>{i+1}</span><b>{e.title}</b><small>{e.component}</small></button>)}</div><div className="event-detail"><b>{event?.title||"Ready to simulate"}</b><p>{event?.description||"Run the deployment to see how a commit becomes production traffic."}</p><code>{event?.command||"kubectl get pods,svc,ingress"}</code></div><button className="lab-primary" onClick={()=>setRuntime(s=>advanceRuntime(s,eksEvents))}><Play size={14}/> Advance simulation</button><button className="lab-secondary" onClick={()=>setRuntime(initialRuntime())}><RotateCcw size={14}/> Reset simulation</button><pre>{runtime.logs.join("\n")}</pre></div>}
+  {mode==="kubernetes"&&hasKubernetesCluster&&<div className="lab-panel simulation-panel"><div className="simulation-title"><h3><GitBranch size={16}/> {kubernetesClusterName} release simulation</h3><b>{progress}%</b></div><div className="metric-track"><i style={{width:progress+"%"}}/></div><div className="simulation-events">{kubernetesEvents.map((e,i)=><button key={e.id} className={i===runtime.currentEvent?"event active":runtime.completed.includes(e.id)?"event done":"event"} onClick={()=>setRuntime(s=>({...s,currentEvent:i,completed:kubernetesEvents.slice(0,i+1).map(x=>x.id),status:i===eksEvents.length-1?"succeeded":"running"}))}><span>{i+1}</span><b>{e.title}</b><small>{e.component}</small></button>)}</div><div className="event-detail"><b>{event?.title||"Ready to simulate"}</b><p>{event?.description||"Run the deployment to see how a commit becomes production traffic."}</p><code>{event?.command||"kubectl get pods,svc,ingress"}</code></div><button className="lab-primary" onClick={()=>setRuntime(s=>advanceRuntime(s,kubernetesEvents))}><Play size={14}/> Advance simulation</button><button className="lab-secondary" onClick={()=>setRuntime(initialRuntime())}><RotateCcw size={14}/> Reset simulation</button><pre>{runtime.logs.join("\n")}</pre></div>}
  </section>;
 }
