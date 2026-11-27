@@ -1,5 +1,5 @@
 import { useEffect,useState } from "react";
-import { Activity,AlertTriangle,BookOpen,Calculator,CheckCircle2,Code2,Container,GitBranch,Layers,Play,RotateCcw,ShieldCheck,TriangleAlert,Wrench } from "lucide-react";
+import { Activity,AlertTriangle,BookOpen,Calculator,CheckCircle2,Code2,Container,GitBranch,Layers,Play,RotateCcw,ShieldCheck,Terminal,TriangleAlert,Wrench } from "lucide-react";
 import { advanceRuntime,initialRuntime,progressPercent,resolveFault,type Fault,type RuntimeState,type SimulationEvent } from "./simulation/engine.ts";
 import { estimateMonthlyResourceCost } from "./simulation/pricing.js";
 import { createTerminalState,executeTerminalCommand } from "./simulation/terminal.ts";
