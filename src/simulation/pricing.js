@@ -25,8 +25,11 @@ export function estimateMonthlyResourceCost(resource, provider) {
   if (/\b(eks|aks|gke|kubernetes cluster|managed kubernetes)\b/.test(label)) {
     return { monthlyUsd: 72, basis: "small managed cluster baseline; worker compute excluded" };
   }
-  if (/\b(fargate|ecs service|ecs tasks|app runner|cloud run|container apps)\b/.test(label)) {
-    return { monthlyUsd: 32, basis: "small managed container workload baseline" };
+  // The ECS Fargate target and ECS Service are graph nodes for one billed service.
+  // Price the Fargate target once; do not double-count its runtime/service node.
+  if (/\becs service\b/.test(label)) return null;
+  if (/\b(fargate|ecs tasks|app runner|cloud run|container apps)\b/.test(label)) {
+    return { monthlyUsd: 32, basis: "illustrative small Fargate workload baseline; CPU/memory/runtime assumptions apply" };
   }
   if (/\b(ec2|compute engine|linux vm|virtual machine|application host)\b/.test(label) || kind === "server") {
     return { monthlyUsd: 36, basis: "single small virtual machine baseline" };
