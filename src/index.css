@@ -305,3 +305,144 @@ button:disabled{cursor:not-allowed}
  .visual-top{align-items:flex-start}
  .view-actions{flex-wrap:wrap;justify-content:flex-end}
 }
+
+
+/* Reference-matched visual system: Behind the Paycheck palette and typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{font-family:'Inter',sans-serif}
+.app{
+ --bg:#f7f9fd;
+ --panel:#ffffff;
+ --panel-alt:#f4f7fc;
+ --line:#e2e8f2;
+ --ink:#192b4d;
+ --muted:#71819d;
+ --accent:#3478c9;
+ --accent-soft:#edf3ff;
+ --scene:#f8faff;
+ --scene-grid:#e9eef7;
+ color:var(--ink);
+ background:var(--bg);
+ font-family:'Inter',sans-serif;
+}
+.app.dark{
+ --bg:#111b30;--panel:#182744;--panel-alt:#203451;--line:#344866;
+ --ink:#f4f7ff;--muted:#a9b8d1;--accent:#83b1f4;--accent-soft:#263e62;
+ --scene:#e9eff9;--scene-grid:#dce5f2;
+}
+.topbar{background:#fff;border-bottom:1px solid #e8edf5;box-shadow:0 2px 12px #192b4d08}
+.brand strong,.panel-title h2,.page-heading h1,.node-heading h2,.stage-copy b{font-family:'Manrope','Inter',sans-serif;color:#192b4d}
+.brand strong span{color:#3b80cf}
+.brand-icon{background:#f0f4fb;border:1px solid #dce5f2;color:#1d3154}
+.brand small,.topbar-spacer span,.panel-title small,.group-label,.inspector-kicker,
+.stats small,.visual-top b,.timeline-head b,.visual-top span,.timeline-head span,
+.play-status b,.scene-hint,.scene-legend,.right-tabs button,.info-block label,
+.active-pill,.chips span,.stage-copy small,.stage-copy code,.command-item code,
+.right-note,.files-tree-title,.file-row,.file-preview-head b,.files-learning-note,
+.implementation-guide-head p,.implementation-level,.implementation-steps li p,
+.stage-file-map>span,.stage-file-map small,.project-paths code,.production-checklist ul,
+.safety-reminder{font-family:'Inter',sans-serif}
+.topbar-spacer span,.brand small{letter-spacing:1.2px}
+.header-search{background:#f7f9fd;border-color:#e1e8f3;border-radius:10px}
+.header-search input{font-family:'Inter',sans-serif;font-size:12px;color:#192b4d}
+.icon-btn{background:#fff;border-color:#e0e7f1;color:#192b4d;border-radius:10px}
+.left-panel,.right-panel{background:#fff;border-color:#e4eaf3}
+.panel-title h2{font-weight:800;letter-spacing:-.4px}
+.group-label,.panel-title small,.inspector-kicker{font-size:10px;letter-spacing:1.1px;color:#71819d}
+.library-filter{background:#fff;border-color:#dfe7f2;color:#526783;border-radius:10px;font-size:12px}
+.library-filter span{background:#f0f4fb;color:#71819d}
+.library-filter.active{background:#edf3ff;border-color:#a9c6ec;color:#2866ad}
+.scenario{border-radius:12px;color:#1d3154;padding:11px 9px}
+.scenario:hover{background:#f4f7fc}
+.scenario.active{background:#edf3ff;border-color:#c9dcf6;color:#1c4f8d}
+.scenario b{font-family:'Manrope','Inter',sans-serif;font-size:12px;font-weight:700;color:#1c2f50}
+.scenario small{font-family:'Inter',sans-serif;font-size:10px;color:#7c8ca6}
+.scenario-icon{border-radius:10px}
+.main{background:#f7f9fd}
+.page-heading h1{font-size:clamp(23px,2.1vw,31px);font-weight:800;letter-spacing:-1.15px;color:#192b4d}
+.page-heading p{font-size:13px;color:#71819d;line-height:1.65}
+.eyebrow{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.3px;color:#4c83c4}
+.pulse{background:#38b58b;box-shadow:0 0 0 5px #38b58b1b}
+.heading-tags span{background:#f3f7fd;border-color:#dfe7f2;color:#58708f;font-family:'Inter',sans-serif;font-size:9px;font-weight:600}
+.stats>div,.visual-card,.timeline-card{background:#fff;border-color:#e0e7f1;box-shadow:0 8px 24px #1c345408}
+.stats>div{border-radius:12px;padding:12px 14px}
+.stats small{font-size:9px;font-weight:600;letter-spacing:.35px;color:#7788a2}
+.stats b{font-family:'Manrope','Inter',sans-serif;font-size:21px;font-weight:800;color:#192b4d}
+.stats b.safe{font-family:'Inter',sans-serif;font-size:10px;color:#279d7c}
+.progress{background:#edf1f7}
+.progress i,.play-progress i{background:linear-gradient(100deg,#ff626b 0%,#ff895e 48%,#4c8bd6 100%)}
+.visual-card,.timeline-card{border-radius:14px}
+.visual-top{background:#fff;border-color:#e7edf5;padding:11px 16px}
+.visual-top b,.timeline-head b{font-family:'Inter',sans-serif;font-size:11px;font-weight:800;letter-spacing:.65px;color:#1b2e50}
+.visual-top span,.timeline-head span{font-family:'Inter',sans-serif;font-size:10px;color:#7c8ca6}
+.view-actions button{background:#fff;border-color:#dfe7f2;color:#526987;border-radius:9px;font-family:'Inter',sans-serif;font-size:10px;font-weight:600}
+.view-actions button:hover,.play-controls button:hover,.next-button:hover{background:#edf3ff;border-color:#b9d1f0;color:#2867ad}
+.view-actions .view-selected{background:#eaf2ff;border-color:#b7d0f1;color:#2868b2}
+.scene,.architecture-2d{background-color:#f8faff;background-image:linear-gradient(30deg,#e9eef7 1px,transparent 1px),linear-gradient(150deg,#e9eef7 1px,transparent 1px)}
+.scene-legend{font-family:'Inter',sans-serif;color:#6d7f9b}
+.scene-hint{font-family:'Inter',sans-serif;color:#8292ab}
+.playbar{background:#fff;border-color:#e5ebf4}
+.play-status b{font-family:'Inter',sans-serif;font-size:9px;color:#71819d}
+.play-controls button{background:#fff;border-color:#dfe7f2;border-radius:9px;color:#425a7a}
+.play-controls .play-button{background:linear-gradient(110deg,#ff626b 0%,#e66c91 48%,#4c8bd6 100%);border:0;border-radius:10px;color:#fff;font:700 11px 'Inter',sans-serif;box-shadow:0 7px 16px #4c8bd633;padding:0 15px}
+.timeline-card{padding:15px}
+.stage-counter{font-family:'Inter',sans-serif;color:#617692;background:#f7f9fd;border-color:#e0e7f1}
+.timeline-step{font-family:'Inter',sans-serif;color:#71819d}
+.timeline-step:before{background:#dfe7f1}
+.step-circle{background:#fff;border-color:#d6e0ed;color:#6d7f99;font-family:'Inter',sans-serif}
+.timeline-step.current{color:#2868b2}
+.timeline-step.current .step-circle{background:#eaf2ff;border-color:#4b87cf;color:#2868b2}
+.timeline-step.done .step-circle{background:#39b58b;border-color:#39b58b;color:#fff}
+.timeline-step b{font-family:'Inter',sans-serif;font-size:10px;font-weight:600}
+.stage-detail{border-color:#e5ebf4}
+.stage-icon,.node-glyph{background:#edf3ff;color:#397bc8;border-radius:11px}
+.stage-copy small{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:#4a83c8}
+.stage-copy b{font-size:13px;font-weight:800;color:#1b2e50}
+.stage-copy p,.info-block p{font-family:'Inter',sans-serif;font-size:11px;line-height:1.65;color:#71819d}
+.stage-copy code,.command-item code{background:#f1f5fb;color:#435b7b;border:1px solid #e3eaf4;border-radius:6px;font-family:'Inter',sans-serif}
+.next-button{background:#fff;border-color:#dfe7f2;border-radius:9px;color:#355579;font-family:'Inter',sans-serif;font-size:10px;font-weight:700}
+.right-tabs{border-color:#e4eaf3}
+.right-tabs button{font-family:'Inter',sans-serif;font-size:10px;font-weight:600;color:#8291a9}
+.right-tabs button.selected{color:#1d3154}
+.right-tabs button.selected:after{height:3px;background:#397bc8;border-radius:3px}
+.inspector-kicker{font-size:9px;font-weight:700;letter-spacing:1.2px}
+.node-heading h2{font-size:16px;font-weight:800;color:#1b2e50}
+.node-heading span{font-family:'Inter',sans-serif;font-size:10px;color:#7b8ca6}
+.active-pill{background:#eaf2ff;color:#397bc8;font-family:'Inter',sans-serif;font-size:9px;font-weight:700;border-radius:7px}
+.info-block{border-color:#e6ecf4}
+.info-block label{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:#7d8ca4}
+.chips span{background:#f8faff;border-color:#dfe7f2;color:#607590;font-family:'Inter',sans-serif;font-size:9px}
+.right-stage{border-color:#e7edf5}
+.right-stage>span{background:#edf3ff;color:#397bc8;font-family:'Inter',sans-serif;font-weight:700}
+.right-stage b{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:#1d3154}
+.right-stage small{font-family:'Inter',sans-serif;color:#7b8ca6}
+.right-note{font-family:'Inter',sans-serif;color:#299b7a}
+.empty-inspector{color:#7b8ca6}
+.workspace-nav{border-color:#e2e9f3}
+.workspace-nav button{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:#71819d;border-radius:10px;padding:9px 13px}
+.workspace-nav button:hover{background:#f1f5fc;color:#294d7b}
+.workspace-nav button.active{background:#eaf2ff;border-color:#d1e1f7;color:#2868b2}
+.implementation-guide,.stage-learning-card{background:#f7f9fd;border-color:#e0e7f1;border-radius:11px}
+.implementation-guide-head h3,.stage-learning-card h3{font-family:'Manrope','Inter',sans-serif;color:#1b2e50;font-weight:800}
+.implementation-guide-head p,.implementation-steps li p,.stage-learning-card p{font-family:'Inter',sans-serif;color:#71819d}
+.implementation-steps li,.project-structure,.production-checklist{background:#fff;border-color:#e1e8f2;border-radius:9px}
+.implementation-steps li b{font-family:'Inter',sans-serif;color:#1b2e50}
+.implementation-steps li>span{background:#eaf2ff;color:#397bc8}
+.project-structure summary,.production-checklist summary{font-family:'Inter',sans-serif;color:#1b2e50}
+.project-paths button,.stage-file-map button{background:#edf3ff;border-color:#d7e5f6;color:#315f96}
+.safety-reminder,.files-learning-note{background:#edf7f3;color:#4e7e70}
+.files-browser,.file-preview,.files-tree{background:#fff;border-color:#e1e8f2}
+.files-tree{background:#f7f9fd}
+.file-row{font-family:'Inter',sans-serif;color:#637895}
+.file-row.active,.file-row:hover{background:#edf3ff;color:#285f9f}
+.file-preview pre{background:#f7f9fd;color:#263b5b}
+.sidebar-foot{color:#299b7a}
+.app.dark .topbar,.app.dark .left-panel,.app.dark .right-panel,.app.dark .playbar{background:var(--panel)}
+.app.dark .main{background:var(--bg)}
+.app.dark .brand strong,.app.dark .panel-title h2,.app.dark .page-heading h1,.app.dark .node-heading h2,.app.dark .stage-copy b{color:var(--ink)}
+.app.dark .stats>div,.app.dark .visual-card,.app.dark .timeline-card,.app.dark .implementation-steps li,.app.dark .project-structure,.app.dark .production-checklist{background:var(--panel);border-color:var(--line)}
+.app.dark .visual-top,.app.dark .playbar{background:var(--panel);border-color:var(--line)}
+.app.dark .library-filter,.app.dark .view-actions button,.app.dark .play-controls button,.app.dark .next-button,.app.dark .icon-btn{background:var(--panel-alt);border-color:var(--line);color:var(--ink)}
+.app.dark .scenario b,.app.dark .right-stage b,.app.dark .project-structure summary{color:var(--ink)}
+.app.dark .scenario.active{background:#263e62;border-color:#42658f;color:var(--ink)}
+.app.dark .file-preview pre{background:#101d33;color:#e2ebfb}
