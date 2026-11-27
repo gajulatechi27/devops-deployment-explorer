@@ -1820,13 +1820,6 @@ Never commit real secrets. The secret example is intentionally fake and must be 
       </div>
       {stageTitle && <div className="stage-file-map"><b>Current stage: {stageTitle}</b><span>Related files — select one to inspect its actual configuration:</span><div>{stageFiles.length ? stageFiles.map(file => <button key={file.path} onClick={() => setSelected(file.path)}>{file.path}</button>) : <small>Review the pipeline and README for this stage.</small>}</div></div>}
       <ol className="implementation-steps">{runbook.map(([title, detail], index) => <li key={title}><span>{index + 1}</span><div><b>{title}</b><p>{detail}</p></div></li>)}</ol>
-      <details className="project-structure" open>
-        <summary>REFERENCE FILES · PROJECT STRUCTURE ({files.length} files)</summary>
-        <div className="project-structure-body">
-          <div className="project-paths"><b>Folders</b>{projectFolders.length ? projectFolders.map(path => <code key={path}>{path}</code>) : <small>Root-level files only</small>}</div>
-          <div className="project-paths"><b>Files</b>{files.map(file => <button key={file.path} onClick={() => setSelected(file.path)}><FileCode2 size={12}/>{file.path}</button>)}</div>
-        </div>
-      </details>
       <details className="production-checklist">
         <summary>Before adapting this to a real environment — production checklist</summary>
         <ul>
