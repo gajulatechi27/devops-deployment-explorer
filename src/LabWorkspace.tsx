@@ -45,6 +45,7 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const [runtime,setRuntime]=useState<RuntimeState>(initialRuntime);
  const [selectedTerraformFile,setSelectedTerraformFile]=useState("main.tf");
  const [selectedKubernetesFile,setSelectedKubernetesFile]=useState("deployment.yaml");
+ const [selectedSecurityFile,setSelectedSecurityFile]=useState("");
  const terraformPack=buildTerraformPack(deploymentProvider,scenarioId,deploymentName);
  const activeTerraformFile=terraformPack.files.find(file=>file.name===selectedTerraformFile)||terraformPack.files[0];
  const [faultId,setFaultId]=useState("image-pull");
