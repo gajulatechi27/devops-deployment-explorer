@@ -1,7 +1,7 @@
 export type WorkloadKind = "Deployment" | "StatefulSet" | "DaemonSet" | "Job" | "CronJob";
 export type SimPod = { name:string; ip:string; node:string; status:string; ready:string; restarts:number; age:string; image:string; owner:string; };
 export type SimWorkload = { kind:WorkloadKind; name:string; desired:number; image:string; pods:SimPod[]; revision:number; };
-export type TerminalState = { deployed:boolean; kubernetes:boolean; namespace:string; workloads:SimWorkload[]; image:string; containers:boolean; };
+export type TerminalState = { deployed:boolean; kubernetes:boolean; namespace:string; workloads:SimWorkload[]; image:string; imageBuilt:boolean; containers:boolean; };
 export type TerminalResult = { state:TerminalState; output:string; };
 const nodes=[{name:"worker-10-0-1-21",ip:"10.0.1.21"},{name:"worker-10-0-2-18",ip:"10.0.2.18"},{name:"worker-10-0-3-14",ip:"10.0.3.14"}];
 const files:Record<string,string>={
@@ -25,7 +25,7 @@ const makePods=(kind,name,count,image,owner)=>Array.from({length:count},(_,i)=>{
  return {name:podName,ip:"10.244."+[1,2,3][i%3]+"."+[11,12,13,14,15][i%5],node:daemonNode.name,status:kind==="Job"||kind==="CronJob"?"Completed":"Running",ready:kind==="Job"||kind==="CronJob"?"0/1":"1/1",restarts:0,age:"2m",image,owner};
 });
 const initialWorkloads=(deployed:boolean):SimWorkload[]=>deployed?[{kind:"Deployment",name:"orders-api",desired:3,image:"registry.example.com/orders:1.0.0",pods:makePods("Deployment","orders-api",3,"registry.example.com/orders:1.0.0","ReplicaSet/orders-api-7c9d"),revision:1}]:[];
-export function createTerminalState(deployed=false,kubernetes=true):TerminalState{return {deployed:deployed&&kubernetes,kubernetes,namespace:"production",workloads:initialWorkloads(deployed&&kubernetes),image:"registry.example.com/orders:1.0.0",containers:deployed};}
+export function createTerminalState(deployed=false,kubernetes=true):TerminalState{return {deployed:deployed&&kubernetes,kubernetes,namespace:"production",workloads:initialWorkloads(deployed&&kubernetes),image:"registry.example.com/orders:1.0.0",imageBuilt:deployed,containers:false};}
 const allPods=(s:TerminalState)=>s.workloads.flatMap(w=>w.pods);
 const table=(rows:string[],headers:string[])=>[headers.join("   "),...rows].join("\n");
 function applyManifest(s:TerminalState,path:string):{state:TerminalState;output:string}{
@@ -43,7 +43,7 @@ function applyManifest(s:TerminalState,path:string):{state:TerminalState;output:
   workloads=[...workloads.filter(w=>w.name!==name),workload];
   messages.push(kind.toLowerCase()+".apps/"+name+" configured",... (kind==="Deployment"?["replicaset.apps/orders-api-7c9d created"]:[]),desired+" Pod(s) "+(kind==="Job"||kind==="CronJob"?"completed":"created"));
  }
- return {state:{...s,deployed:true,workloads,containers:true},output:messages.join("\n")+"\n(simulated manifest apply; no cluster was contacted)"};
+ return {state:{...s,deployed:true,workloads,imageBuilt:true},output:messages.join("\n")+"\n(simulated manifest apply; no cluster was contacted)"};
 }
 export function executeTerminalCommand(state:TerminalState,raw:string):TerminalResult{
  const command=raw.trim();if(!command)return {state,output:""};
@@ -64,10 +64,10 @@ export function executeTerminalCommand(state:TerminalState,raw:string):TerminalR
  else if(p==="git remote -v")out="origin  https://github.com/demo-org/orders-service.git (fetch)\norigin  https://github.com/demo-org/orders-service.git (push)";
  else if(p==="mvn clean package"||p==="./mvnw clean package"){out="[INFO] Scanning for projects...\n[INFO] Building orders-service 1.0.0\n[INFO] Tests run: 24, Failures: 0, Errors: 0\n[INFO] Building target/orders-service-1.0.0.jar\n[INFO] BUILD SUCCESS";}
  else if(p.startsWith("java -jar ")){out=p.includes("orders-service")?"Started OrdersApplication on port 8080 (simulated)\nTomcat initialized with port 8080\nApplication started successfully.":"Error: unable to access jarfile";}
- else if(p.startsWith("docker build")){const tag=p.match(/-t\s+(\S+)/)?.[1]||"orders:latest";current={...current,image:tag,containers:true};out="Step 1/4 : FROM eclipse-temurin:21-jre\nStep 2/4 : COPY target/orders-service-1.0.0.jar app.jar\nSuccessfully built a81c2f9\nSuccessfully tagged "+tag;}
- else if(p==="docker images")out=table(["orders  1.0.0  248MB  a81c2f9","postgres 16  432MB  9a82d11","example/log-agent 1.0  82MB  3c2a1d0"],["REPOSITORY   TAG   SIZE   IMAGE ID"]);
+ else if(p.startsWith("docker build")){const tag=p.match(/-t\s+(\S+)/)?.[1]||"orders:latest";current={...current,image:tag,imageBuilt:true};out="Step 1/4 : FROM eclipse-temurin:21-jre\nStep 2/4 : COPY target/orders-service-1.0.0.jar app.jar\nSuccessfully built a81c2f9\nSuccessfully tagged "+tag;}
+ else if(p==="docker images")out=current.imageBuilt?table([current.image+"  248MB  a81c2f9","postgres:16  432MB  9a82d11","example/log-agent:1.0  82MB  3c2a1d0"],["REPOSITORY:TAG   SIZE   IMAGE ID"]):"REPOSITORY   TAG   IMAGE ID   SIZE\\n(no local images yet; run docker build first)";
  else if(p==="docker ps"||p==="docker ps -a")out=current.containers?table(["a81c2f9  orders:1.0.0  Up 2 minutes  0.0.0.0:8080->8080/tcp","b72d1a0  postgres:16  Up 2 minutes  5432/tcp"],["CONTAINER ID   IMAGE   STATUS   PORTS"]):"CONTAINER ID   IMAGE   STATUS\n(no containers yet; build an image or complete a deployment)";
- else if(p.startsWith("docker logs"))out="Started OrdersApplication on port 8080\nConnected to PostgreSQL at orders-db:5432\nGET /actuator/health 200 OK";
+ else if(p.startsWith("docker run ")){if(!current.imageBuilt)out="Unable to find image locally. Build it first with docker build -t orders:1.0.0 .";else{current={...current,containers:true};out="a81c2f9d2b1a  "+current.image+"  Up 2 seconds  0.0.0.0:8080->8080/tcp (simulated)";}}\n else if(p==="docker stop orders-api"){current={...current,containers:false};out="orders-api stopped (simulated)";}\n else if(p==="crictl ps")out=allPods(current).length?table(allPods(current).map(pod=>pod.name+"  "+pod.image+"  Running  "+pod.name),["CONTAINER   IMAGE   STATE   POD"]):"CONTAINER   IMAGE   STATE\\n(no Kubernetes containers; no Pods are running)";\n else if(p.startsWith("docker logs"))out="Started OrdersApplication on port 8080\nConnected to PostgreSQL at orders-db:5432\nGET /actuator/health 200 OK";
  else if(p.startsWith("kubectl apply -f")){const applied=applyManifest(current,p.split(/\s+/).slice(3).join(" "));current=applied.state;out=applied.output;}
  else if(p==="kubectl get nodes"||p==="kubectl get nodes -o wide")out=current.kubernetes?table(nodes.map(n=>n.name+"   Ready   worker   12d   v1.30.2   "+n.ip),["NAME   STATUS   ROLES   AGE   VERSION   INTERNAL-IP"]):"No Kubernetes cluster is attached.";
  else if(p.startsWith("kubectl get ")){
