@@ -80,7 +80,7 @@ test("plural Kubernetes aliases list Services and their real simulated endpoints
  const result=run(state,"kubectl get services,endpoints");
  assert.match(result.output,/service\/orders-api/);
  assert.match(result.output,/endpoints\/orders-api/);
- assert.equal((result.output.match(/10\\.244\\./g)||[]).length,3);
+ assert.equal((result.output.match(/10\.244\./g)||[]).length,3);
  assert.match(run(state,"kubectl get persistentvolumeclaims").output,/data-orders-db-0/);
 });
 
