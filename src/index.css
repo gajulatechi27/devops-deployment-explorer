@@ -235,3 +235,73 @@ button:disabled{cursor:not-allowed}
 .architecture-2d.flow-map::-webkit-scrollbar-thumb{background:#9aab91;border:2px solid #e9e1d5;border-radius:8px}
 .architecture-2d.flow-map::-webkit-scrollbar-thumb:hover{background:#718a68}
 @media(max-width:700px){.architecture-2d.flow-map{height:260px;min-height:240px;max-height:260px;overflow-x:auto}.architecture-2d.flow-map svg{min-width:0;max-width:none!important}}
+
+
+/* Brand refresh inspired by the supplied Behind the Paycheck reference.
+   Keep DeployLab's existing information architecture and controls intact. */
+.app{
+ --bg:#f5f8ff;
+ --panel:#ffffff;
+ --panel-alt:#f0f5ff;
+ --line:#dce5f2;
+ --ink:#17294b;
+ --muted:#71829e;
+ --accent:#3979c9;
+ --accent-soft:#eaf2ff;
+ --scene:#f8faff;
+ --scene-grid:#e5ecf6;
+}
+.app.dark{
+ --bg:#111d35;
+ --panel:#182744;
+ --panel-alt:#203352;
+ --line:#344968;
+ --ink:#f1f5ff;
+ --muted:#aab9d2;
+ --accent:#77a9f1;
+ --accent-soft:#263f63;
+ --scene:#e9eff9;
+ --scene-grid:#d8e2f1;
+}
+.topbar{background:#fff;border-bottom:1px solid #e3eaf5;box-shadow:0 2px 14px #1b31500a}
+.app.dark .topbar{background:var(--panel);border-color:var(--line)}
+.brand-icon{background:#eaf1ff;border-color:#d5e2f5;color:#1b3157}
+.brand strong{color:#17294b}
+.brand strong span{color:#3979c9}
+.left-panel{background:#fff;border-right-color:#e1e9f5}
+.app.dark .left-panel{background:var(--panel)}
+.library-filter{border-radius:10px;background:#fff}
+.library-filter.active{background:#eaf2ff;border-color:#a9c5ee;color:#1e4f91}
+.scenario{border-radius:10px}
+.scenario:hover{background:#f1f6ff}
+.scenario.active{background:#eaf2ff;border-color:#c5d9f6;color:#183d70}
+.page-heading h1{color:#17294b;letter-spacing:-1px}
+.app.dark .page-heading h1{color:var(--ink)}
+.eyebrow{color:#3979c9}
+.pulse{background:#38b58b;box-shadow:0 0 0 4px #38b58b20}
+.visual-card,.timeline-card,.stats>div{background:#fff;border-color:#dce5f2;box-shadow:0 5px 18px #233b5b08}
+.app.dark .visual-card,.app.dark .timeline-card,.app.dark .stats>div{background:var(--panel);border-color:var(--line)}
+.visual-top,.playbar{border-color:#e3eaf5}
+.view-actions button,.play-controls button,.icon-btn{border-color:#d7e2f1;border-radius:9px;background:#fff;color:#4d6383}
+.view-actions button:hover,.play-controls button:hover,.icon-btn:hover{background:#edf4ff;border-color:#b9d0f0;color:#245b9e}
+.view-actions .view-selected{background:#eaf2ff;border-color:#b7cff0;color:#245b9e}
+.play-controls .play-button{background:linear-gradient(110deg,#ff626b,#4c8bd6);border-color:transparent;color:#fff;font-weight:700;box-shadow:0 5px 12px #4c8bd633}
+.progress i,.play-progress i{background:linear-gradient(90deg,#ff6b70,#4b8bd6)}
+.timeline-step.active,.timeline-step.done{color:#285e9e}
+.timeline-step.active:before{background:#3979c9;border-color:#3979c9}
+.timeline-step.done:before{background:#39b58b;border-color:#39b58b}
+.scene{background-color:#f8faff;background-image:linear-gradient(30deg,#e5ecf6 1px,transparent 1px),linear-gradient(150deg,#e5ecf6 1px,transparent 1px)}
+.scene-legend{color:#637694}
+.scene-hint{color:#8292ab}
+.panel-collapse{background:#f0f5ff;border-color:#d7e2f1;color:#294c7b}
+.heading-tags span{background:#f7faff;border-color:#dce5f2;color:#607795}
+.stats b{color:#1b3157}
+.stats b.safe{color:#269b79}
+.app.dark .stats b{color:var(--ink)}
+.app.dark .view-actions button,.app.dark .play-controls button,.app.dark .icon-btn{background:var(--panel-alt);color:var(--ink);border-color:var(--line)}
+.app.dark .play-controls .play-button{background:linear-gradient(110deg,#ff626b,#4c8bd6);color:#fff}
+@media(max-width:700px){
+ .topbar{padding-inline:12px}
+ .visual-top{align-items:flex-start}
+ .view-actions{flex-wrap:wrap;justify-content:flex-end}
+}
