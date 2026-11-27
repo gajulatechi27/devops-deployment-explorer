@@ -1723,3 +1723,20 @@ main>footer span{color:#4c8bd6}
  .lab-safe{white-space:normal}
  .right-panel{display:none}
 }
+
+/* Keep the refreshed grid in the architecture workspace, whose legacy selectors are more specific. */
+.app.workspace-architectures{grid-template-columns:272px minmax(0,1fr) 320px}
+.app.workspace-architectures:not(.right-collapsed){grid-template-columns:272px minmax(0,1fr) 320px}
+.app.workspace-architectures.left-collapsed{grid-template-columns:54px minmax(0,1fr) 320px}
+.app.workspace-architectures.right-collapsed{grid-template-columns:272px minmax(0,1fr) 54px}
+.app.workspace-architectures.left-collapsed.right-collapsed{grid-template-columns:54px minmax(0,1fr) 54px}
+@media(max-width:1020px){
+ .app.workspace-architectures,.app.workspace-architectures:not(.right-collapsed),
+ .app.workspace-architectures.left-collapsed,.app.workspace-architectures.right-collapsed,
+ .app.workspace-architectures.left-collapsed.right-collapsed{grid-template-columns:54px minmax(0,1fr) 0}
+}
+@media(max-width:700px){
+ .app.workspace-architectures,.app.workspace-architectures:not(.right-collapsed),
+ .app.workspace-architectures.left-collapsed,.app.workspace-architectures.right-collapsed,
+ .app.workspace-architectures.left-collapsed.right-collapsed{grid-template-columns:0 minmax(0,1fr) 0}
+}
