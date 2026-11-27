@@ -1680,7 +1680,8 @@ This is a safe, fictional learning pack. Values such as IP addresses, hostnames,
 Never commit real secrets. The secret example is intentionally fake and must be replaced with a secret manager or Kubernetes Secret created securely.
 `
     };
-    const uniqueFiles = new Map<string, LearningFile>();\n    [intro, ...base].forEach(file => { if (!uniqueFiles.has(file.path)) uniqueFiles.set(file.path, file); });\n    return [...uniqueFiles.values()];
+    const uniqueFiles = new Map<string, LearningFile>();
+    [intro, ...base].forEach(file => { if (!uniqueFiles.has(file.path)) uniqueFiles.set(file.path, file); });\n    return [...uniqueFiles.values()];
   }, [scenarioId, scenarioName, provider]);
   const [selected, setSelected] = useState(files[0]?.path || "");
   useEffect(() => {
