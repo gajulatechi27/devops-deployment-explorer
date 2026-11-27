@@ -71,7 +71,7 @@ test("manifest application is rejected without a Kubernetes cluster",()=>{
 test("repository tree exposes JAR, Dockerfile, pipeline and workload manifests",()=>{
  const state=simulator.createTerminalState(false,true);
  const result=run(state,"tree");
- for(const path of ["target/orders-service-1.0.0.jar","Dockerfile","deploy.yml","deployment.yaml","statefulset.yaml","daemonset.yaml","job.yaml","cronjob.yaml"])assert.ok(result.output.includes(path));
+ for(const path of ["target/orders-service-1.0.0.jar","Dockerfile","deploy.yml","deployment.yaml","statefulset.yaml","daemonset.yaml","job.yaml","cronjob.yaml","service.yaml","ingress.yaml"])assert.ok(result.output.includes(path));
 });
 
 test("plural Kubernetes aliases list Services and their real simulated endpoints",()=>{
@@ -100,4 +100,23 @@ test("combined resource aliases return every requested workload type",()=>{
  state=run(state,"kubectl apply -f k8s/").state;
  const output=run(state,"kubectl get deployments,statefulsets,daemonsets,jobs,cronjobs,pods -o wide").output;
  for(const name of ["orders-api","orders-db","node-log-agent","orders-db-migration","orders-cleanup","orders-api-7c9d"])assert.ok(output.includes(name));
+});
+
+test("bulk deployment includes Service and Ingress resources consistently",()=>{
+ let state=simulator.createTerminalState(false,true);
+ state=run(state,"kubectl apply -f k8s/").state;
+ assert.equal(state.service,true);
+ assert.equal(state.ingress,true);
+ assert.match(run(state,"kubectl get svc,endpoints").output,/endpoints\/orders-api/);
+ assert.match(run(state,"kubectl get ingress").output,/orders\.example\.test/);
+ assert.match(run(state,"kubectl top nodes").output,/worker-10-0-3-14/);
+});
+
+test("Ingress can be applied independently",()=>{
+ let state=simulator.createTerminalState(false,true);
+ state=run(state,"kubectl apply -f k8s/ingress.yaml").state;
+ assert.equal(state.ingress,true);
+ assert.equal(state.service,false);
+ assert.match(run(state,"kubectl get ingress").output,/orders\.example\.test/);
+ assert.match(run(state,"kubectl get svc").output,/No resources found/);
 });
