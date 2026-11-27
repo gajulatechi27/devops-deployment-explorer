@@ -1,8 +1,8 @@
-import { useEffect,useState } from "react";
+import { useEffect,useRef,useState } from "react";
 import LabWorkspace from "./LabWorkspace";
 import DeploymentFiles from "./DeploymentFiles";
 import "./labs.css";
-import { ArrowRight,Box,Check,ChevronDown,Cloud,Layers,Moon,Pause,Play,RotateCcw,Search,ShieldCheck,SkipBack,SkipForward,Sun,Workflow } from "lucide-react";
+import { ArrowRight,Box,Check,ChevronDown,Cloud,Layers,Maximize2,Moon,Pause,Play,RotateCcw,Search,ShieldCheck,SkipBack,SkipForward,Sun,Workflow,ZoomIn,ZoomOut } from "lucide-react";
 
 type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"server"|"database";
 type NodeDef={id:string;name:string;sub:string;kind:NodeKind;pos:[number,number,number];description:string;tech:string[]};
@@ -646,6 +646,10 @@ function wrapNodeLabel(value:string,maxChars:number,maxLines=2):string[]{
  return lines;
 }
 function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMode=false}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void;tierMode?:2|3;flowMode?:boolean}){
+ const [zoom,setZoom]=useState(1);
+ const [pan,setPan]=useState({x:0,y:0});
+ const drag=useRef<{x:number;y:number;panX:number;panY:number}|null>(null);
+ const svgRef=useRef<SVGSVGElement|null>(null);
  const activeStage=scenario.stages[stageIndex];
  const doneStages=stageIndex<0?[]:scenario.stages.slice(0,stageIndex);
  const nodes=scenario.nodes;
@@ -667,14 +671,46 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
   const midX=(startX+endX)/2;
   return `M ${startX} ${y1} H ${midX} V ${y2} H ${endX}`;
  };
+ const sceneHeight=flowMode?280:600;
+ const viewWidth=sceneWidth/zoom,viewHeight=sceneHeight/zoom;
+ const clamp=(value:number,min:number,max:number)=>Math.min(Math.max(value,min),Math.max(min,max));
+ const zoomBy=(amount:number)=>setZoom(z=>clamp(Number((z+amount).toFixed(2)),.65,1.8));
+ const resetViewport=()=>{setZoom(1);setPan({x:0,y:0});};
+ const onCanvasPointerDown=(e:React.PointerEvent<SVGSVGElement>)=>{
+  const target=e.target as SVGElement;
+  if(target!==e.currentTarget&&!target.classList.contains("canvas-background"))return;
+  drag.current={x:e.clientX,y:e.clientY,panX:pan.x,panY:pan.y};
+  e.currentTarget.setPointerCapture(e.pointerId);
+ };
+ const onCanvasPointerMove=(e:React.PointerEvent<SVGSVGElement>)=>{
+  if(!drag.current||!svgRef.current)return;
+  const rect=svgRef.current.getBoundingClientRect();
+  const dx=(e.clientX-drag.current.x)*viewWidth/rect.width;
+  const dy=(e.clientY-drag.current.y)*viewHeight/rect.height;
+  setPan({x:clamp(drag.current.panX-dx,0,sceneWidth-viewWidth),y:clamp(drag.current.panY-dy,0,sceneHeight-viewHeight)});
+ };
+ const stopCanvasDrag=(e:React.PointerEvent<SVGSVGElement>)=>{
+  drag.current=null;
+  if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);
+ };
+ const onCanvasWheel=(e:React.WheelEvent<SVGSVGElement>)=>{
+  e.preventDefault();
+  setZoom(z=>clamp(Number((z+(e.deltaY<0?.08:-.08)).toFixed(2)),.65,1.8));
+ };
  return <div className={flowMode?"architecture-2d flow-map":"architecture-2d"}>
-  <svg viewBox={`0 0 ${sceneWidth} ${flowMode?280:600}`} style={flowMode?{width:`${sceneWidth}px`,minWidth:`${sceneWidth}px`,maxWidth:"none"}:undefined} preserveAspectRatio="xMidYMid meet" role="img" aria-label={scenario.name+" deployment architecture"}>
+  <div className="canvas-toolbar" role="group" aria-label="Architecture canvas controls">
+   <span className="canvas-zoom-level">{Math.round(zoom*100)}%</span>
+   <button type="button" title="Zoom out" aria-label="Zoom out" onClick={()=>zoomBy(-.1)} disabled={zoom<=.65}><ZoomOut size={14}/></button>
+   <button type="button" title="Zoom in" aria-label="Zoom in" onClick={()=>zoomBy(.1)} disabled={zoom>=1.8}><ZoomIn size={14}/></button>
+   <button type="button" title="Fit architecture" aria-label="Fit architecture" onClick={resetViewport}><Maximize2 size={14}/></button>
+  </div>
+  <svg ref={svgRef} viewBox={`${pan.x} ${pan.y} ${viewWidth} ${viewHeight}`} onWheel={onCanvasWheel} onPointerDown={onCanvasPointerDown} onPointerMove={onCanvasPointerMove} onPointerUp={stopCanvasDrag} onPointerCancel={stopCanvasDrag} style={{...(flowMode?{width:`${sceneWidth}px`,minWidth:`${sceneWidth}px`,maxWidth:"none"}:{}),cursor:drag.current?"grabbing":"grab"}} preserveAspectRatio="xMidYMid meet" role="img" aria-label={scenario.name+" deployment architecture. Drag to pan and use controls to zoom."}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e5ecf6" strokeWidth="1"/></pattern>
     <marker id="route-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#7188aa"/></marker>
     <linearGradient id="node-card" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#ffffff"/><stop offset="100%" stopColor="#f3f8ff"/></linearGradient><linearGradient id="node-card-active" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#f0f6ff"/><stop offset="100%" stopColor="#dceaff"/></linearGradient><linearGradient id="route-active" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#3978e8"/><stop offset="100%" stopColor="#21b6c7"/></linearGradient><filter id="card-shadow" x="-35%" y="-45%" width="180%" height="200%"><feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#23456f" floodOpacity=".16"/></filter><filter id="node-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="5" result="blur"/><feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.18 0 0 0 0 0.48 0 0 0 0 0.95 0 0 0 .5 0" result="glow"/><feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
    </defs>
-   <rect width={sceneWidth} height={flowMode?280:600} fill="#f8faff"/><rect width={sceneWidth} height={flowMode?280:600} fill="url(#map-grid)"/>
+   <rect className="canvas-background" width={sceneWidth} height={flowMode?280:600} fill="#f8faff"/><rect width={sceneWidth} height={flowMode?280:600} fill="url(#map-grid)"/>
    {flowMode?<g><rect x="14" y="12" width={sceneWidth-28} height="256" rx="14" fill="#edf3fc" opacity=".32" stroke="#d4dadd"/></g>:tierMode===2?<><rect x="14" y="92" width="1372" height="190" rx="14" fill="#eaf2ff" opacity=".65" stroke="#c8d9f0"/><rect x="14" y="315" width="1372" height="265" rx="14" fill="#edf3fc" opacity=".72" stroke="#d0def0"/><text x="34" y="120" fontSize="13" fontWeight="700" fill="#356daF">TIER 1 · PRESENTATION / CLIENT</text><text x="34" y="343" fontSize="13" fontWeight="700" fill="#496b9c">TIER 2 · APPLICATION + DATA</text></>:<><rect x="14" y="20" width="1372" height="165" rx="14" fill="#eaf2ff" opacity=".65" stroke="#c8d9f0"/><rect x="14" y="205" width="1372" height="165" rx="14" fill="#edf3fc" opacity=".72" stroke="#d0def0"/><rect x="14" y="390" width="1372" height="190" rx="14" fill="#fff4e6" opacity=".72" stroke="#f0dfc7"/><text x="34" y="47" fontSize="13" fontWeight="700" fill="#356daF">TIER 1 · PRESENTATION</text><text x="34" y="232" fontSize="13" fontWeight="700" fill="#496b9c">TIER 2 · APPLICATION / SERVICES</text><text x="34" y="417" fontSize="13" fontWeight="700" fill="#a77b38">TIER 3 · DATA</text></>}
    {scenario.links.map(([a,b],i)=>{const from=nodeById(a),to=nodeById(b),d=route(from,to);const active=activeStage?.from===a&&activeStage?.to===b;const done=doneStages.some(s=>s.from===a&&s.to===b);return <g key={i} className={active?"route-active-group":done?"route-done-group":"route-idle-group"}><path d={d} fill="none" stroke={active?"#3978e8":done?"#20a47a":"#9aacc4"} strokeWidth={active?3.5:done?2.6:1.8} strokeLinecap="round" markerEnd="url(#route-arrow)"/>{active&&<path className="route-flow-dash" d={d} fill="none" stroke="url(#route-active)" strokeWidth="4" strokeLinecap="round" strokeDasharray="10 13"/>}{active&&playing&&<circle r="7" fill="#fff" stroke="#3978e8" strokeWidth="3"><animateMotion path={d} dur="1.8s" repeatCount="indefinite"/></circle>}</g>})}
    {nodes.map(n=>{const [x,y]=nodeXY(n,nodes,tierMode,flowMode);const active=n.id===activeStage?.node;const done=doneStages.some(s=>s.node===n.id);const icon=iconForNode(n);const labelX=62;const titleLines=wrapNodeLabel(n.name,19,2);const subLines=wrapNodeLabel(n.sub,22,2);return <g key={n.id} className={"architecture-node"+(active?" is-active":"")+(done?" is-complete":"")+(selected===n.id?" is-selected":"")} transform={`translate(${x-cardWidth/2} ${y-39})`} onClick={()=>onSelect(n.id)} role="button" tabIndex={0} aria-label={"Select "+n.name} style={{cursor:"pointer"}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(n.id);}}}>
