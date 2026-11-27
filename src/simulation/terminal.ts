@@ -57,10 +57,10 @@ export function executeTerminalCommand(state:TerminalState,raw:string):TerminalR
  else if(p==="pwd")out="/workspace/orders-service";
  else if(p==="ls"||p==="ls -la"||p==="ls -l")out="README.md  pom.xml  Dockerfile  .dockerignore  .github/  target/  k8s/  scripts/";
  else if(p==="ls target/")out="orders-service-1.0.0.jar";
- else if(p==="ls k8s/"||p==="ls k8s")out="deployment.yaml  statefulset.yaml  daemonset.yaml  job.yaml  cronjob.yaml  service.yaml";
+ else if(p==="ls k8s/"||p==="ls k8s")out="deployment.yaml  statefulset.yaml  daemonset.yaml  job.yaml  cronjob.yaml  service.yaml  ingress.yaml";
  else if(p==="ls .github/workflows/")out="deploy.yml";
  else if(p==="ls scripts/")out="deploy.sh";
- else if(p==="ls -R"||p==="tree"||p==="tree -L 4")out="orders-service/\n├── .github/workflows/deploy.yml\n├── target/orders-service-1.0.0.jar\n├── k8s/\n│   ├── deployment.yaml\n│   ├── statefulset.yaml\n│   ├── daemonset.yaml\n│   ├── job.yaml\n│   ├── cronjob.yaml\n│   └── service.yaml\n├── scripts/deploy.sh\n├── Dockerfile\n├── pom.xml\n└── README.md";
+ else if(p==="ls -R"||p==="tree"||p==="tree -L 4")out="orders-service/\n├── .github/workflows/deploy.yml\n├── target/orders-service-1.0.0.jar\n├── k8s/\n│   ├── deployment.yaml\n│   ├── statefulset.yaml\n│   ├── daemonset.yaml\n│   ├── job.yaml\n│   ├── cronjob.yaml\n│   ├── service.yaml\n│   └── ingress.yaml\n├── scripts/deploy.sh\n├── Dockerfile\n├── pom.xml\n└── README.md";
  else if(p.startsWith("find ")||p.startsWith("find ."))out=Object.keys(files).filter(path=>p.includes("*.jar")?path.endsWith(".jar"):p.includes("*.yml")?path.endsWith(".yml"):p.includes("*.yaml")?path.endsWith(".yaml"):true).map(path=>path.startsWith(".")?path:"./"+path).join("\n")||"No matching files.";
  else if(p.startsWith("cat ")||p.startsWith("less ")||p.startsWith("head ")){const path=p.split(/\s+/)[1]?.replace(/^\.\//,"");out=files[path]??"cat: "+path+": No such file or directory";}
  else if(p==="git status")out="On branch main\nYour branch is up to date with 'origin/main'.\nworking tree clean";
