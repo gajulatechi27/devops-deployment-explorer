@@ -33,3 +33,92 @@
  .lab-workspace .lab-panel{padding:15px}
  .lab-workspace .simulation-events{grid-template-columns:1fr 1fr}
 }
+
+/* Terminal: distinguish transcript from the command prompt and remove the false input-like banner. */
+.terminal-panel{
+ display:flex;
+ flex-direction:column;
+ min-height:340px;
+}
+.terminal-panel .terminal-output{
+ height:auto;
+ min-height:145px;
+ max-height:260px;
+ flex:1 1 auto;
+ overflow:auto;
+ padding:12px 0;
+ margin:0;
+ border-bottom:1px solid #405047;
+}
+.terminal-panel .terminal-output pre{
+ display:block;
+ margin:0;
+ padding:3px 0;
+ background:transparent!important;
+ color:#d6e1d2!important;
+ border-radius:0;
+ font:10px/1.55 "DM Mono",monospace;
+ white-space:pre-wrap;
+ overflow-wrap:anywhere;
+}
+.terminal-panel form{
+ display:flex;
+ align-items:center;
+ gap:12px;
+ padding:12px 0 6px;
+ margin:0;
+}
+.terminal-panel form label{
+ display:flex;
+ align-items:center;
+ gap:9px;
+ flex:1 1 auto;
+ min-width:0;
+ color:#d6e1d2;
+ font:12px "DM Mono",monospace;
+}
+.terminal-panel form label input{
+ display:block;
+ flex:1 1 auto;
+ width:100%;
+ min-width:0;
+ height:38px;
+ padding:0 10px;
+ border:1px solid #536456;
+ border-radius:7px;
+ outline:none;
+ background:#17231c!important;
+ color:#f0f5ed!important;
+ font:11px "DM Mono",monospace;
+ box-shadow:none;
+}
+.terminal-panel form label input::placeholder{color:#829486;opacity:1}
+.terminal-panel form label input:focus{
+ border-color:#91b783;
+ box-shadow:0 0 0 3px #91b78322;
+}
+.terminal-panel form button{
+ min-width:76px;
+ min-height:38px;
+ border:1px solid #86a77a;
+ border-radius:7px;
+ background:#86a77a;
+ color:#152018;
+ font:600 11px "DM Sans",sans-serif;
+}
+.terminal-panel form button:hover{filter:brightness(.95)}
+.terminal-panel>p{
+ margin:3px 0 0;
+ padding-top:9px;
+ border-top:1px solid #405047;
+ color:#aebbac;
+ font-size:10px;
+ line-height:1.5;
+}
+@media(max-width:700px){
+ .terminal-panel{min-height:300px}
+ .terminal-panel .terminal-output{min-height:110px;max-height:190px}
+ .terminal-panel form{align-items:stretch;gap:7px}
+ .terminal-panel form button{min-width:62px}
+ .terminal-panel form label{gap:6px}
+}
