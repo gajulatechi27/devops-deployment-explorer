@@ -42,6 +42,10 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentN
  const [namespace,setNamespace]=useState("production");
  const [terminalReplicas,setTerminalReplicas]=useState(3);
  const [terminalImage,setTerminalImage]=useState("web:v1.2");
+ const hasKubernetesWorkload=deploymentResources.some(resource=>resource.kind==="cluster")&&deploymentResources.some(resource=>resource.kind==="workload")&&/eks|kubernetes/i.test(deploymentName);
+ const [terminalManualDeployment,setTerminalManualDeployment]=useState(false);
+ const terminalDeploymentReady=hasKubernetesWorkload&&(deploymentCompleted||terminalManualDeployment);
+ useEffect(()=>{if(deploymentCompleted)setTerminalManualDeployment(false);},[deploymentCompleted]);
  const [quiz,setQuiz]=useState<Record<number,number>>(()=>{try{return JSON.parse(localStorage.getItem("deploylab-learning-quiz")||"{}");}catch{return {};}});
  const [strategyName,setStrategyName]=useState("Rolling");
  const [releaseStep,setReleaseStep]=useState(0);
@@ -62,20 +66,22 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentN
   const monthlyTotal=deploymentCompleted?cloudResources.reduce((sum,r)=>sum+r.monthlyCost,0):0;
   const excludedResourceCount=deploymentResources.length-cloudResources.length;
   const formatCost=(value:number)=>"$"+value.toFixed(2);
- const runCommand=()=>{const input=command.trim();if(!input)return;const parts=input.split(/\s*(?:&&|;)\s*/).filter(Boolean);let out:string[]=[];for(const part of parts){if(part==="clear"){setHistory([]);out=[];continue;}let result="";if(part==="help")result="kubectl get pods|deployments|services|nodes -n production\nkubectl describe pod web-7d8f\nkubectl logs deploy/web\nkubectl rollout status|history|undo deployment/web\nkubectl scale deployment/web --replicas=5\nkubectl set image deployment/web web=web:v2\nkubectl apply -f deployment.yaml\nkubectl config set-context --current --namespace=staging\ndocker ps|images|build -t web:v2 .|compose ps\nterraform plan|apply\nUse && or ; to chain commands. All operations are simulated.";
+
+ const runCommand=()=>{const input=command.trim();if(!input)return;const parts=input.split(/\s*(?:&&|;)\s*/).filter(Boolean);let out:string[]=[];for(const part of parts){if(part==="clear"){setHistory([]);out=[];continue;}let result="";if(part==="help")result="kubectl get pods|deployments|services|nodes -n production\nkubectl describe pod <pod-name>\nkubectl logs deploy/web\nkubectl rollout status|history|undo deployment/web\nkubectl scale deployment/web --replicas=5\nkubectl set image deployment/web web=web:v2\nkubectl apply -f deployment.yaml\nkubectl config set-context --current --namespace=staging\ndocker ps|images|build -t web:v2 .|compose ps\nterraform plan|apply\nKubernetes workload commands show resources only after the selected EKS deployment completes. All operations are simulated.";
 else if(part.startsWith("kubectl config set-context")&&part.includes("--namespace=")){const n=part.match(/--namespace=([^\s]+)/)?.[1]||"production";setNamespace(n);result="Context modified. Active namespace: "+n;}
-else if(part.startsWith("kubectl get pods")){const ns=part.match(/-n\s+(\S+)/)?.[1]||namespace;result="NAMESPACE   NAME       READY   STATUS    RESTARTS   AGE\n"+Array.from({length:terminalReplicas},(_,i)=>ns+"   web-"+["7d8f","8c2a","9a1b","a71c","b82d"][i%5]+"   1/1     Running   0          3m").join("\n");}
-else if(part==="kubectl get deployments"||part==="kubectl get deploy")result="NAME   READY   UP-TO-DATE   AVAILABLE\nweb    "+terminalReplicas+"/"+terminalReplicas+"      "+terminalReplicas+"            "+terminalReplicas;
-else if(part==="kubectl get svc"||part==="kubectl get services")result="NAME   TYPE        CLUSTER-IP     PORT(S)\nweb    ClusterIP   10.100.12.4   80/TCP";
-else if(part==="kubectl get nodes")result="NAME             STATUS   ROLES    AGE   VERSION\nip-10-0-1-21     Ready    worker   12d   v1.30.2\nip-10-0-2-18     Ready    worker   12d   v1.30.2";
-else if(part.startsWith("kubectl describe pod"))result="Name: web-7d8f\nNamespace: "+namespace+"\nNode: ip-10-0-1-21\nStatus: Running\nImage: "+terminalImage+"\nReady: True\nEvents: Readiness probe succeeded";
-else if(part.startsWith("kubectl logs"))result="INFO server started on :8080\nINFO connected to database\nINFO GET /health 200 OK";
-else if(part.startsWith("kubectl rollout status"))result="deployment \"web\" successfully rolled out";
-else if(part.startsWith("kubectl rollout history"))result="deployment.apps/web\nREVISION  CHANGE-CAUSE\n1         initial release\n2         image update "+terminalImage;
-else if(part.startsWith("kubectl rollout undo")){setTerminalImage("web:v1.2");result="deployment.apps/web rolled back";}
-else if(part.startsWith("kubectl scale deployment/web")){const n=Number(part.match(/--replicas=(\d+)/)?.[1]);if(Number.isInteger(n)&&n>0&&n<=10){setTerminalReplicas(n);result="deployment.apps/web scaled";}else result="error: replicas must be between 1 and 10";}
-else if(part.startsWith("kubectl set image")){const image=part.match(/web=(\S+)/)?.[1];if(image){setTerminalImage(image);result="deployment.apps/web image updated";}else result="error: expected web=<image>";}
-else if(part.startsWith("kubectl apply -f"))result="deployment.apps/web configured\nservice/web unchanged\n(simulated manifest validation only)";
+else if(part.startsWith("kubectl get pods")){const ns=part.match(/-n\s+(\S+)/)?.[1]||namespace;result=terminalDeploymentReady?"NAMESPACE   NAME       READY   STATUS    RESTARTS   AGE\n"+Array.from({length:terminalReplicas},(_,i)=>ns+"   web-"+["7d8f","8c2a","9a1b","a71c","b82d"][i%5]+"   1/1     Running   0          3m").join("\n"):"No resources found in "+ns+" namespace.";}
+else if(part==="kubectl get deployments"||part==="kubectl get deploy")result=terminalDeploymentReady?"NAME   READY   UP-TO-DATE   AVAILABLE\nweb    "+terminalReplicas+"/"+terminalReplicas+"      "+terminalReplicas+"            "+terminalReplicas:"No resources found in "+namespace+" namespace.";
+else if(part==="kubectl get rs"||part==="kubectl get replicasets")result=terminalDeploymentReady?"NAME             DESIRED   CURRENT   READY\nweb-6d8f9c       "+terminalReplicas+"         "+terminalReplicas+"         "+terminalReplicas:"No resources found in "+namespace+" namespace.";
+else if(part==="kubectl get svc"||part==="kubectl get services")result=terminalDeploymentReady?"NAME   TYPE        CLUSTER-IP     PORT(S)\nweb    ClusterIP   10.100.12.4   80/TCP":"No resources found in "+namespace+" namespace.";
+else if(part==="kubectl get nodes")result=hasKubernetesWorkload?"NAME             STATUS   ROLES    AGE   VERSION\nip-10-0-1-21     Ready    worker   12d   v1.30.2\nip-10-0-2-18     Ready    worker   12d   v1.30.2":"No Kubernetes cluster is attached to the selected architecture.";
+else if(part.startsWith("kubectl describe pod"))result=terminalDeploymentReady?"Name: "+(part.split(/\s+/)[3]||"web-7d8f")+"\nNamespace: "+namespace+"\nNode: ip-10-0-1-21\nStatus: Running\nImage: "+terminalImage+"\nOwner: ReplicaSet/web-6d8f9c\nControlled by: Deployment/web\nReady: True\nEvents: Readiness probe succeeded":"Error from server (NotFound): pods not found. Complete the Kubernetes deployment first.";
+else if(part.startsWith("kubectl logs"))result=terminalDeploymentReady?"INFO server started on :8080\nINFO connected to database\nINFO GET /health 200 OK":"Error from server (NotFound): deployments.apps \"web\" not found. Complete the Kubernetes deployment first.";
+else if(part.startsWith("kubectl rollout status"))result=terminalDeploymentReady?'deployment "web" successfully rolled out':"error: deployment \"web\" not found. Complete the Kubernetes deployment first.";
+else if(part.startsWith("kubectl rollout history"))result=terminalDeploymentReady?"deployment.apps/web\nREVISION  CHANGE-CAUSE\n1         initial release\n2         image update "+terminalImage:"error: deployment \"web\" not found.";
+else if(part.startsWith("kubectl rollout undo")){if(terminalDeploymentReady){setTerminalImage("web:v1.2");result="deployment.apps/web rolled back";}else result="error: deployment \"web\" not found.";}
+else if(part.startsWith("kubectl scale deployment/web")){const n=Number(part.match(/--replicas=(\d+)/)?.[1]);if(!terminalDeploymentReady)result="error: deployment \"web\" not found. Complete the Kubernetes deployment first.";else if(Number.isInteger(n)&&n>0&&n<=10){setTerminalReplicas(n);result="deployment.apps/web scaled";}else result="error: replicas must be between 1 and 10";}
+else if(part.startsWith("kubectl set image")){const image=part.match(/web=(\S+)/)?.[1];if(!terminalDeploymentReady)result="error: deployment \"web\" not found. Complete the Kubernetes deployment first.";else if(image){setTerminalImage(image);result="deployment.apps/web image updated";}else result="error: expected web=<image>";}
+else if(part.startsWith("kubectl apply -f")){if(!hasKubernetesWorkload)result="error: the selected architecture does not include a Kubernetes workload.";else{setTerminalManualDeployment(true);result="deployment.apps/web configured\nreplicaset.apps/web-6d8f9c created\nservice/web created\n(simulated manifest applied)";}}
 else if(part==="docker ps")result="CONTAINER ID   IMAGE       STATUS       PORTS\na81c2f         "+terminalImage+"   Up 4 minutes 0.0.0.0:8080->8080/tcp";
 else if(part==="docker images")result="REPOSITORY   TAG    SIZE\nweb          "+terminalImage.split(":")[1]+"   142MB\nnginx        1.27   188MB";
 else if(part.startsWith("docker build"))result="Step 1/5 : FROM node:22-alpine\nSuccessfully built a81c2f\nSuccessfully tagged "+(part.match(/-t\s+(\S+)/)?.[1]||"web:latest");
@@ -84,6 +90,7 @@ else if(part==="terraform plan")result="Plan: 2 to add, 0 to change, 0 to destro
 else if(part==="terraform apply")result="Apply complete! Resources: 2 added, 0 changed, 0 destroyed. (simulation)";
 else result="command not found in this simulated environment. Type help.";
 out.push("$ "+part,result);}setHistory(h=>[...h,...out]);setCommand("");};
+
  const title:Record<Mode,string>={dashboard:"Deployment Dashboard",security:"Deployment Security",cost:"Deployment Cost Explorer",runbooks:"Deployment Runbooks",troubleshoot:"Troubleshooting Lab",terminal:"Deployment Terminal",monitoring:"Deployment Observability",strategies:"Deployment Strategies",learning:"Learning Paths",kubernetes:"Kubernetes Cluster Lab",iac:"Infrastructure & Terraform"};
  return <section className="lab-workspace">
   <div className="lab-heading"><div><span>DEPLOYLAB PRACTICE ENVIRONMENT</span><h2>{title[mode]}</h2><p>Safe, deterministic simulations. No cloud accounts, credentials or real commands.</p></div><span className="lab-safe"><ShieldCheck size={14}/> SIMULATION ONLY</span></div>
