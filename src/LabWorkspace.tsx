@@ -44,7 +44,6 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentN
  const [terminalState,setTerminalState]=useState(()=>createTerminalState(deploymentCompleted,hasKubernetesWorkload));
  const namespace=terminalState.namespace;
  useEffect(()=>{setTerminalState(createTerminalState(deploymentCompleted,hasKubernetesWorkload));},[deploymentCompleted,deploymentName,hasKubernetesWorkload]);
- useEffect(()=>{if(deploymentCompleted)setTerminalManualDeployment(false);},[deploymentCompleted]);
  const [quiz,setQuiz]=useState<Record<number,number>>(()=>{try{return JSON.parse(localStorage.getItem("deploylab-learning-quiz")||"{}");}catch{return {};}});
  const [strategyName,setStrategyName]=useState("Rolling");
  const [releaseStep,setReleaseStep]=useState(0);
