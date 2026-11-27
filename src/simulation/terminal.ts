@@ -32,7 +32,8 @@ function applyManifest(s:TerminalState,path:string):{state:TerminalState;output:
  if(!s.kubernetes)return {state:s,output:"error: no Kubernetes cluster is attached to this architecture."};
  const lower=path.toLowerCase();
  const kinds:WorkloadKind[]=lower.endsWith("/")||lower==="k8s"||lower==="k8s/"?["Deployment","StatefulSet","DaemonSet","Job","CronJob"]:lower.includes("statefulset")?["StatefulSet"]:lower.includes("daemonset")?["DaemonSet"]:lower.includes("cronjob")?["CronJob"]:lower.includes("/job")||lower.endsWith("job.yaml")?["Job"]:lower.includes("deployment")?["Deployment"]:[];
- if(!kinds.length&&lower.includes("service.yaml"))return {state:{...s,service:true},output:"service/orders-api configured\n(simulated manifest apply; no cluster was contacted)"};\n if(!kinds.length)return {state:s,output:"error: manifest not found. Try ls k8s/ or kubectl apply -f k8s/."};
+ if(!kinds.length&&lower.includes("service.yaml"))return {state:{...s,service:true},output:"service/orders-api configured\n(simulated manifest apply; no cluster was contacted)"};
+ if(!kinds.length)return {state:s,output:"error: manifest not found. Try ls k8s/ or kubectl apply -f k8s/."};
  let workloads=[...s.workloads];const messages:string[]=[];
  for(const kind of kinds){
   const name=kind==="Deployment"?"orders-api":kind==="StatefulSet"?"orders-db":kind==="DaemonSet"?"node-log-agent":kind==="Job"?"orders-db-migration":"orders-cleanup";
