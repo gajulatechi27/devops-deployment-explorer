@@ -120,3 +120,12 @@ test("Ingress can be applied independently",()=>{
  assert.match(run(state,"kubectl get ingress").output,/orders\.example\.test/);
  assert.match(run(state,"kubectl get svc").output,/No resources found/);
 });
+
+test("ReplicaSet and EndpointSlice inspection reflects the active Deployment",()=>{
+ let state=simulator.createTerminalState(false,true);
+ state=run(state,"kubectl apply -f k8s/").state;
+ assert.match(run(state,"kubectl get rs").output,/orders-api-7c9d/);
+ assert.match(run(state,"kubectl get replicasets").output,/orders-api-7c9d/);
+ assert.match(run(state,"kubectl get svc,endpointslices").output,/orders-api-xxxxx/);
+ assert.match(run(state,"kubectl get all").output,/replicaset\.apps\/orders-api-7c9d/);
+});
