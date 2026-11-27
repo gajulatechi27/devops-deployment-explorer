@@ -2,8 +2,6 @@ export type KubernetesManifest = { name:string; kind:string; description:string;
 
 type Resource = { id:string; name:string; sub?:string; kind:string; description?:string; tech?:string[] };
 
-const yaml = (value:unknown) => JSON.stringify(value);
-
 export function buildKubernetesManifests(
   scenarioId:string,
   deploymentName:string,
