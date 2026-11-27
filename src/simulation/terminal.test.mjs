@@ -62,7 +62,7 @@ test("Docker image build, local Docker containers and Kubernetes containers are 
 
 test("manifest application is rejected without a Kubernetes cluster",()=>{
  let state=simulator.createTerminalState(false,false);
- const result=run(state,"kubectl apply -f k8/");
+ const result=run(state,"kubectl apply -f k8s/");
  assert.match(result.output,/no Kubernetes cluster/);
  assert.equal(result.state.workloads.length,0);
 });
