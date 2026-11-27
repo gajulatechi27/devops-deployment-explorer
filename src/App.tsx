@@ -646,10 +646,6 @@ function wrapNodeLabel(value:string,maxChars:number,maxLines=2):string[]{
  return lines;
 }
 function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMode=false}:{scenario:Scenario;stageIndex:number;selected:string;playing:boolean;onSelect:(id:string)=>void;tierMode?:2|3;flowMode?:boolean}){
- const [zoom,setZoom]=useState(1);
- const [pan,setPan]=useState({x:0,y:0});
- const drag=useRef<{x:number;y:number;panX:number;panY:number}|null>(null);
- const svgRef=useRef<SVGSVGElement|null>(null);
  const activeStage=scenario.stages[stageIndex];
  const doneStages=stageIndex<0?[]:scenario.stages.slice(0,stageIndex);
  const nodes=scenario.nodes;
