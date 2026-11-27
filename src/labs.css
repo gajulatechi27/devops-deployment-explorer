@@ -122,3 +122,30 @@
  .terminal-panel form button{min-width:62px}
  .terminal-panel form label{gap:6px}
 }
+
+/* Guided deployment terminal */
+.terminal-status-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.terminal-status-row>div{display:grid;grid-template-columns:10px auto;align-items:center;gap:2px 8px}
+.terminal-status-row b{font-size:10px;letter-spacing:.05em}
+.terminal-status-row small{grid-column:2;color:var(--muted);font-size:10px}
+.terminal-status-dot{width:8px;height:8px;border-radius:50%;background:#d49a49}
+.terminal-status-dot.active{background:#65a477;box-shadow:0 0 0 3px #65a47722}
+.terminal-guide{margin-top:14px;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.terminal-guide-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.terminal-guide-heading>div>span{font:9px 'DM Mono';letter-spacing:.1em;color:var(--accent)}
+.terminal-guide-heading h3{margin:5px 0;font-size:16px;color:var(--ink)}
+.terminal-guide-heading p{margin:0;color:var(--muted);font-size:11px}
+.terminal-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.terminal-guide-item{display:grid;gap:6px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);cursor:pointer;min-width:0}
+.terminal-guide-item:hover{border-color:var(--accent);background:var(--accent-soft)}
+.terminal-guide-item b{font-size:11px}
+.terminal-guide-item span{font-size:10px;color:var(--muted);line-height:1.45}
+.terminal-guide-item code{font:9px 'DM Mono';color:var(--accent);white-space:normal;overflow-wrap:anywhere}
+.terminal-guide-workloads{margin-top:15px;padding-top:13px;border-top:1px solid var(--line)}
+.terminal-guide-workloads>b{font-size:11px}
+.terminal-guide-workloads p{margin:5px 0 10px;color:var(--muted);font-size:10px}
+.terminal-guide-workloads>div{display:flex;flex-wrap:wrap;gap:7px}
+.terminal-guide-workloads .lab-secondary{font:9px 'DM Mono';padding:7px 9px}
+.terminal-panel .terminal-output{min-height:190px;max-height:390px}
+.terminal-panel .terminal-output pre{white-space:pre-wrap;overflow-wrap:anywhere;font:10px/1.55 'DM Mono',monospace}
+@media(max-width:700px){.terminal-guide{padding:13px}.terminal-guide-grid{grid-template-columns:1fr}.terminal-guide-heading{flex-direction:column}.terminal-status-row{align-items:flex-start;flex-direction:column}}
