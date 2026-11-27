@@ -39,10 +39,11 @@ function applyManifest(s:TerminalState,path:string):{state:TerminalState;output:
   const name=kind==="Deployment"?"orders-api":kind==="StatefulSet"?"orders-db":kind==="DaemonSet"?"node-log-agent":kind==="Job"?"orders-db-migration":"orders-cleanup";
   const desired=kind==="Deployment"||kind==="StatefulSet"?3:kind==="DaemonSet"?nodes.length:1;
   const image=kind==="StatefulSet"?"postgres:16":kind==="DaemonSet"?"example/log-agent:1.0":kind==="CronJob"?"registry.example.com/orders:1.0.0":"registry.example.com/orders:1.0.0";
-  const pods=makePods(kind,name,desired,image,kind==="Deployment"?"ReplicaSet/orders-api-7c9d":kind);
+  const pods=kind==="CronJob"?[]:makePods(kind,name,desired,image,kind==="Deployment"?"ReplicaSet/orders-api-7c9d":kind);
   const workload:SimWorkload={kind,name,desired,image,pods,revision:1};
   workloads=[...workloads.filter(w=>w.name!==name),workload];
-  messages.push(kind.toLowerCase()+"."+(kind==="Job"||kind==="CronJob"?"batch":"apps")+"/"+name+" configured",... (kind==="Deployment"?["replicaset.apps/orders-api-7c9d created"]:[]),desired+" Pod(s) "+(kind==="Job"||kind==="CronJob"?"completed":"created"));
+  messages.push(kind.toLowerCase()+"."+(kind==="Job"||kind==="CronJob"?"batch":"apps")+"/"+name+" configured",... (kind==="Deployment"?["replicaset.apps/orders-api-7c9d created"]:[]),desired+" Pod(s) "+(kind==="Job"?"completed":kind==="CronJob"?"schedule configured":"created"));
+  if(kind==="CronJob"){const generatedJobName="orders-cleanup-9f8d2";const generatedPods=makePods("Job",generatedJobName,1,image,"Job");workloads=[...workloads.filter(w=>w.name!==generatedJobName),{kind:"Job",name:generatedJobName,desired:1,image,pods:generatedPods,revision:1}];messages.push("job.batch/"+generatedJobName+" created","1 scheduled Pod completed");}
  }
  return {state:{...s,deployed:true,workloads,imageBuilt:true,service:s.service||lower.endsWith("/")||lower==="k8s"||lower==="k8s/"||lower.includes("service.yaml")},output:messages.join("\n")+"\n(simulated manifest apply; no cluster was contacted)"};
 }
