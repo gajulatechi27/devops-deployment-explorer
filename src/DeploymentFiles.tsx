@@ -1681,7 +1681,8 @@ Never commit real secrets. The secret example is intentionally fake and must be 
 `
     };
     const uniqueFiles = new Map<string, LearningFile>();
-    [intro, ...base].forEach(file => { if (!uniqueFiles.has(file.path)) uniqueFiles.set(file.path, file); });\n    return [...uniqueFiles.values()];
+    [intro, ...base].forEach(file => { if (!uniqueFiles.has(file.path)) uniqueFiles.set(file.path, file); });
+    return [...uniqueFiles.values()];
   }, [scenarioId, scenarioName, provider]);
   const [selected, setSelected] = useState(files[0]?.path || "");
   useEffect(() => {
