@@ -5,7 +5,8 @@ type Resource = { id:string; name:string; sub?:string; kind:string; description?
 export function buildKubernetesManifests(
   scenarioId:string,
   deploymentName:string,
-  resources:Resource[]
+  resources:Resource[],
+  replicas:number=3
 ): KubernetesManifest[] {
   const workload=resources.find(resource=>resource.kind==="workload");
   if(!resources.some(resource=>resource.kind==="cluster")||!workload) return [];
@@ -31,7 +32,7 @@ metadata:
   labels:
     app.kubernetes.io/name: ${label}
 spec:
-  replicas: 3
+  replicas: ${replicas}
   selector:
     matchLabels:
       app.kubernetes.io/name: ${label}
@@ -82,6 +83,28 @@ spec:
       protocol: TCP
 `}
   ];
+  if((workload.tech||[]).some(item=>/hpa|autoscal/i.test(item))){
+    manifests.push({name:"hpa.yaml",kind:"HorizontalPodAutoscaler",description:"Scales the Deployment using resource metrics; verify metrics-server and target sizing.",content:`apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ${app}
+  namespace: ${namespace}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${app}
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+`});
+  }
   if(network){
     manifests.push({name:"ingress.yaml",kind:"Ingress",description:"Illustrative HTTP routing for the network entry in this architecture. Review controller-specific annotations before use.",content:`apiVersion: networking.k8s.io/v1
 kind: Ingress
