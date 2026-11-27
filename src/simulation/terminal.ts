@@ -19,7 +19,7 @@ const files:Record<string,string>={
 "k8s/service.yaml":"apiVersion: v1\nkind: Service\nmetadata:\n  name: orders-api\nspec:\n  type: ClusterIP\n  selector:\n    app: orders-api\n  ports:\n    - port: 80\n      targetPort: 8080",
 "scripts/deploy.sh":"#!/usr/bin/env bash\nset -euo pipefail\nmvn clean package\ndocker build -t registry.example.com/orders:1.0.0 .\nkubectl apply -f k8s/"
 };
-const makePods=(kind,name,count,image,owner)=>Array.from({length:count},(_,i)=>{
+const makePods=(kind:WorkloadKind,name:string,count:number,image:string,owner:string)=>Array.from({length:count},(_,i)=>{
  const daemonNode=kind==="DaemonSet"?nodes[i%nodes.length]:nodes[(i+(kind==="StatefulSet"?1:0))%nodes.length];
  const podName=kind==="StatefulSet"?name+"-"+i:kind==="DaemonSet"?name+"-"+daemonNode.name.split("-").slice(-4).join("-"):kind==="Job"?name+"-run-"+String(i+1).padStart(5,"0"):kind==="CronJob"?name+"-scheduled-"+String(i+1).padStart(5,"0"):name+"-7c9d"+["4f","8b","a1","c2","e3"][i%5];
  return {name:podName,ip:"10.244."+[1,2,3][i%3]+"."+[11,12,13,14,15][i%5],node:daemonNode.name,status:kind==="Job"||kind==="CronJob"?"Completed":"Running",ready:kind==="Job"||kind==="CronJob"?"0/1":"1/1",restarts:0,age:"2m",image,owner};
