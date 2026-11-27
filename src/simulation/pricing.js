@@ -22,7 +22,7 @@ export function estimateMonthlyResourceCost(resource, provider) {
   if (/\b(rds|cloud sql|azure sql|sql database|managed postgres|managed database)\b/.test(label)) {
     return { monthlyUsd: 45, basis: "small managed database baseline" };
   }
-  if (/\b(eks|aks|gke|kubernetes cluster|managed kubernetes)\b/.test(label) || kind === "cluster") {
+  if (/\b(eks|aks|gke|kubernetes cluster|managed kubernetes)\b/.test(label)) {
     return { monthlyUsd: 72, basis: "small managed cluster baseline; worker compute excluded" };
   }
   if (/\b(fargate|ecs service|ecs tasks|app runner|cloud run|container apps)\b/.test(label)) {
