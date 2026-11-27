@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, FileCode2, Folder, Search } from "lucide-react";
 
 type LearningFile = { path: string; description: string; content: string };
-type Props = { scenarioId: string; scenarioName: string; provider: string; stageTitle?: string };
+type Props = { scenarioId: string; scenarioName: string; provider: string; stageTitle?: string; view?: "files" | "guide" };
 
 const commonEnv = `# Dummy learning values only — never use real credentials
 APP_NAME=demo-web
@@ -1656,7 +1656,7 @@ All hostnames, addresses, account IDs and credentials in this pack are placehold
   ];
 }
 
-export default function DeploymentFiles({ scenarioId, scenarioName, provider, stageTitle }: Props) {
+export default function DeploymentFiles({ scenarioId, scenarioName, provider, stageTitle, view = "files" }: Props) {
   const files = useMemo(() => {
     const base = cloudSpecificFiles(scenarioId, provider) || pipelineFiles(scenarioId === "lambda-sam" ? "lambda-serverless" : scenarioId);
     const intro: LearningFile = {
@@ -1807,12 +1807,12 @@ Never commit real secrets. The secret example is intentionally fake and must be 
     download({ path: "deployment-learning-pack.txt", description: "All sample files combined into one reference document.", content: body });
   };
   return <section className="deployment-files">
+    {view === "guide" && (
     <div className="implementation-guide">
       <div className="implementation-guide-head">
         <div><div className="inspector-kicker">REAL-WORLD IMPLEMENTATION GUIDE</div><h3>Reproduce this deployment in your project</h3><p>Follow the same sequence in your own repository. These examples are templates—not production credentials or one-click deployment scripts.</p></div>
         <span className="implementation-level">6 implementation steps</span>
       </div>
-      {stageTitle && <div className="stage-file-map"><b>Current stage: {stageTitle}</b><span>Related files — select one to inspect its actual configuration:</span><div>{stageFiles.length ? stageFiles.map(file => <button key={file.path} onClick={() => setSelected(file.path)}>{file.path}</button>) : <small>Review the pipeline and README for this stage.</small>}</div></div>}
       <ol className="implementation-steps">{runbook.map(([title, detail], index) => <li key={title}><span>{index + 1}</span><div><b>{title}</b><p>{detail}</p></div></li>)}</ol>
       <details className="production-checklist">
         <summary>Before adapting this to a real environment — production checklist</summary>
@@ -1827,6 +1827,10 @@ Never commit real secrets. The secret example is intentionally fake and must be 
         <p className="safety-reminder">Never paste real credentials into DeployLab or commit them to Git. Downloaded files are fictional starter templates and must be reviewed for your exact platform and version.</p>
       </details>
     </div>
+    )}
+    {view === "files" && (
+      <>
+      {stageTitle && <div className="stage-file-map"><b>Current stage: {stageTitle}</b><span>Related files — select one to inspect its actual configuration:</span><div>{stageFiles.length ? stageFiles.map(file => <button key={file.path} onClick={() => setSelected(file.path)}>{file.path}</button>) : <small>Review the pipeline and README for this stage.</small>}</div></div>}
     <div className="files-heading">
       <div><div className="inspector-kicker">DEPLOYMENT REFERENCE FILES</div><b>{files.length} sample files for this flow</b><p>Dummy values only · editable examples · no real credentials</p></div>
       <button className="files-download-all" onClick={downloadGuide}><Download size={13}/> Download pack</button>
@@ -1841,5 +1845,7 @@ Never commit real secrets. The secret example is intentionally fake and must be 
       </div>
     </div>
     <div className="files-learning-note"><Search size={13}/> Study the pipeline first, then trace how it creates an artifact, publishes it and configures the target environment.</div>
+      </>
+    )}
   </section>;
 }
