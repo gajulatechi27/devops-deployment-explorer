@@ -1569,3 +1569,13 @@ main>footer span{color:#4c8bd6}
   max-height:160px;
  }
 }
+
+
+/* Deployment-linked cloud resource estimates */
+.module-resource-list{display:flex;flex-direction:column;margin:12px 0 14px;border-top:1px solid var(--line)}
+.module-resource-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 3px;border-bottom:1px solid var(--line)}
+.module-resource-row>span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.module-resource-row b{font:700 12px 'Inter',sans-serif;color:var(--ink)}
+.module-resource-row small{font:9px 'Inter',sans-serif;letter-spacing:.04em;color:var(--muted)}
+.module-resource-row strong{font:750 13px 'Manrope','Inter',sans-serif;color:var(--accent);white-space:nowrap}
+.module-panel .module-resource-list+p{margin-top:10px}
