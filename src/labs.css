@@ -184,3 +184,16 @@
 .terraform-command-list code{font:10px/1.4 'DM Mono',monospace;color:var(--ink,#17243b);overflow-wrap:anywhere}
 .terraform-lifecycle p{font-size:11px;line-height:1.6;color:var(--muted,#64748b);margin:7px 0}
 @media(max-width:850px){.terraform-layout{grid-template-columns:1fr}.terraform-command-list{grid-template-columns:1fr}.terraform-context{align-items:flex-start;flex-direction:column}}
+
+/* Keep Terraform HCL readable even when global code-preview styles are loaded later. */
+.lab-workspace .lab-panel.terraform-preview pre{
+  background:#101b2e!important;
+  color:#e2e8f0!important;
+  -webkit-text-fill-color:#e2e8f0!important;
+  opacity:1!important;
+  text-shadow:none!important;
+  font:11px/1.7 'DM Mono',monospace!important;
+  padding:16px!important;
+  border:1px solid #26364f;
+  border-radius:9px;
+}
