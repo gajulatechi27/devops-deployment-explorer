@@ -194,3 +194,34 @@ button,input{font:inherit}button{cursor:pointer}.topbar{grid-column:1/-1;grid-ro
 .architecture-2d.flow-map{height:clamp(210px,22vw,280px);min-height:210px;max-height:280px}
 .architecture-2d.flow-map svg{height:100%;width:auto;min-width:0}
 @media(max-width:700px){.architecture-2d.flow-map{height:220px;min-height:220px;max-height:220px}}
+
+
+/* Final visual quality pass: consistent hierarchy, readable controls and responsive architecture canvas. */
+.app{--surface:var(--panel-alt);--text:var(--ink)}
+.library-filter span{background:var(--panel-alt)}
+.library-filter.active{color:var(--ink)}
+.scenario b{font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+.scenario small{font-size:9px;line-height:1.45;overflow-wrap:anywhere}
+.page-heading p{font-size:12px;line-height:1.65}
+.visual-top b,.timeline-head b{font-size:10px;line-height:1.5}
+.visual-top span,.timeline-head span{font-size:9px;line-height:1.55}
+.scene{min-height:300px}
+.architecture-2d{height:clamp(330px,34vw,460px);min-height:300px;max-height:460px;width:100%;overflow-x:auto;overflow-y:hidden}
+.architecture-2d svg{display:block;width:100%;height:100%;min-width:0;max-width:100%}
+.architecture-2d.flow-map{height:clamp(230px,25vw,310px);min-height:230px;max-height:310px;overflow-x:hidden}
+.architecture-2d.flow-map svg{width:100%;height:100%;min-width:0;max-width:100%}
+.scene-legend{font-size:9px;line-height:1.5}
+.timeline-step{min-width:104px}
+.timeline-step b{font-size:9px;line-height:1.45;max-width:110px;overflow-wrap:anywhere}
+.stage-copy p,.info-block p{font-size:11px;line-height:1.65}
+.right-stage b{font-size:11px;line-height:1.4}
+.right-stage small{font-size:10px;line-height:1.55}
+.chips span{font-size:9px}
+.view-actions button,.play-controls button,.next-button,.workspace-nav button{transition:background .15s,border-color .15s,color .15s}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{cursor:not-allowed}
+.app.dark .stats b.safe{color:var(--accent)}
+@media(min-width:1251px){.app{grid-template-columns:280px minmax(0,1fr) minmax(330px,23vw)}.main{padding:22px 20px 14px}}
+@media(min-width:1021px) and (max-width:1250px){.app{grid-template-columns:230px minmax(0,1fr) minmax(300px,25vw)}.main{padding:18px 14px 12px}}
+@media(max-width:1020px){.architecture-2d.flow-map{height:260px;min-height:240px;overflow-x:auto}.architecture-2d.flow-map svg{min-width:760px;width:100%}}
+@media(max-width:700px){.architecture-2d{height:320px;min-height:300px}.architecture-2d.flow-map{height:240px;min-height:220px}.architecture-2d.flow-map svg{min-width:760px}.page-heading p{font-size:11px}.timeline-step{min-width:100px}}
