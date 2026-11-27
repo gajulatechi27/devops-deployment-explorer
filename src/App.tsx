@@ -1,4 +1,4 @@
-import { useEffect,useRef,useState } from "react";
+import { useEffect,useRef,useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from "react";
 import LabWorkspace from "./LabWorkspace";
 import DeploymentFiles from "./DeploymentFiles";
 import "./labs.css";
@@ -676,7 +676,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
  const clamp=(value:number,min:number,max:number)=>Math.min(Math.max(value,min),Math.max(min,max));
  const zoomBy=(amount:number)=>setZoom(z=>clamp(Number((z+amount).toFixed(2)),.65,1.8));
  const resetViewport=()=>{setZoom(1);setPan({x:0,y:0});};
- const onCanvasPointerDown=(e:React.PointerEvent<SVGSVGElement>)=>{
+ const onCanvasPointerDown=(e:ReactPointerEvent<SVGSVGElement>)=>{
   const target=e.target as SVGElement;
   if(target!==e.currentTarget&&!target.classList.contains("canvas-background"))return;
   drag.current={x:e.clientX,y:e.clientY,panX:pan.x,panY:pan.y};
@@ -693,7 +693,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
   drag.current=null;
   if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);
  };
- const onCanvasWheel=(e:React.WheelEvent<SVGSVGElement>)=>{
+ const onCanvasWheel=(e:ReactWheelEvent<SVGSVGElement>)=>{
   e.preventDefault();
   setZoom(z=>clamp(Number((z+(e.deltaY<0?.08:-.08)).toFixed(2)),.65,1.8));
  };
