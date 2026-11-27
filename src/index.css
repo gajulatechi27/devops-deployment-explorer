@@ -1740,3 +1740,31 @@ main>footer span{color:#4c8bd6}
  .app.workspace-architectures.left-collapsed,.app.workspace-architectures.right-collapsed,
  .app.workspace-architectures.left-collapsed.right-collapsed{grid-template-columns:0 minmax(0,1fr) 0}
 }
+
+/* Wider architecture inspector: the right tab panel gets the marked workspace width. */
+@media (min-width:1451px){
+ .app.workspace-architectures:not(.right-collapsed){
+  grid-template-columns:280px minmax(0,1fr) 480px;
+ }
+ .app.workspace-architectures.left-collapsed:not(.right-collapsed){
+  grid-template-columns:54px minmax(0,1fr) 480px;
+ }
+}
+@media (min-width:1021px) and (max-width:1450px){
+ .app.workspace-architectures:not(.right-collapsed){
+  grid-template-columns:260px minmax(0,1fr) minmax(360px,400px);
+ }
+ .app.workspace-architectures.left-collapsed:not(.right-collapsed){
+  grid-template-columns:54px minmax(0,1fr) minmax(360px,400px);
+ }
+}
+.app.workspace-architectures:not(.right-collapsed) .right-tabs{
+ display:flex;
+ justify-content:space-between;
+ gap:8px;
+}
+.app.workspace-architectures:not(.right-collapsed) .right-tabs button{
+ flex:1 1 0;
+ min-width:0;
+ text-align:center;
+}
