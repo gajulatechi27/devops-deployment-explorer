@@ -629,7 +629,7 @@ addDeployment({
 
  const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
 const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,flowMode=false):[number,number]=>{
-  if(flowMode){const index=Math.max(0,nodes.findIndex(n=>n.id===node.id));return [125+index*220,140];}
+  if(flowMode){const index=Math.max(0,nodes.findIndex(n=>n.id===node.id));return [125+index*220,86];}
   const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
   const tier=tierFor(node);const sameTier=nodes.filter(n=>tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===node.id));
   const column=inTier%3;const row=Math.floor(inTier/3);const x=100+column*220;
@@ -668,7 +668,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
   return `M ${startX} ${y1} H ${midX} V ${y2} H ${endX}`;
  };
  return <div className={flowMode?"architecture-2d flow-map":"architecture-2d"}>
-  <svg viewBox={`0 0 ${sceneWidth} ${flowMode?280:600}`} style={flowMode?{width:`${sceneWidth}px`,minWidth:`${sceneWidth}px`,maxWidth:"none"}:undefined} preserveAspectRatio="xMidYMid meet" role="img" aria-label={scenario.name+" deployment architecture"}>
+  <svg viewBox={`0 0 ${sceneWidth} ${flowMode?172:600}`} style={flowMode?{width:`${sceneWidth}px`,minWidth:`${sceneWidth}px`,maxWidth:"none"}:undefined} preserveAspectRatio="xMidYMid meet" role="img" aria-label={scenario.name+" deployment architecture"}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e5ecf6" strokeWidth="1"/></pattern>
     <marker id="route-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#7188aa"/></marker>
