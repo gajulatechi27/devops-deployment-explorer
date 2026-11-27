@@ -73,3 +73,31 @@ test("repository tree exposes JAR, Dockerfile, pipeline and workload manifests",
  const result=run(state,"tree");
  for(const path of ["target/orders-service-1.0.0.jar","Dockerfile","deploy.yml","deployment.yaml","statefulset.yaml","daemonset.yaml","job.yaml","cronjob.yaml"])assert.ok(result.output.includes(path));
 });
+
+test("plural Kubernetes aliases list Services and their real simulated endpoints",()=>{
+ let state=simulator.createTerminalState(false,true);
+ state=run(state,"kubectl apply -f k8s/").state;
+ const result=run(state,"kubectl get services,endpoints");
+ assert.match(result.output,/service\/orders-api/);
+ assert.match(result.output,/endpoints\/orders-api/);
+ assert.equal((result.output.match(/10\\.244\\./g)||[]).length,3);
+ assert.match(run(state,"kubectl get persistentvolumeclaims").output,/data-orders-db-0/);
+});
+
+test("applying a Service manifest does not invent Pods or workload resources",()=>{
+ let state=simulator.createTerminalState(false,true);
+ state=run(state,"kubectl apply -f k8s/service.yaml").state;
+ assert.equal(state.workloads.length,0);
+ assert.equal(state.service,true);
+ assert.match(run(state,"kubectl get pods").output,/No resources found/);
+ assert.match(run(state,"kubectl get svc").output,/orders-api/);
+ assert.match(run(state,"kubectl get endpoints").output,/ENDPOINTS/);
+ assert.match(run(state,"kubectl get ingress").output,/No resources found/);
+});
+
+test("combined resource aliases return every requested workload type",()=>{
+ let state=simulator.createTerminalState(false,true);
+ state=run(state,"kubectl apply -f k8s/").state;
+ const output=run(state,"kubectl get deployments,statefulsets,daemonsets,jobs,cronjobs,pods -o wide").output;
+ for(const name of ["orders-api","orders-db","node-log-agent","orders-db-migration","orders-cleanup","orders-api-7c9d"])assert.ok(output.includes(name));
+});
