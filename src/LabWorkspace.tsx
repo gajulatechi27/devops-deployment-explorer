@@ -40,7 +40,7 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentN
  const [incidentGuess,setIncidentGuess]=useState("");
  const [incidentSolved,setIncidentSolved]=useState(false);
  const [incidentScore,setIncidentScore]=useState(0);
- const hasKubernetesWorkload=deploymentResources.some(resource=>resource.kind==="cluster")&&deploymentResources.some(resource=>resource.kind==="workload")&&/eks|kubernetes/i.test(deploymentName);
+ const hasKubernetesWorkload=deploymentResources.some(resource=>resource.kind==="cluster")&&deploymentResources.some(resource=>resource.kind==="workload");
  const [terminalState,setTerminalState]=useState(()=>createTerminalState(deploymentCompleted,hasKubernetesWorkload));
  const namespace=terminalState.namespace;
  useEffect(()=>{setTerminalState(createTerminalState(deploymentCompleted,hasKubernetesWorkload));},[deploymentCompleted,deploymentName,hasKubernetesWorkload]);
