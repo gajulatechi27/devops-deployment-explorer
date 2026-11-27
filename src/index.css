@@ -2041,3 +2041,32 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .timeline-card{padding:12px}
   .lab-panel{padding:13px}
 }
+
+
+/* Keep creator attribution and support links visible in the architecture workspace. */
+.app.workspace-architectures .topbar-creator-actions{
+  display:flex;
+  align-items:center;
+  flex-shrink:0;
+  gap:8px;
+  margin-right:4px;
+}
+.app.workspace-architectures .profile-link{
+  background:#eff6ff;
+  border-color:#cfe0fb;
+  color:#245b9b;
+}
+.app.workspace-architectures .coffee-support{
+  background:#ffdf73;
+  border-color:#f3cf62;
+  color:#3b2b08;
+}
+.app.workspace-architectures .creator-credit{
+  background:#f7faff;
+  border-color:#dce6f4;
+  color:#647895;
+}
+.app.workspace-architectures .creator-credit strong{color:#2868b2}
+@media(max-width:980px){
+  .app.workspace-architectures .topbar-creator-actions{display:none}
+}
