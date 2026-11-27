@@ -1,8 +1,8 @@
-import { useEffect,useRef,useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from "react";
+import { useEffect,useState } from "react";
 import LabWorkspace from "./LabWorkspace";
 import DeploymentFiles from "./DeploymentFiles";
 import "./labs.css";
-import { ArrowRight,Box,Check,ChevronDown,Cloud,Layers,Maximize2,Moon,Pause,Play,RotateCcw,Search,ShieldCheck,SkipBack,SkipForward,Sun,Workflow,ZoomIn,ZoomOut } from "lucide-react";
+import { ArrowRight,Box,Check,ChevronDown,Cloud,Layers,Moon,Pause,Play,RotateCcw,Search,ShieldCheck,SkipBack,SkipForward,Sun,Workflow } from "lucide-react";
 
 type NodeKind="source"|"pipeline"|"registry"|"cluster"|"workload"|"network"|"server"|"database";
 type NodeDef={id:string;name:string;sub:string;kind:NodeKind;pos:[number,number,number];description:string;tech:string[]};
@@ -671,40 +671,8 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
   const midX=(startX+endX)/2;
   return `M ${startX} ${y1} H ${midX} V ${y2} H ${endX}`;
  };
- const sceneHeight=flowMode?280:600;
- const viewWidth=sceneWidth/zoom,viewHeight=sceneHeight/zoom;
- const clamp=(value:number,min:number,max:number)=>Math.min(Math.max(value,min),Math.max(min,max));
- const zoomBy=(amount:number)=>setZoom(z=>clamp(Number((z+amount).toFixed(2)),.65,1.8));
- const resetViewport=()=>{setZoom(1);setPan({x:0,y:0});};
- const onCanvasPointerDown=(e:ReactPointerEvent<SVGSVGElement>)=>{
-  const target=e.target as SVGElement;
-  if(target!==e.currentTarget&&!target.classList.contains("canvas-background"))return;
-  drag.current={x:e.clientX,y:e.clientY,panX:pan.x,panY:pan.y};
-  e.currentTarget.setPointerCapture(e.pointerId);
- };
- const onCanvasPointerMove=(e:React.PointerEvent<SVGSVGElement>)=>{
-  if(!drag.current||!svgRef.current)return;
-  const rect=svgRef.current.getBoundingClientRect();
-  const dx=(e.clientX-drag.current.x)*viewWidth/rect.width;
-  const dy=(e.clientY-drag.current.y)*viewHeight/rect.height;
-  setPan({x:clamp(drag.current.panX-dx,0,sceneWidth-viewWidth),y:clamp(drag.current.panY-dy,0,sceneHeight-viewHeight)});
- };
- const stopCanvasDrag=(e:React.PointerEvent<SVGSVGElement>)=>{
-  drag.current=null;
-  if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);
- };
- const onCanvasWheel=(e:ReactWheelEvent<SVGSVGElement>)=>{
-  e.preventDefault();
-  setZoom(z=>clamp(Number((z+(e.deltaY<0?.08:-.08)).toFixed(2)),.65,1.8));
- };
  return <div className={flowMode?"architecture-2d flow-map":"architecture-2d"}>
-  <div className="canvas-toolbar" role="group" aria-label="Architecture canvas controls">
-   <span className="canvas-zoom-level">{Math.round(zoom*100)}%</span>
-   <button type="button" title="Zoom out" aria-label="Zoom out" onClick={()=>zoomBy(-.1)} disabled={zoom<=.65}><ZoomOut size={14}/></button>
-   <button type="button" title="Zoom in" aria-label="Zoom in" onClick={()=>zoomBy(.1)} disabled={zoom>=1.8}><ZoomIn size={14}/></button>
-   <button type="button" title="Fit architecture" aria-label="Fit architecture" onClick={resetViewport}><Maximize2 size={14}/></button>
-  </div>
-  <svg ref={svgRef} viewBox={`${pan.x} ${pan.y} ${viewWidth} ${viewHeight}`} onWheel={onCanvasWheel} onPointerDown={onCanvasPointerDown} onPointerMove={onCanvasPointerMove} onPointerUp={stopCanvasDrag} onPointerCancel={stopCanvasDrag} style={{...(flowMode?{width:`${sceneWidth}px`,minWidth:`${sceneWidth}px`,maxWidth:"none"}:{}),cursor:drag.current?"grabbing":"grab"}} preserveAspectRatio="xMidYMid meet" role="img" aria-label={scenario.name+" deployment architecture. Drag to pan and use controls to zoom."}>
+  <svg viewBox={`0 0 ${sceneWidth} ${flowMode?280:600}`} style={flowMode?{width:`${sceneWidth}px`,minWidth:`${sceneWidth}px`,maxWidth:"none"}:undefined} preserveAspectRatio="xMidYMid meet" role="img" aria-label={scenario.name+" deployment architecture"}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e5ecf6" strokeWidth="1"/></pattern>
     <marker id="route-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#7188aa"/></marker>
