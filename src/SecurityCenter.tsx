@@ -55,8 +55,8 @@ export default function SecurityCenter({scenarioId,deploymentName,deploymentProv
   const filteredFiles = files.filter(file=>(category==="All"||file.category===category) && (file.path+" "+file.title+" "+file.purpose).toLowerCase().includes(query.toLowerCase()));
   const reachedStages = deploymentStages.filter((_,i)=>deploymentTriggered&&(deploymentCompleted||i<=deploymentStageIndex)).length;
   const stageNames = deploymentStages.length ? deploymentStages : ["Source control","CI/CD identity","Build and scan","Container registry","Kubernetes access","Runtime protection"];
-  const securityFilesForStage = (index:number) => files.filter(file=>file.stage===index || file.stage===index+1);
-  const checks = securityChecks.map((check,index)=>({...check,stage:Math.min(check.stage,Math.max(0,stageNames.length-1)),index}));
+  const securityFilesForStage = (index:number) => files.filter(file=>file.stage===index+1);
+  const checks = (scenarioId==="eks" && deploymentProvider==="AWS CLOUD" ? securityChecks : [{name:"Provider-specific security mapping",area:deploymentProvider,stage:0,detail:"This architecture currently has a security review guide only. Provider-specific security files and executable checks have not yet been authored.",command:"Review the selected workflow and define provider-specific controls.",icon:ShieldCheck}]).map((check,index)=>({...check,stage:Math.min(check.stage,Math.max(0,stageNames.length-1)),index}));
   const timelineLabel = deploymentCompleted ? "Deployment flow completed" : deploymentTriggered ? "Deployment flow in progress" : "Deployment not started";
 
   return <div className="deployment-module security-center">
@@ -83,7 +83,7 @@ export default function SecurityCenter({scenarioId,deploymentName,deploymentProv
       <section className="sc-panel">
         <div className="sc-section-head"><div><span>01 / SECURITY MAP</span><h3>Where security fits in this deployment</h3><p>Follow the actual selected workflow. Select a stage to inspect its related security files and checks.</p></div><span className="sc-legend"><i className="reached"/> Reached <i className="current"/> Current <i/> Upcoming</span></div>
         <div className="sc-map">
-          {stageNames.map((name,index)=>{const state=statusForStage(index,true,deploymentStageIndex,deploymentCompleted);const stageFiles=securityFilesForStage(index);return <button type="button" key={name+"-"+index} className={"sc-map-stage "+state.kind} onClick={()=>{setTab("files");if(stageFiles[0])setSelectedPath(stageFiles[0].path);}}><span className="sc-map-number">{deploymentTriggered&&(deploymentCompleted||index<=deploymentStageIndex)?<CheckCircle2 size={15}/>:index+1}</span><b>{name}</b><small>{stageFiles.length} mapped file{stageFiles.length===1?"":"s"}</small><ChevronRight size={13}/></button>;})}
+          {stageNames.map((name,index)=>{const state=statusForStage(index,deploymentTriggered,deploymentStageIndex,deploymentCompleted);const stageFiles=securityFilesForStage(index);return <button type="button" key={name+"-"+index} className={"sc-map-stage "+state.kind} onClick={()=>{setTab("files");if(stageFiles[0])setSelectedPath(stageFiles[0].path);}}><span className="sc-map-number">{deploymentTriggered&&(deploymentCompleted||index<=deploymentStageIndex)?<CheckCircle2 size={15}/>:index+1}</span><b>{name}</b><small>{stageFiles.length} mapped file{stageFiles.length===1?"":"s"}</small><ChevronRight size={13}/></button>;})}
         </div>
         <div className="sc-map-foot"><span><Workflow size={14}/> Deployment stage progression is simulated</span><span>Security checks require separate execution evidence</span></div>
       </section>
