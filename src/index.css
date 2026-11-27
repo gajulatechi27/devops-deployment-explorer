@@ -1768,3 +1768,32 @@ main>footer span{color:#4c8bd6}
  min-width:0;
  text-align:center;
 }
+
+/* Architecture reference panel: reserve enough width for the project tree and code preview. */
+@media (min-width:1281px){
+ .app.workspace-architectures:not(.right-collapsed){
+  grid-template-columns:280px minmax(0,1fr) 440px;
+ }
+ .app.workspace-architectures.left-collapsed:not(.right-collapsed){
+  grid-template-columns:54px minmax(0,1fr) 440px;
+ }
+}
+@media (min-width:1021px) and (max-width:1280px){
+ .app.workspace-architectures:not(.right-collapsed){
+  grid-template-columns:250px minmax(0,1fr) 390px;
+ }
+ .app.workspace-architectures.left-collapsed:not(.right-collapsed){
+  grid-template-columns:54px minmax(0,1fr) 390px;
+ }
+}
+.app.workspace-architectures .deployment-files,
+.app.workspace-architectures .implementation-guide,
+.app.workspace-architectures .project-structure,
+.app.workspace-architectures .files-browser{
+ width:100%;
+ max-width:100%;
+ min-width:0;
+}
+.app.workspace-architectures .project-structure-body{
+ grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);
+}
