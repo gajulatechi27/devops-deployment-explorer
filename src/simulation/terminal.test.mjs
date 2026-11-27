@@ -24,7 +24,7 @@ test("applies all five workload types and exposes their Pods and nodes",()=>{
  for(const name of ["orders-api","orders-db","node-log-agent","orders-db-migration","orders-cleanup","10.244."])assert.ok(result.output.includes(name));
  assert.equal(state.workloads.find(w=>w.kind==="DaemonSet").pods.length,3);
  assert.ok(state.workloads.find(w=>w.kind==="Job").pods.every(p=>p.status==="Completed"));
- assert.ok(state.workloads.find(w=>w.kind==="CronJob").pods.every(p=>p.status==="Completed"));
+ assert.equal(state.workloads.find(w=>w.kind==="CronJob").pods.length,0);\n assert.ok(state.workloads.some(w=>w.kind==="Job"&&w.name==="orders-cleanup-9f8d2"&&w.pods.every(p=>p.status==="Completed")));
 });
 
 test("StatefulSet Pods have stable ordinal names and simulated PVCs",()=>{
