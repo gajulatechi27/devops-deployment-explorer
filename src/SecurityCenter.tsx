@@ -32,6 +32,15 @@ const securityChecks = [
   {name:"Network and secret delivery",area:"Runtime",stage:5,detail:"Verify NetworkPolicy enforcement and the configured external secret delivery path.",command:"kubectl get networkpolicy,externalsecret -n production",icon:Network}
 ];
 
+const ecsSecurityChecks = [
+  {name:"GitHub Actions OIDC permissions",area:"CI/CD identity",stage:0,detail:"Review repository and environment restrictions, id-token permissions and the assumed deployment role.",command:"Review .github/workflows/deploy.yml and the OIDC trust policy",icon:Fingerprint},
+  {name:"ECR image scan and provenance",area:"Image supply chain",stage:2,detail:"Review the exact image tag or digest, vulnerability scan findings, immutable tag policy and repository access.",command:"aws ecr describe-image-scan-findings --repository-name REPOSITORY --image-id imageTag=TAG",icon:PackageCheck},
+  {name:"Task execution and application roles",area:"ECS task identity",stage:3,detail:"Keep image-pull/logging permissions in the execution role and application API permissions in the separate task role.",command:"aws ecs describe-task-definition --task-definition TASK_FAMILY",icon:LockKeyhole},
+  {name:"Fargate network boundary",area:"VPC and security groups",stage:4,detail:"Verify private task subnets, disabled public IP assignment and task ingress restricted to the load balancer security group.",command:"aws ec2 describe-security-groups --group-ids ALB_SG_ID TASK_SG_ID",icon:Network},
+  {name:"Secrets and runtime hardening",area:"ECS runtime",stage:4,detail:"Review secret references, read-only root filesystem, container health checks and deployment circuit breaker.",command:"aws ecs describe-services --cluster CLUSTER --services SERVICE",icon:ShieldCheck},
+  {name:"CloudWatch and audit logging",area:"Observability",stage:5,detail:"Review container log group, retention, sensitive-data handling and release traceability fields.",command:"aws logs describe-log-groups --log-group-name-prefix /ecs/",icon:Activity}
+];
+
 const statusForStage = (stage:number, triggered:boolean, current:number, completed:boolean) => {
   if (!triggered) return {label:"Waiting",kind:"waiting" as const};
   if (completed || current >= stage) return {label:"Stage reached · simulated",kind:"reached" as const};
@@ -56,7 +65,7 @@ export default function SecurityCenter({scenarioId,deploymentName,deploymentProv
   const reachedStages = deploymentStages.filter((_,i)=>deploymentTriggered&&(deploymentCompleted||i<=deploymentStageIndex)).length;
   const stageNames = deploymentStages.length ? deploymentStages : ["Source control","CI/CD identity","Build and scan","Container registry","Kubernetes access","Runtime protection"];
   const securityFilesForStage = (index:number) => files.filter(file=>file.stage===index+1);
-  const checks = (scenarioId==="eks" && deploymentProvider==="AWS CLOUD" ? securityChecks : [{name:"Provider-specific security mapping",area:deploymentProvider,stage:0,detail:"This architecture currently has a security review guide only. Provider-specific security files and executable checks have not yet been authored.",command:"Review the selected workflow and define provider-specific controls.",icon:ShieldCheck}]).map((check,index)=>({...check,stage:Math.min(check.stage,Math.max(0,stageNames.length-1)),index}));
+  const checks = (scenarioId==="eks" && deploymentProvider==="AWS CLOUD" ? securityChecks : scenarioId==="ecs-fargate-ci" && deploymentProvider==="AWS CLOUD" ? ecsSecurityChecks : [{name:"Provider-specific security mapping",area:deploymentProvider,stage:0,detail:"This architecture has a workflow-specific reference security guide. Provider checks are not yet authored for this pattern.",command:"Review the selected workflow and define provider-specific controls.",icon:ShieldCheck}]).map((check,index)=>({...check,stage:Math.min(check.stage,Math.max(0,stageNames.length-1)),index}));
   const timelineLabel = deploymentCompleted ? "Deployment flow completed" : deploymentTriggered ? "Deployment flow in progress" : "Deployment not started";
 
   if (!deploymentCompleted) return <div className="deployment-module security-center">
