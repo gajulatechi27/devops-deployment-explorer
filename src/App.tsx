@@ -629,7 +629,7 @@ addDeployment({
 
  const palette:Record<NodeKind,string>={source:"#b9d8a8",pipeline:"#efbd79",registry:"#c8b5d9",cluster:"#9eb9d4",workload:"#a8c7e4",network:"#b9d8a8",server:"#d9bd91",database:"#c8b5d9"};
 const nodeXY=(node:NodeDef,nodes:NodeDef[],tierMode:2|3=3,flowMode=false):[number,number]=>{
-  if(flowMode){const index=Math.max(0,nodes.findIndex(n=>n.id===node.id));const spacing=nodes.length<=7?1170/Math.max(nodes.length-1,1):220;return [115+index*spacing,210];}
+  if(flowMode){const index=Math.max(0,nodes.findIndex(n=>n.id===node.id));return [125+index*220,210];}
   const tierFor=(n:NodeDef)=>{if(n.kind==="source"||n.kind==="network")return 1;if(n.kind==="database")return tierMode===3?3:2;return 2;};
   const tier=tierFor(node);const sameTier=nodes.filter(n=>tierFor(n)===tier);const inTier=Math.max(0,sameTier.findIndex(n=>n.id===node.id));
   const column=inTier%3;const row=Math.floor(inTier/3);const x=100+column*220;
@@ -649,7 +649,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
  const activeStage=scenario.stages[stageIndex];
  const doneStages=stageIndex<0?[]:scenario.stages.slice(0,stageIndex);
  const nodes=scenario.nodes;
- const sceneWidth=flowMode?(nodes.length<=7?1400:Math.max(1400,230+(nodes.length-1)*220)):1400;
+ const sceneWidth=flowMode?250+Math.max(nodes.length-1,0)*220:1400;
  const nodeById=(id:string)=>nodes.find(n=>n.id===id)!;
  const route=(from:NodeDef,to:NodeDef)=>{
   const [x1,y1]=nodeXY(from,nodes,tierMode,flowMode),[x2,y2]=nodeXY(to,nodes,tierMode,flowMode);
@@ -666,7 +666,7 @@ function Scene({scenario,stageIndex,selected,playing,onSelect,tierMode=3,flowMod
   return `M ${startX} ${y1} H ${midX} V ${y2} H ${endX}`;
  };
  return <div className={flowMode?"architecture-2d flow-map":"architecture-2d"}>
-  <svg viewBox={`0 0 ${sceneWidth} ${flowMode?420:600}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label={scenario.name+" deployment architecture"}>
+  <svg viewBox={`0 0 ${sceneWidth} ${flowMode?420:600}`} style={flowMode?{width:`${sceneWidth}px`,minWidth:`${sceneWidth}px`,maxWidth:"none"}:undefined} preserveAspectRatio="xMidYMid meet" role="img" aria-label={scenario.name+" deployment architecture"}>
    <defs>
     <pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e9e0d2" strokeWidth="1"/></pattern>
     <marker id="route-arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b9388"/></marker>
