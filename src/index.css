@@ -1056,3 +1056,70 @@ main>footer span{color:#4c8bd6}
 @media(prefers-reduced-motion:reduce){
   .route-flow-dash,.node-halo{animation:none!important}
 }
+
+
+/* Architecture Studio canvas navigation controls */
+.architecture-2d{position:relative;isolation:isolate;touch-action:pan-y}
+.architecture-2d>svg{display:block;max-width:100%;user-select:none;touch-action:none}
+.architecture-2d.flow-map>svg{max-width:none}
+.canvas-toolbar{
+ position:absolute;
+ z-index:5;
+ top:12px;
+ right:14px;
+ display:flex;
+ align-items:center;
+ gap:5px;
+ padding:5px;
+ border:1px solid rgba(190,207,230,.8);
+ border-radius:11px;
+ background:rgba(255,255,255,.9);
+ box-shadow:0 5px 18px rgba(27,57,96,.12);
+ backdrop-filter:blur(12px);
+}
+.canvas-toolbar button{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ width:29px;
+ height:29px;
+ padding:0;
+ border:1px solid transparent;
+ border-radius:7px;
+ background:transparent;
+ color:#49627f;
+ cursor:pointer;
+ transition:all .16s ease;
+}
+.canvas-toolbar button:hover:not(:disabled){
+ color:#2368c5;
+ border-color:#c7daf4;
+ background:#eaf2ff;
+}
+.canvas-toolbar button:disabled{opacity:.35;cursor:not-allowed}
+.canvas-zoom-level{
+ min-width:39px;
+ padding:0 5px;
+ color:#506783;
+ text-align:center;
+ font:750 9px 'Inter',sans-serif;
+ font-variant-numeric:tabular-nums;
+}
+.app.dark .canvas-toolbar{
+ background:rgba(16,31,54,.92);
+ border-color:#355071;
+ box-shadow:0 6px 20px rgba(0,0,0,.28);
+}
+.app.dark .canvas-toolbar button{color:#b8cbe4}
+.app.dark .canvas-toolbar button:hover:not(:disabled){
+ color:#dcecff;
+ border-color:#456f9f;
+ background:#1d3a5d;
+}
+.app.dark .canvas-zoom-level{color:#c0d1e7}
+.architecture-2d svg:active{cursor:grabbing}
+.architecture-2d .canvas-background{cursor:grab}
+@media(max-width:700px){
+ .canvas-toolbar{top:8px;right:8px;gap:2px;padding:4px}
+ .canvas-toolbar button{width:27px;height:27px}
+}
