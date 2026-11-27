@@ -64,7 +64,7 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const kubernetesClusterName=clusterResource?.name||"Kubernetes Cluster";
  const kubernetesProvider=deploymentProvider==="AWS CLOUD"?"Amazon EKS":deploymentProvider==="MICROSOFT AZURE"?"Azure AKS":deploymentProvider==="GOOGLE CLOUD"?"Google GKE":"Kubernetes";
  const kubernetesWorkloadName=kubernetesWorkloads[0]?.name||"Application workload";
- const kubernetesManifests=buildKubernetesManifests(scenarioId,deploymentName,deploymentResources);
+ const kubernetesManifests=buildKubernetesManifests(scenarioId,deploymentName,deploymentResources,replicas);
  const activeKubernetesManifest=kubernetesManifests.find(file=>file.name===selectedKubernetesFile)||kubernetesManifests[0];
  const kubernetesRolloutState=!deploymentTriggered?"Not started":deploymentCompleted||deploymentProgress>=90?"Available":deploymentProgress>=45?"Progressing":"Waiting for apply";
  const kubernetesReadyReplicas=Math.max(0,(kubernetesRolloutState==="Available"?replicas:kubernetesRolloutState==="Progressing"?Math.max(1,Math.floor(replicas/2)):0)-(podFailure&&!podRecovered?1:0));
