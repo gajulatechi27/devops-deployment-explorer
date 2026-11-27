@@ -2129,3 +2129,20 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     font-size:9px;
   }
 }
+
+/* Terminal is intentionally a dark console inside the light learning workspace. */
+.app .lab-panel.terminal-panel{background:#17251f!important;color:#e7f0e9!important;border:1px solid #34483d!important;box-shadow:0 14px 34px rgba(15,30,22,.13)!important;padding:18px 20px!important}
+.app .terminal-panel .terminal-head{color:#edf5ef;border-bottom:1px solid #40564a;min-height:30px}
+.app .terminal-panel .terminal-head b{color:#e5eee7;font-weight:600}
+.app .terminal-panel .terminal-clear{margin-left:auto;color:#d5e4d8;background:#20342a;border:1px solid #526b5b;border-radius:6px;padding:5px 9px}
+.app .terminal-panel .terminal-output{min-height:210px;max-height:420px;height:clamp(210px,32vh,360px);overflow:auto;padding:12px 0;color:#dce9df;scrollbar-color:#526d5b #1b2b23}
+.app .terminal-panel .terminal-output pre{color:#dce9df!important;background:transparent!important;font:11px/1.65 'DM Mono',monospace!important;padding:2px 0!important;margin:0!important;white-space:pre-wrap;overflow-wrap:anywhere}
+.app .terminal-panel form{display:flex;align-items:center;gap:10px;border-top:1px solid #40564a;border-bottom:1px solid #40564a;padding:11px 0;color:#dce9df}
+.app .terminal-panel form label{display:flex;align-items:center;gap:9px;min-width:0;color:#b8d2bd;font:12px 'DM Mono',monospace}
+.app .terminal-panel form label input{flex:1;min-width:0;width:100%;min-height:38px;padding:9px 12px;border:1px solid #526b5b;border-radius:7px;outline:none;background:#102019!important;color:#f0f7f1!important;caret-color:#8fcf9c;font:11px 'DM Mono',monospace}
+.app .terminal-panel form label input::placeholder{color:#91a99a;opacity:1}
+.app .terminal-panel form label input:focus{border-color:#83b995;box-shadow:0 0 0 3px rgba(131,185,149,.15)}
+.app .terminal-panel form button{min-width:70px;min-height:38px;padding:0 17px;border:1px solid #8dbb91;border-radius:7px;background:#8dbb91;color:#122219;font-weight:700}
+.app .terminal-panel form button:hover{background:#a4cba7}
+.app .terminal-panel>p{margin:10px 0 0;color:#aebfb2!important;font-size:11px;line-height:1.5}
+@media(max-width:700px){.app .lab-panel.terminal-panel{padding:13px!important}.app .terminal-panel .terminal-output{height:260px;min-height:180px}.app .terminal-panel form{align-items:stretch}.app .terminal-panel form button{min-width:58px;padding:0 10px}}
