@@ -1,7 +1,7 @@
 export type WorkloadKind = "Deployment" | "StatefulSet" | "DaemonSet" | "Job" | "CronJob";
 export type SimPod = { name:string; ip:string; node:string; status:string; ready:string; restarts:number; age:string; image:string; owner:string; };
 export type SimWorkload = { kind:WorkloadKind; name:string; desired:number; image:string; pods:SimPod[]; revision:number; };
-export type TerminalState = { deployed:boolean; kubernetes:boolean; namespace:string; workloads:SimWorkload[]; image:string; imageBuilt:boolean; containers:boolean; };
+export type TerminalState = { deployed:boolean; kubernetes:boolean; namespace:string; workloads:SimWorkload[]; image:string; imageBuilt:boolean; containers:boolean; service:boolean; };
 export type TerminalResult = { state:TerminalState; output:string; };
 const nodes=[{name:"worker-10-0-1-21",ip:"10.0.1.21"},{name:"worker-10-0-2-18",ip:"10.0.2.18"},{name:"worker-10-0-3-14",ip:"10.0.3.14"}];
 const files:Record<string,string>={
@@ -25,7 +25,7 @@ const makePods=(kind,name,count,image,owner)=>Array.from({length:count},(_,i)=>{
  return {name:podName,ip:"10.244."+[1,2,3][i%3]+"."+[11,12,13,14,15][i%5],node:daemonNode.name,status:kind==="Job"||kind==="CronJob"?"Completed":"Running",ready:kind==="Job"||kind==="CronJob"?"0/1":"1/1",restarts:0,age:"2m",image,owner};
 });
 const initialWorkloads=(deployed:boolean):SimWorkload[]=>deployed?[{kind:"Deployment",name:"orders-api",desired:3,image:"registry.example.com/orders:1.0.0",pods:makePods("Deployment","orders-api",3,"registry.example.com/orders:1.0.0","ReplicaSet/orders-api-7c9d"),revision:1}]:[];
-export function createTerminalState(deployed=false,kubernetes=true):TerminalState{return {deployed:deployed&&kubernetes,kubernetes,namespace:"production",workloads:initialWorkloads(deployed&&kubernetes),image:"registry.example.com/orders:1.0.0",imageBuilt:deployed,containers:false};}
+export function createTerminalState(deployed=false,kubernetes=true):TerminalState{return {deployed:deployed&&kubernetes,kubernetes,namespace:"production",workloads:initialWorkloads(deployed&&kubernetes),image:"registry.example.com/orders:1.0.0",imageBuilt:deployed,containers:false,service:deployed};}
 const allPods=(s:TerminalState)=>s.workloads.flatMap(w=>w.pods);
 const table=(rows:string[],headers:string[])=>[headers.join("   "),...rows].join("\n");
 function applyManifest(s:TerminalState,path:string):{state:TerminalState;output:string}{
@@ -43,7 +43,7 @@ function applyManifest(s:TerminalState,path:string):{state:TerminalState;output:
   workloads=[...workloads.filter(w=>w.name!==name),workload];
   messages.push(kind.toLowerCase()+".apps/"+name+" configured",... (kind==="Deployment"?["replicaset.apps/orders-api-7c9d created"]:[]),desired+" Pod(s) "+(kind==="Job"||kind==="CronJob"?"completed":"created"));
  }
- return {state:{...s,deployed:true,workloads,imageBuilt:true},output:messages.join("\n")+"\n(simulated manifest apply; no cluster was contacted)"};
+ return {state:{...s,deployed:true,workloads,imageBuilt:true,service:s.service||lower.endsWith("/")||lower==="k8s"||lower==="k8s/"||lower.includes("service.yaml")},output:messages.join("\n")+"\n(simulated manifest apply; no cluster was contacted)"};
 }
 export function executeTerminalCommand(state:TerminalState,raw:string):TerminalResult{
  const command=raw.trim();if(!command)return {state,output:""};
@@ -75,15 +75,15 @@ export function executeTerminalCommand(state:TerminalState,raw:string):TerminalR
   const ws=current.workloads.filter(w=>wanted.has(w.kind.toLowerCase())||wanted.has(w.kind==="StatefulSet"?"sts":w.kind==="DaemonSet"?"ds":w.kind==="Deployment"?"deploy":w.kind.toLowerCase()));
   if(arg==="all")out=current.workloads.length?current.workloads.map(w=>w.kind+"/"+w.name+" "+(w.pods.filter(pod=>pod.status==="Running").length)+"/"+w.desired).join("\n"):"No resources found in "+current.namespace+" namespace.";
   else if(wanted.has("pod")||wanted.has("pods")){const pods=allPods(current);out=pods.length?table(pods.map(pod=>pod.name+"   "+pod.ready+"   "+pod.status+"   "+pod.restarts+"   "+pod.ip+(wide?"   "+pod.node+"   "+pod.image:"")),wide?["NAME   READY   STATUS   RESTARTS   IP   NODE   IMAGE"]:["NAME   READY   STATUS   RESTARTS   AGE"]):"No resources found in "+current.namespace+" namespace.";}
-  else if(names.length>1){const lines=ws.map(w=>w.kind+"/"+w.name+"   "+(w.kind==="Deployment"||w.kind==="StatefulSet"?w.pods.filter(x=>x.status==="Running").length+"/"+w.desired:w.kind==="DaemonSet"?w.pods.length+"/"+nodes.length:w.kind==="Job"?"1/1 Complete":"schedule 0 2 * * *"));if(wanted.has("svc")||wanted.has("service"))lines.push("service/orders-api   ClusterIP   10.96.12.4   80/TCP");if(wanted.has("endpoints")||wanted.has("ep"))lines.push("endpoints/orders-api   "+allPods(current).filter(x=>x.owner.startsWith("ReplicaSet")).map(x=>x.ip+":8080").join(","));out=lines.length?lines.join("\\n"):"No resources found in "+current.namespace+" namespace."; }
+  else if(names.length>1){const lines=ws.map(w=>w.kind+"/"+w.name+"   "+(w.kind==="Deployment"||w.kind==="StatefulSet"?w.pods.filter(x=>x.status==="Running").length+"/"+w.desired:w.kind==="DaemonSet"?w.pods.length+"/"+nodes.length:w.kind==="Job"?"1/1 Complete":"schedule 0 2 * * *"));if((wanted.has("svc")||wanted.has("service"))&&current.service)lines.push("service/orders-api   ClusterIP   10.96.12.4   80/TCP");if((wanted.has("endpoints")||wanted.has("ep"))&&current.service)lines.push("endpoints/orders-api   "+allPods(current).filter(x=>x.owner.startsWith("ReplicaSet")).map(x=>x.ip+":8080").join(","));out=lines.length?lines.join("\\n"):"No resources found in "+current.namespace+" namespace."; }
   else if(wanted.has("deployment")||wanted.has("deploy"))out=ws.filter(w=>w.kind==="Deployment").length?table(ws.filter(w=>w.kind==="Deployment").map(w=>w.name+"   "+w.pods.filter(x=>x.status==="Running").length+"/"+w.desired+"   "+w.desired+"   "+w.desired),["NAME   READY   UP-TO-DATE   AVAILABLE"]):"No resources found in "+current.namespace+" namespace.";
   else if(wanted.has("statefulset")||wanted.has("sts"))out=ws.filter(w=>w.kind==="StatefulSet").length?table(ws.filter(w=>w.kind==="StatefulSet").map(w=>w.name+"   "+w.pods.length+"/"+w.desired+"   "+w.desired),["NAME   READY   AGE"]):"No resources found in "+current.namespace+" namespace.";
   else if(wanted.has("daemonset")||wanted.has("ds"))out=ws.filter(w=>w.kind==="DaemonSet").length?table(ws.filter(w=>w.kind==="DaemonSet").map(w=>w.name+"   "+w.pods.length+"   "+nodes.length+"   "+nodes.length),["NAME   DESIRED   CURRENT   READY"]):"No resources found in "+current.namespace+" namespace.";
   else if(wanted.has("job"))out=ws.filter(w=>w.kind==="Job").length?table(ws.filter(w=>w.kind==="Job").map(w=>w.name+"   1/1   Complete"),["NAME   COMPLETIONS   STATUS"]):"No resources found in "+current.namespace+" namespace.";
   else if(wanted.has("cronjob")||wanted.has("cj"))out=ws.filter(w=>w.kind==="CronJob").length?table(ws.filter(w=>w.kind==="CronJob").map(w=>w.name+"   0 */2 * * *   orders-cleanup-xxxxx   1m"),["NAME   SCHEDULE   SUSPEND   ACTIVE   LAST SCHEDULE"]):"No resources found in "+current.namespace+" namespace.";
   else if(wanted.has("rs")||wanted.has("replicaset"))out=ws.filter(w=>w.kind==="Deployment").length?table(ws.filter(w=>w.kind==="Deployment").map(w=>w.name+"-7c9d   "+w.desired+"   "+w.desired+"   "+w.desired),["NAME   DESIRED   CURRENT   READY"]):"No resources found in "+current.namespace+" namespace.";
-  else if(wanted.has("svc")||wanted.has("service"))out=current.deployed?"NAME         TYPE        CLUSTER-IP     PORT(S)\\norders-api   ClusterIP   10.96.12.4   80/TCP":"No resources found in "+current.namespace+" namespace.";
-  else if(wanted.has("endpoints")||wanted.has("ep"))out=current.deployed?"orders-api   10.244.1.11:8080,10.244.2.12:8080,10.244.3.13:8080":"No resources found in "+current.namespace+" namespace.";
+  else if(wanted.has("svc")||wanted.has("service"))out=current.service?"NAME         TYPE        CLUSTER-IP     PORT(S)\\norders-api   ClusterIP   10.96.12.4   80/TCP":"No resources found in "+current.namespace+" namespace.";
+  else if(wanted.has("endpoints")||wanted.has("ep"))out=current.service?"orders-api   10.244.1.11:8080,10.244.2.12:8080,10.244.3.13:8080":"No resources found in "+current.namespace+" namespace.";
   else if(wanted.has("pvc")||wanted.has("persistentvolumeclaim"))out=current.workloads.some(w=>w.kind==="StatefulSet")?"NAME                 STATUS   VOLUME\\ndata-orders-db-0     Bound    pvc-a1b2\\ndata-orders-db-1     Bound    pvc-c3d4\\ndata-orders-db-2     Bound    pvc-e5f6":"No resources found in "+current.namespace+" namespace.";\n  else if(wanted.has("ingress")||wanted.has("ing"))out=current.deployed?"orders-api   nginx   orders.example.test   203.0.113.20":"No resources found in "+current.namespace+" namespace.";
   else out="No resources found in "+current.namespace+" namespace.";
  }
