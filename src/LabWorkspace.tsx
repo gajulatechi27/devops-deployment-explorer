@@ -26,7 +26,7 @@ const kubernetesEventsFor=(provider:string):SimulationEvent[]=>eksEvents.map(eve
  const pushCommand=provider==="MICROSOFT AZURE"?"docker push $ACR_LOGIN_SERVER/web:$GITHUB_SHA":provider==="GOOGLE CLOUD"?"docker push REGION-docker.pkg.dev/PROJECT/REPOSITORY/web:$COMMIT_SHA":"docker push $ECR_REPOSITORY:$GITHUB_SHA";
  return {...event,
   component:event.component==="Amazon ECR"?registry:event.component==="AWS Load Balancer Controller"?ingress:event.component,
-  description:event.description.replaceAll("ECR",registry).replace("ALB",ingress),
+  description:event.description.replace(/ECR/g,registry).replace("ALB",ingress),
   command:event.id==="ecr-push"?pushCommand:event.command
  };
 });
