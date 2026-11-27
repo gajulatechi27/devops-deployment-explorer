@@ -229,9 +229,9 @@ button:disabled{cursor:not-allowed}
 
 /* Restore full-size deployment cards and the scrollable horizontal flow lane. */
 .architecture-2d.flow-map{height:280px;min-height:260px;max-height:280px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#9aab91 #e9e1d5}
-.architecture-2d.flow-map svg{display:block;width:auto!important;height:100%;min-width:0;max-width:none!important}
+.architecture-2d.flow-map svg{display:block;height:100%;min-width:0;max-width:none!important}
 .architecture-2d.flow-map::-webkit-scrollbar{height:12px}
 .architecture-2d.flow-map::-webkit-scrollbar-track{background:#e9e1d5;border-radius:8px}
 .architecture-2d.flow-map::-webkit-scrollbar-thumb{background:#9aab91;border:2px solid #e9e1d5;border-radius:8px}
 .architecture-2d.flow-map::-webkit-scrollbar-thumb:hover{background:#718a68}
-@media(max-width:700px){.architecture-2d.flow-map{height:260px;min-height:240px;max-height:260px;overflow-x:auto}.architecture-2d.flow-map svg{width:auto!important;min-width:0;max-width:none!important}}
+@media(max-width:700px){.architecture-2d.flow-map{height:260px;min-height:240px;max-height:260px;overflow-x:auto}.architecture-2d.flow-map svg{min-width:0;max-width:none!important}}
