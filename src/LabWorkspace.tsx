@@ -56,6 +56,9 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const [incidentGuess,setIncidentGuess]=useState("");
  const [incidentSolved,setIncidentSolved]=useState(false);
  const [incidentScore,setIncidentScore]=useState(0);
+ const [replicas,setReplicas]=useState(3);
+ const [podFailure,setPodFailure]=useState(false);
+ const [podRecovered,setPodRecovered]=useState(false);
  const clusterResource=deploymentResources.find(resource=>resource.kind==="cluster");
  const kubernetesWorkloads=deploymentResources.filter(resource=>resource.kind==="workload");
  const kubernetesNetworks=deploymentResources.filter(resource=>resource.kind==="network");
@@ -79,9 +82,6 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  useEffect(()=>{if(!monitorLive||mode!=="monitoring")return;const id=window.setInterval(()=>setMetrics(m=>({cpu:Math.max(25,Math.min(96,m.cpu+(Math.random()*10-5))),memory:Math.max(42,Math.min(91,m.memory+(Math.random()*4-1.5))),requests:Math.max(500,m.requests+Math.round(Math.random()*90-35)),errors:Math.max(0,m.errors+Math.round(Math.random()*3-1))})),2200);return()=>window.clearInterval(id);},[monitorLive,mode]);
  useEffect(()=>{setMonitorHistory(h=>[...h.slice(-23),metrics]);},[metrics]);
 
- const [replicas,setReplicas]=useState(3);
- const [podFailure,setPodFailure]=useState(false);
- const [podRecovered,setPodRecovered]=useState(false);
  const fault=faults.find(f=>f.id===faultId)!;
 
  const kubernetesEvents=kubernetesEventsFor(deploymentProvider);
