@@ -1713,14 +1713,6 @@ Never commit real secrets. The secret example is intentionally fake and must be 
     const terms = rules.find(([pattern]) => pattern.test(title))?.[1] || [];
     return files.filter(file => terms.some(term => file.path.toLowerCase().includes(term.toLowerCase()))).slice(0, 6);
   }, [files, stageTitle]);
-  const projectFolders = useMemo(() => {
-    const folders = new Set<string>();
-    files.forEach(file => {
-      const parts = file.path.split("/");
-      for (let i = 1; i < parts.length; i++) folders.add(parts.slice(0, i).join("/") + "/");
-    });
-    return [...folders].sort();
-  }, [files]);
   const runbook = useMemo(() => {
     const paths = files.map(file => file.path.toLowerCase());
     const has = (term: string) => paths.some(path => path.includes(term));
