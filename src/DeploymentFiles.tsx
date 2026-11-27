@@ -1698,6 +1698,105 @@ Never commit real secrets. The secret example is intentionally fake and must be 
     setSelected(match?.path || files[0]?.path || "");
   }, [scenarioId, stageTitle, files]);
   const active = files.find(file => file.path === selected) || files[0];
+  const stageFiles = useMemo(() => {
+    if (!stageTitle) return [];
+    const title = stageTitle.toLowerCase();
+    const rules: [RegExp, string[]][] = [
+      [/checkout|source|commit/, ["Jenkinsfile", ".gitlab-ci.yml", "azure-pipelines.yml", "cloudbuild.yaml", "workflows"]],
+      [/test|quality|scan|sonar|validate/, ["pom.xml", "build.gradle", "sonar", "test", "package.json"]],
+      [/build|compile|package|artifact/, ["pom.xml", "build.gradle", "package.json", "Dockerfile", "template.yaml"]],
+      [/image|container|docker|registry|publish|push/, ["Dockerfile", "docker-compose", "task-definition", "deployment"]],
+      [/database|schema|migration|rds|sql/, ["sql/", "flyway", "database/", "postgresql"]],
+      [/deploy|release|apply|sync|rollout|traffic/, ["deployment.yaml", "service.yaml", "ingress.yaml", "task-definition", "template.yaml", "deploy.sh", "application.yaml", "main.tf", "app.yaml"]],
+      [/verify|health|monitor|promote/, ["README", "prometheus", "grafana", "nginx", "service", "health"]]
+    ];
+    const terms = rules.find(([pattern]) => pattern.test(title))?.[1] || [];
+    return files.filter(file => terms.some(term => file.path.toLowerCase().includes(term.toLowerCase()))).slice(0, 6);
+  }, [files, stageTitle]);
+  const projectFolders = useMemo(() => {
+    const folders = new Set<string>();
+    files.forEach(file => {
+      const parts = file.path.split("/");
+      for (let i = 1; i < parts.length; i++) folders.add(parts.slice(0, i).join("/") + "/");
+    });
+    return [...folders].sort();
+  }, [files]);
+  const runbook = useMemo(() => {
+    const paths = files.map(file => file.path.toLowerCase());
+    const has = (term: string) => paths.some(path => path.includes(term));
+    if (has("jenkinsfile")) return [
+      ["Prepare source", "Commit the application, build file and Jenkinsfile. Configure a Jenkins agent with the required JDK/build tools."],
+      ["Configure Jenkins", "Create credentials or workload identity bindings for the registry, artifact repository and target host. Match credential IDs referenced by the pipeline."],
+      ["Build and quality", "Run the build and tests first. Add the SonarQube quality gate where the project uses it; publish only after the gate passes."],
+      ["Publish immutable artifact", "Publish a versioned JAR/image to the configured repository. Record its version and checksum."],
+      ["Deploy target", "Use the deployment script, manifest or Ansible playbook in this pack. Replace example hosts, paths, service names and repository URLs."],
+      ["Verify and rollback", "Run the health check, inspect service logs and keep the previous known-good artifact available for rollback."]
+    ];
+    if (has("azure-pipelines.yml")) return [
+      ["Prepare repository", "Commit azure-pipelines.yml, application source, build files and deployment manifests to the repository connected to Azure DevOps."],
+      ["Create service connections", "Create least-privilege connections for the registry, cloud target, SonarQube and Kubernetes as required. Use workload identity federation where supported."],
+      ["Run build and tests", "Confirm the selected agent image has the right JDK/Node/Docker tools. Run tests and inspect published test results."],
+      ["Quality and artifact", "Configure the real SonarQube endpoint and quality gate; publish an immutable image or package tag."],
+      ["Deploy with approval", "Bind the pipeline environment to the correct target and approvals. Replace demo namespace, registry and resource names."],
+      ["Verify release", "Check rollout status, endpoint health, logs and metrics. Keep the previous image/package tag for rollback."]
+    ];
+    if (has("cloudbuild.yaml")) return [
+      ["Prepare Google Cloud project", "Set the real project ID, region, Artifact Registry repository and runtime target in substitutions or deployment configuration."],
+      ["Configure identity", "Grant the Cloud Build service account only the roles needed to build, publish and deploy. Avoid downloading long-lived service-account keys."],
+      ["Build and test", "Run dependency installation, tests and the application build in pinned builder images."],
+      ["Publish artifact", "Push an immutable image/package tag to Artifact Registry and retain build provenance."],
+      ["Deploy target", "Add the provider-specific deploy step for Cloud Run, GKE, Compute Engine, Dataflow or the selected service. Confirm network and runtime identity."],
+      ["Verify and rollback", "Check revision/job health, logs and metrics; route traffic back to the previous healthy revision if needed."]
+    ];
+    if (has("terraform") || has(".tf")) return [
+      ["Review inputs", "Set project/account, region, naming, CIDR and environment variables. Keep state and secrets outside source control."],
+      ["Configure backend", "Create a remote state backend with encryption, access control and locking before team use."],
+      ["Validate changes", "Run format, init and validate. Inspect provider versions and module sources."],
+      ["Plan", "Generate a plan for the intended workspace/environment and review every create, update and destroy action."],
+      ["Approve and apply", "Require peer review and a protected approval before applying to a real account."],
+      ["Verify and recover", "Check outputs and cloud resources. Use a reviewed follow-up plan to correct drift; do not manually edit state."]
+    ];
+    if (has("sql/") || has("flyway")) return [
+      ["Prepare database change", "Review versioned SQL migrations and confirm the target engine/version and schema compatibility."],
+      ["Prepare access", "Use private connectivity, TLS and a dedicated migration identity. Load credentials from a secret manager, never from committed files."],
+      ["Test migration", "Restore a recent backup into a disposable database and apply the migration there first."],
+      ["Validate release", "Run migration validation and review lock duration, table size and backward compatibility."],
+      ["Apply with approval", "Confirm backup/PITR and change approval, then run the migration in the controlled release window."],
+      ["Verify and recover", "Check schema history, application compatibility and query health. Prefer forward-fix migrations; restore only under an approved recovery plan."]
+    ];
+    if (has("template.yaml") || has("samconfig")) return [
+      ["Prepare function", "Check handler path, runtime version, dependencies, memory, timeout and event trigger."],
+      ["Configure identity", "Create a least-privilege execution role and a separate deployment identity. Put secrets in the cloud secret manager."],
+      ["Package", "Install pinned dependencies and build the deployment bundle. Inspect package size and included files."],
+      ["Validate template", "Run the provider template validator and review IAM permissions, networking, logs and environment settings."],
+      ["Deploy non-production", "Deploy to a development/staging alias or slot first. Keep production traffic unchanged during validation."],
+      ["Test and promote", "Invoke the function with representative events, inspect logs/metrics and promote a version only after tests pass."]
+    ];
+    if (has("k8s/") || has("charts/") || has("argocd/")) return [
+      ["Prepare application", "Build and test the source; confirm the container listens on the configured port and exposes a health endpoint."],
+      ["Build image", "Build with the Dockerfile, scan it and tag it with a commit SHA or immutable version."],
+      ["Publish image", "Authenticate to the correct registry using short-lived identity and push the immutable image."],
+      ["Configure cluster release", "Review namespace, ConfigMap, Secret references, requests/limits, probes, Service and Ingress/Helm values."],
+      ["Deploy", "Use a namespace-scoped deployment identity, Helm or Argo CD. Review the diff before sync/apply."],
+      ["Verify and rollback", "Check rollout status, Pods, events, Service endpoints and logs. Roll back to the previous known-good image/chart revision."]
+    ];
+    if (has("dockerfile") || has("docker-compose")) return [
+      ["Prepare application", "Confirm build instructions, runtime port, health endpoint and external dependencies."],
+      ["Build locally", "Run the build and tests; build the image with the provided Dockerfile."],
+      ["Inspect image", "Check image layers, user, exposed ports, base image updates and vulnerability scan results."],
+      ["Configure runtime", "Set environment variables and volumes; inject secrets at runtime rather than baking them into the image."],
+      ["Deploy host", "Configure registry access, firewall rules, persistent data and restart policy on a disposable host first."],
+      ["Verify and rollback", "Check container health, logs and resource usage. Retain the prior image tag and compose configuration."]
+    ];
+    return [
+      ["Understand the flow", "Read the deployment overview and identify source, pipeline, artifact, target and consumers."],
+      ["Prepare the project", "Add the supplied build, pipeline and deployment files to the matching paths in your repository."],
+      ["Configure access", "Create least-privilege identities and service connections. Store all real secrets in the target secret manager."],
+      ["Build and publish", "Run tests and package a versioned, immutable artifact. Confirm the artifact can be retrieved by the deploy stage."],
+      ["Deploy safely", "Replace every example account, region, host, path, network, repository and resource name; deploy to non-production first."],
+      ["Verify and rollback", "Run health checks, inspect logs and metrics, and document the previous known-good release for rollback."]
+    ];
+  }, [files]);
   const download = (file: LearningFile) => {
     const blob = new Blob([file.content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
