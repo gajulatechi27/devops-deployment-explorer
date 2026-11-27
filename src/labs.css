@@ -197,3 +197,32 @@
   border:1px solid #26364f;
   border-radius:9px;
 }
+
+/* Deployment-aware Kubernetes workspace */
+.k8s-workspace{display:grid;gap:14px;min-width:0}
+.k8s-deployment-banner{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.k8s-deployment-banner>div>span{font:9px 'DM Mono';letter-spacing:.09em;color:var(--accent)}
+.k8s-deployment-banner h3{margin:5px 0;font:600 17px 'Space Grotesk';color:var(--ink)}
+.k8s-deployment-banner p{margin:0;color:var(--muted);font-size:11px}
+.k8s-status{padding:6px 9px;border:1px solid var(--line);border-radius:20px;color:var(--accent);font:9px 'DM Mono';white-space:nowrap}
+.k8s-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.k8s-summary-grid>div{display:grid;gap:5px;min-width:0;padding:13px;background:var(--panel);border:1px solid var(--line);border-radius:9px}
+.k8s-summary-grid small{font:8px 'DM Mono';letter-spacing:.06em;color:var(--muted)}
+.k8s-summary-grid b{font-size:13px;color:var(--ink);overflow-wrap:anywhere}
+.k8s-summary-grid span{font-size:10px;color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
+.k8s-topology-grid,.k8s-detail-grid,.k8s-metadata-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.k8s-object-row{display:grid;grid-template-columns:minmax(95px,.55fr) minmax(0,1.45fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:10px}
+.k8s-object-row b{color:var(--ink)}
+.k8s-object-row span{color:var(--muted);overflow-wrap:anywhere;line-height:1.45}
+.k8s-command-list{display:grid;gap:6px}
+.k8s-command-list code{display:block;padding:8px 9px;background:var(--panel-alt);border:1px solid var(--line);border-radius:6px;color:var(--ink);font:9px 'DM Mono';overflow-wrap:anywhere}
+.k8s-resource-detail{padding:10px 0;border-bottom:1px solid var(--line)}
+.k8s-resource-detail b,.k8s-resource-detail span{display:block}
+.k8s-resource-detail b{font-size:11px;color:var(--ink)}
+.k8s-resource-detail span,.k8s-resource-detail small{font-size:9px;color:var(--muted)}
+.k8s-resource-detail p{margin:6px 0;font-size:10px;line-height:1.5}
+.k8s-workspace .cluster-box{background:#e8eff5;color:#314b64}
+.k8s-workspace .worker{min-height:84px}
+.k8s-workspace .worker span{overflow-wrap:anywhere;line-height:1.35}
+@media(max-width:900px){.k8s-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.k8s-topology-grid,.k8s-detail-grid,.k8s-metadata-grid{grid-template-columns:1fr}.k8s-deployment-banner{align-items:flex-start;flex-direction:column}.k8s-object-row{grid-template-columns:1fr;gap:4px}}
