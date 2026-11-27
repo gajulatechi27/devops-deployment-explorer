@@ -1813,6 +1813,33 @@ Never commit real secrets. The secret example is intentionally fake and must be 
     download({ path: "deployment-learning-pack.txt", description: "All sample files combined into one reference document.", content: body });
   };
   return <section className="deployment-files">
+    <div className="implementation-guide">
+      <div className="implementation-guide-head">
+        <div><div className="inspector-kicker">REAL-WORLD IMPLEMENTATION GUIDE</div><h3>Reproduce this deployment in your project</h3><p>Follow the same sequence in your own repository. These examples are templates—not production credentials or one-click deployment scripts.</p></div>
+        <span className="implementation-level">6 implementation steps</span>
+      </div>
+      {stageTitle && <div className="stage-file-map"><b>Current stage: {stageTitle}</b><span>Related files — select one to inspect its actual configuration:</span><div>{stageFiles.length ? stageFiles.map(file => <button key={file.path} onClick={() => setSelected(file.path)}>{file.path}</button>) : <small>Review the pipeline and README for this stage.</small>}</div></div>}
+      <ol className="implementation-steps">{runbook.map(([title, detail], index) => <li key={title}><span>{index + 1}</span><div><b>{title}</b><p>{detail}</p></div></li>)}</ol>
+      <details className="project-structure">
+        <summary>View real-world project structure ({files.length} files)</summary>
+        <div className="project-structure-body">
+          <div className="project-paths"><b>Folders</b>{projectFolders.length ? projectFolders.map(path => <code key={path}>{path}</code>) : <small>Root-level files only</small>}</div>
+          <div className="project-paths"><b>Files</b>{files.map(file => <button key={file.path} onClick={() => setSelected(file.path)}><FileCode2 size={12}/>{file.path}</button>)}</div>
+        </div>
+      </details>
+      <details className="production-checklist">
+        <summary>Before adapting this to a real environment — production checklist</summary>
+        <ul>
+          <li>Replace all example.invalid domains, TEST IPs, account/project IDs, regions, repository names, namespaces, paths and resource names.</li>
+          <li>Create separate dev, staging and production configuration; do not hard-code environment-specific values in the pipeline.</li>
+          <li>Configure least-privilege service identities, OIDC/workload identity where supported, and secret-manager references.</li>
+          <li>Pin tool, action, plugin, base-image and dependency versions; scan dependencies and container images.</li>
+          <li>Add approvals, protected branches, artifact retention, audit logs, monitoring and an explicit rollback procedure.</li>
+          <li>Test the complete process in a disposable/non-production environment before using production resources.</li>
+        </ul>
+        <p className="safety-reminder">Never paste real credentials into DeployLab or commit them to Git. Downloaded files are fictional starter templates and must be reviewed for your exact platform and version.</p>
+      </details>
+    </div>
     <div className="files-heading">
       <div><div className="inspector-kicker">DEPLOYMENT FILES</div><b>{files.length} sample files for this flow</b><p>Dummy values only · editable examples · no real credentials</p></div>
       <button className="files-download-all" onClick={downloadGuide}><Download size={13}/> Download pack</button>
