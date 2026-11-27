@@ -59,6 +59,11 @@ export default function SecurityCenter({scenarioId,deploymentName,deploymentProv
   const checks = (scenarioId==="eks" && deploymentProvider==="AWS CLOUD" ? securityChecks : [{name:"Provider-specific security mapping",area:deploymentProvider,stage:0,detail:"This architecture currently has a security review guide only. Provider-specific security files and executable checks have not yet been authored.",command:"Review the selected workflow and define provider-specific controls.",icon:ShieldCheck}]).map((check,index)=>({...check,stage:Math.min(check.stage,Math.max(0,stageNames.length-1)),index}));
   const timelineLabel = deploymentCompleted ? "Deployment flow completed" : deploymentTriggered ? "Deployment flow in progress" : "Deployment not started";
 
+  if (!deploymentCompleted) return <div className="deployment-module security-center">
+    <header className="sc-hero"><div className="sc-hero-copy"><span className="sc-eyebrow"><ShieldCheck size={13}/> DEPLOYMENT SECURITY CENTER</span><h2>{deploymentName}</h2><p>{deploymentProvider} · {scenarioId.toUpperCase()} deployment</p></div><div className="sc-hero-state"><span className="sc-live-dot"/><b>{deploymentTriggered?"Deployment in progress":"Waiting for deployment"}</b><small>SECURITY PACK OPENS AFTER COMPLETION</small></div></header>
+    <section className="sc-panel"><div className="sc-section-head"><div><span>DEPLOYMENT-SPECIFIC SECURITY</span><h3>Security information will appear here after deployment</h3><p>Complete this deployment flow to load its matching security files, identity policies, image controls, runtime configuration and verification guidance.</p></div></div><div className="sc-note"><AlertCircle size={15}/><span>Only artifacts relevant to {deploymentName} will be shown. For ECS Fargate this means ECS task definitions, IAM roles, ECR, networking, secrets and logging—not Kubernetes manifests.</span></div></section>
+  </div>;
+
   return <div className="deployment-module security-center">
     <header className="sc-hero">
       <div className="sc-hero-copy">
@@ -66,7 +71,7 @@ export default function SecurityCenter({scenarioId,deploymentName,deploymentProv
         <h2>{deploymentName}</h2>
         <p>{deploymentProvider} <i/> {scenarioId.toUpperCase()} workflow <i/> Security visibility for the selected deployment</p>
       </div>
-      <div className="sc-hero-state"><span className={"sc-live-dot "+(deploymentTriggered?"active":"")}/><b>{timelineLabel}</b><small>SIMULATION DATA · NO CLOUD ACCOUNT CONNECTED</small></div>
+      <div className="sc-hero-state"><span className={"sc-live-dot "+(deploymentTriggered?"active":"")}/><b>{timelineLabel}</b><small>DEPLOYMENT-SPECIFIC SIMULATION</small></div>
     </header>
 
     <nav className="sc-tabs" aria-label="Deployment security views">
@@ -88,7 +93,7 @@ export default function SecurityCenter({scenarioId,deploymentName,deploymentProv
         <div className="sc-map-foot"><span><Workflow size={14}/> Deployment stage progression is simulated</span><span>Security checks require separate execution evidence</span></div>
       </section>
       <div className="sc-two-col">
-        <section className="sc-panel"><div className="sc-section-head"><div><span>02 / SECURITY FILES</span><h3>Files included in this workflow</h3><p>Inspect the reference files, why they exist and how to verify them.</p></div><button type="button" className="sc-text-button" onClick={()=>setTab("files")}>Browse all <ChevronRight size={13}/></button></div>
+        <section className="sc-panel"><div className="sc-section-head"><div><span>02 / SECURITY FILES</span><h3>Security artifacts for this deployment</h3><p>Inspect deployment-specific files, their purpose, configuration and verification commands.</p></div><button type="button" className="sc-text-button" onClick={()=>setTab("files")}>Browse all <ChevronRight size={13}/></button></div>
           <div className="sc-mini-files">{files.slice(0,5).map(file=><button key={file.path} onClick={()=>{setSelectedPath(file.path);setTab("files");}}><FileCode2 size={15}/><span><b>{file.path}</b><small>{file.category}</small></span><ChevronRight size={14}/></button>)}</div>
         </section>
         <section className="sc-panel"><div className="sc-section-head"><div><span>03 / EXECUTION VISIBILITY</span><h3>Security checks</h3><p>Stage progression is visible; scan results are not connected yet.</p></div></div>
@@ -100,15 +105,15 @@ export default function SecurityCenter({scenarioId,deploymentName,deploymentProv
     </div>}
 
     {tab==="files"&&<div className="sc-view">
-      <div className="sc-page-heading"><div><span>REPOSITORY REFERENCE LIBRARY</span><h3>Security files explorer</h3><p>Search, filter and inspect every security artifact mapped to {deploymentName}.</p></div><span className="sc-count-pill">{files.length} FILES</span></div>
+      <div className="sc-page-heading"><div><span>DEPLOYMENT SECURITY FILES</span><h3>Security files explorer</h3><p>Search, filter and inspect every security artifact mapped to {deploymentName}.</p></div><span className="sc-count-pill">{files.length} FILES</span></div>
       <div className="sc-file-tools"><label><Search size={15}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search file path, purpose or control…"/></label><select value={category} onChange={event=>setCategory(event.target.value)}>{categories.map(item=><option key={item}>{item}</option>)}</select></div>
       <div className="sc-file-layout">
         <aside className="sc-file-list">{filteredFiles.map(file=><button type="button" key={file.path} className={(activeFile?.path===file.path)?"active":""} onClick={()=>setSelectedPath(file.path)}><FileCode2 size={15}/><span><b>{file.path}</b><small>{file.category}</small></span><ChevronRight size={14}/></button>)}{filteredFiles.length===0&&<p className="sc-empty">No files match this filter.</p>}</aside>
         <article className="sc-file-preview">{activeFile?<><div className="sc-file-title"><div><span>{activeFile.category}</span><h4>{activeFile.path}</h4><p>{activeFile.title}</p></div><button type="button" className="sc-outline-button" onClick={()=>navigator.clipboard?.writeText(activeFile.content)}><Code2 size={13}/> Copy content</button></div>
-          <div className="sc-file-meta"><span><b>Purpose</b>{activeFile.purpose}</span><span><b>File type</b>{activeFile.path.split(".").pop()?.toUpperCase()||"TEXT"}</span><span><b>Mapping</b>{activeFile.status==="pipeline-reference"?"Workflow reference":"Configuration example"}</span></div>
+          <div className="sc-file-meta"><span><b>Purpose</b>{activeFile.purpose}</span><span><b>File type</b>{activeFile.path.split(".").pop()?.toUpperCase()||"TEXT"}</span><span><b>Mapping</b>{activeFile.status==="pipeline-reference"?"Workflow reference":"Security configuration"}</span></div>
           <div className="sc-stage-meta"><span>RELATED DEPLOYMENT STAGE</span><b>{activeFile.stage===null?"Cross-cutting":stageNames[Math.min(activeFile.stage,stageNames.length-1)]||"Stage "+activeFile.stage}</b><StageState stage={activeFile.stage??0} triggered={deploymentTriggered} current={deploymentStageIndex} completed={deploymentCompleted}/></div>
           <pre className="sc-code"><code>{activeFile.content}</code></pre>
-          <div className="sc-verify"><div><ShieldCheck size={15}/><b>How to verify this control</b></div><code>{activeFile.verify}</code><small>Verification command or review guidance only. It has not been executed by DeployLab.</small></div>
+          <div className="sc-verify"><div><ShieldCheck size={15}/><b>How to verify this control</b></div><code>{activeFile.verify}</code><small>Reference verification command. DeployLab models this deployment locally; it does not execute cloud commands.</small></div>
         </>:<p className="sc-empty">Choose a file to inspect.</p>}</article>
       </div>
     </div>}
