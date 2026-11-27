@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { Activity, AlertCircle, CheckCircle2, ChevronRight, ClipboardCheck, Code2, FileCode2, FileSearch, Fingerprint, GitBranch, Layers3, LockKeyhole, Network, PackageCheck, Search, ShieldCheck, ShieldAlert, Terminal, Workflow } from "lucide-react";
-import { buildSecurityPack, type SecurityArtifact } from "./simulation/security";
+import { Activity, AlertCircle, CheckCircle2, ChevronRight, ClipboardCheck, Code2, FileCode2, FileSearch, Fingerprint, GitBranch, Layers3, LockKeyhole, Network, PackageCheck, Search, ShieldCheck, ShieldAlert, Workflow } from "lucide-react";
+import { buildSecurityPack } from "./simulation/security";
 
 type Props = {
   scenarioId: string;
