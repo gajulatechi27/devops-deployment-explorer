@@ -149,3 +149,9 @@
 .terminal-panel .terminal-output{min-height:190px;max-height:390px}
 .terminal-panel .terminal-output pre{white-space:pre-wrap;overflow-wrap:anywhere;font:10px/1.55 'DM Mono',monospace}
 @media(max-width:700px){.terminal-guide{padding:13px}.terminal-guide-grid{grid-template-columns:1fr}.terminal-guide-heading{flex-direction:column}.terminal-status-row{align-items:flex-start;flex-direction:column}}
+
+.terminal-workload-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.terminal-workload-notes>div{display:grid;gap:4px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.terminal-workload-notes b{font-size:10px;color:var(--ink)}
+.terminal-workload-notes span{font-size:9px;line-height:1.5;color:var(--muted)}
+@media(max-width:700px){.terminal-workload-notes{grid-template-columns:1fr}}
