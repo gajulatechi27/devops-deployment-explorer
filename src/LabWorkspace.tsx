@@ -89,9 +89,10 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const event=kubernetesEvents[runtime.currentEvent];
  const progress=progressPercent(runtime,kubernetesEvents.length);
  const selectedStrategy=strategies.find(s=>s.name===strategyName)!;
-  const cloudResources=deploymentResources.map(resource=>({resource,estimate:estimateMonthlyResourceCost(resource,deploymentProvider)})).filter((item):item is {resource:DeploymentResource;estimate:NonNullable<ReturnType<typeof estimateMonthlyResourceCost>>}=>item.estimate!==null).map(({resource,estimate})=>({...resource,monthlyCost:estimate.monthlyUsd,costBasis:estimate.basis}));
+  const costResources:DeploymentResource[]=scenarioId==="ecs-fargate-ci"?[...deploymentResources,{id:"ecs-alb",name:"Application Load Balancer",kind:"network",description:"Public HTTPS entry point routing requests to private ECS Fargate tasks."}]:deploymentResources;
+  const cloudResources=costResources.map(resource=>({resource,estimate:estimateMonthlyResourceCost(resource,deploymentProvider)})).filter((item):item is {resource:DeploymentResource;estimate:NonNullable<ReturnType<typeof estimateMonthlyResourceCost>>}=>item.estimate!==null).map(({resource,estimate})=>({...resource,monthlyCost:estimate.monthlyUsd,costBasis:estimate.basis}));
   const monthlyTotal=deploymentCompleted?cloudResources.reduce((sum,r)=>sum+r.monthlyCost,0):0;
-  const excludedResourceCount=deploymentResources.length-cloudResources.length;
+  const excludedResourceCount=costResources.length-cloudResources.length;
   const formatCost=(value:number)=>"$"+value.toFixed(2);
  const runCommand=()=>{const input=command.trim();if(!input)return;if(input==="clear"){setHistory([]);setCommand("");return;}const result=executeTerminalCommand(terminalState,input);setTerminalState(result.state);setHistory(h=>[...h,...result.output.split("\n")]);setCommand("");};
  const title:Record<Mode,string>={dashboard:"Deployment Dashboard",security:"Deployment Security",cost:"Deployment Cost Explorer",runbooks:"Deployment Runbooks",troubleshoot:"Troubleshooting Lab",terminal:"Deployment Terminal",monitoring:"Deployment Observability",strategies:"Deployment Strategies",learning:"Learning Paths",kubernetes:"Kubernetes Cluster Lab",iac:"Infrastructure & Terraform"};
