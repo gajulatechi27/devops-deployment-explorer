@@ -446,3 +446,83 @@ button:disabled{cursor:not-allowed}
 .app.dark .scenario b,.app.dark .right-stage b,.app.dark .project-structure summary{color:var(--ink)}
 .app.dark .scenario.active{background:#263e62;border-color:#42658f;color:var(--ink)}
 .app.dark .file-preview pre{background:#101d33;color:#e2ebfb}
+
+
+/* Deep-navy learning and guidance surfaces inspired by Behind the Paycheck */
+.stage-learning-card,
+.implementation-guide,
+.production-checklist{
+  background:#192b4d;
+  border:1px solid #2b4167;
+  border-radius:16px;
+  color:#fff;
+  box-shadow:0 14px 34px rgba(25,43,77,.12);
+}
+.stage-learning-card h3,
+.implementation-guide-head h3,
+.production-checklist summary,
+.stage-learning-card strong,
+.implementation-guide strong{
+  color:#fff;
+}
+.stage-learning-card p,
+.implementation-guide-head p,
+.implementation-steps li p,
+.production-checklist li,
+.stage-learning-card small{
+  color:#d2dced;
+}
+.implementation-steps li{
+  background:#22395e;
+  border:1px solid #38547d;
+  border-radius:11px;
+  color:#f7faff;
+}
+.implementation-steps li b{color:#fff}
+.implementation-steps li>span{
+  background:#eaf2ff;
+  color:#2868b2;
+}
+.stage-learning-actions button,
+.implementation-guide button,
+.production-checklist button{
+  background:#fff;
+  border:1px solid #d8e4f5;
+  color:#24466f;
+  border-radius:10px;
+  font-weight:700;
+}
+.safety-reminder,
+.files-learning-note{
+  background:#edf4ff;
+  border:1px solid #d7e5f8;
+  border-radius:11px;
+  color:#47658c;
+}
+main>footer{
+  background:#fff;
+  color:#71819d;
+  border-top:1px solid #e2eaf5;
+  padding:15px 20px;
+  font-family:'Inter',sans-serif;
+  font-size:10px;
+  letter-spacing:.15px;
+}
+main>footer span{color:#4c8bd6}
+.app.dark .stage-learning-card,
+.app.dark .implementation-guide,
+.app.dark .production-checklist{
+  background:#192b4d;
+  border-color:#38547d;
+  color:#fff;
+}
+.app.dark .stage-learning-card h3,
+.app.dark .implementation-guide-head h3,
+.app.dark .production-checklist summary,
+.app.dark .implementation-steps li b{color:#fff}
+.app.dark .stage-learning-card p,
+.app.dark .implementation-guide-head p,
+.app.dark .implementation-steps li p,
+.app.dark .production-checklist li{color:#d2dced}
+.app.dark .implementation-steps li{background:#22395e;border-color:#38547d}
+.app.dark main>footer{background:#182744;color:#a9b8d1;border-color:#344866}
