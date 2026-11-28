@@ -6,7 +6,7 @@ type Runbook={id:string;title:string;category:string;summary:string;duration:str
 type Resource={id:string;name:string;kind:string;description?:string};
 type Props={scenarioId:string;deploymentName:string;deploymentProvider:string;deploymentCompleted:boolean;deploymentResources:Resource[]};
 
-function buildRunbooks(scenarioId:string,provider:string,resources:Resource[]):Runbook[]{
+function buildRunbooks(scenarioId:string,resources:Resource[]):Runbook[]{
  const ecs=scenarioId==="ecs-fargate-ci",k8s=resources.some(r=>r.kind==="cluster");
  const workload=resources.find(r=>r.kind==="workload")?.name||"application-workload";
  if(!ecs&&!k8s){
@@ -103,7 +103,7 @@ function buildRunbooks(scenarioId:string,provider:string,resources:Resource[]):R
 }
 
 export default function Runbooks({scenarioId,deploymentName,deploymentProvider,deploymentCompleted,deploymentResources}:Props){
- const runbooks=useMemo(()=>buildRunbooks(scenarioId,deploymentProvider,deploymentResources),[scenarioId,deploymentProvider,deploymentResources]);
+ const runbooks=useMemo(()=>buildRunbooks(scenarioId,deploymentResources),[scenarioId,deploymentResources]);
  const [activeId,setActiveId]=useState("verify"),[category,setCategory]=useState("All"),[query,setQuery]=useState("");
  const [completedSteps,setCompletedSteps]=useState<Record<string,string[]>>({}),[copied,setCopied]=useState("");
  useEffect(()=>{setActiveId("verify");setCategory("All");setQuery("");setCompletedSteps({});setCopied("");},[scenarioId,deploymentName]);
