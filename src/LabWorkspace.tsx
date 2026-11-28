@@ -52,9 +52,6 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const [faultId,setFaultId]=useState("image-pull");
  const [command,setCommand]=useState("");
  const [history,setHistory]=useState<string[]>(["DeployLab simulated shell v1.0","Type help to list supported commands."]);
- const [metrics,setMetrics]=useState({cpu:42,memory:58,requests:1240,errors:2});
- const [monitorHistory,setMonitorHistory]=useState([{cpu:42,memory:58,requests:1240,errors:2}]);
- const [monitorLive,setMonitorLive]=useState(true);
  const [incidentEvidence,setIncidentEvidence]=useState<string[]>([]);
  const [incidentGuess,setIncidentGuess]=useState("");
  const [incidentSolved,setIncidentSolved]=useState(false);
@@ -82,8 +79,6 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const [releaseStep,setReleaseStep]=useState(0);
  const [releaseRolledBack,setReleaseRolledBack]=useState(false);
  useEffect(()=>{localStorage.setItem("deploylab-learning-quiz",JSON.stringify(quiz));},[quiz]);
- useEffect(()=>{if(!monitorLive||mode!=="monitoring")return;const id=window.setInterval(()=>setMetrics(m=>({cpu:Math.max(25,Math.min(96,m.cpu+(Math.random()*10-5))),memory:Math.max(42,Math.min(91,m.memory+(Math.random()*4-1.5))),requests:Math.max(500,m.requests+Math.round(Math.random()*90-35)),errors:Math.max(0,m.errors+Math.round(Math.random()*3-1))})),2200);return()=>window.clearInterval(id);},[monitorLive,mode]);
- useEffect(()=>{setMonitorHistory(h=>[...h.slice(-23),metrics]);},[metrics]);
 
  const fault=faults.find(f=>f.id===faultId)!;
 
