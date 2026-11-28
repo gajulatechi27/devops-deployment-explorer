@@ -94,7 +94,8 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const [quiz,setQuiz]=useState<Record<number,number>>(()=>{try{return JSON.parse(localStorage.getItem("deploylab-learning-quiz")||"{}");}catch{return {};}});
  const [strategyName,setStrategyName]=useState("Rolling");
  const [releaseStep,setReleaseStep]=useState(0);
- const [releaseRolledBack,setReleaseRolledBack]=useState(false);\n const [releaseHealthFailed,setReleaseHealthFailed]=useState(false);
+ const [releaseRolledBack,setReleaseRolledBack]=useState(false);
+ const [releaseHealthFailed,setReleaseHealthFailed]=useState(false);
  useEffect(()=>{localStorage.setItem("deploylab-learning-quiz",JSON.stringify(quiz));},[quiz]);
 
  const activeFaults=hasKubernetesCluster?faults:platformFaults;
