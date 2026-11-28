@@ -722,7 +722,7 @@ export default function App(){
   return()=>window.clearTimeout(timer);
  },[playing,stageIndex,scenario,speed,failureAt,failedStage,deploymentCompleted]);
  useEffect(()=>{setArchitectureView("deployment");setTierMode(3);setStageIndex(-1);setPlaying(false);setDeploymentCompleted(false);setFailedStage(null);setFailureAt(null);setRunLogs(["[SYSTEM] "+scenario.name+" selected.","[SYSTEM] Ready to execute deployment simulation."]);setReleaseVersion(1);setAttempt(1);setSelected(scenario.nodes[0].id);setTab("overview");setLeftCollapsed(false);setRightCollapsed(true);if(!scenario.nodes.some(n=>n.kind==="cluster"))setWorkspace(current=>current==="kubernetes"?"architectures":current);},[scenarioId]);
- useEffect(()=>{setPlaying(false);setStageIndex(-1);setSelected(sceneScenario.nodes[0].id);if(architectureView==="application"){setTab("overview");}},[architectureView]);
+ useEffect(()=>{setPlaying(false);setStageIndex(-1);setDeploymentCompleted(false);setFailedStage(null);setFailureAt(null);setRunLogs(["[SYSTEM] Architecture view changed.","[SYSTEM] Start a deployment simulation to load deployment workspaces."]);setReleaseVersion(1);setAttempt(1);setSelected(sceneScenario.nodes[0].id);if(architectureView==="application"){setTab("overview");}},[architectureView]);
  const progress=architectureView==="application"?0:stageIndex<0?0:Math.round((stageIndex+1)/scenario.stages.length*100);
  const reset=()=>{setPlaying(false);setStageIndex(-1);setDeploymentCompleted(false);setFailedStage(null);setFailureAt(null);setRunLogs(["[SYSTEM] Simulation reset.","[SYSTEM] Ready to execute deployment simulation."]);setReleaseVersion(1);setAttempt(1);};
  const next=()=>{
