@@ -129,12 +129,13 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  useEffect(()=>{setTerminalState(createTerminalState(deploymentCompleted,hasKubernetesWorkload));},[deploymentCompleted,deploymentName,hasKubernetesWorkload]);
  const learningProgressKey="deploylab-learning-quiz:"+scenarioId+":"+deploymentName;
  const [quiz,setQuiz]=useState<Record<number,number>>(()=>{try{return JSON.parse(localStorage.getItem(learningProgressKey)||"{}");}catch{return {};}});
+ const [quizLoadedFor,setQuizLoadedFor]=useState(learningProgressKey);
  const [strategyName,setStrategyName]=useState("Rolling");
  const [releaseStep,setReleaseStep]=useState(0);
  const [releaseRolledBack,setReleaseRolledBack]=useState(false);
  const [releaseHealthFailed,setReleaseHealthFailed]=useState(false);
- useEffect(()=>{try{setQuiz(JSON.parse(localStorage.getItem(learningProgressKey)||"{}"));}catch{setQuiz({});}},[learningProgressKey]);
- useEffect(()=>{localStorage.setItem(learningProgressKey,JSON.stringify(quiz));},[quiz,learningProgressKey]);
+ useEffect(()=>{try{setQuiz(JSON.parse(localStorage.getItem(learningProgressKey)||"{}"));}catch{setQuiz({});}setQuizLoadedFor(learningProgressKey);},[learningProgressKey]);
+ useEffect(()=>{if(quizLoadedFor===learningProgressKey)localStorage.setItem(learningProgressKey,JSON.stringify(quiz));},[quiz,learningProgressKey,quizLoadedFor]);
 
  const activeFaults=hasKubernetesCluster?faults:buildPlatformFaults(scenarioId);
  const fault=activeFaults.find(f=>f.id===faultId)||activeFaults[0];
