@@ -105,7 +105,9 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
  const kubernetesEvents=kubernetesEventsFor(deploymentProvider);
  const event=kubernetesEvents[runtime.currentEvent];
  const progress=progressPercent(runtime,kubernetesEvents.length);
- const selectedStrategy=strategies.find(s=>s.name===strategyName)!;\n const activeLessons=hasKubernetesCluster?[...lessons,...kubernetesLessons]:lessons;\n const strategyTraffic=strategyName==="Canary"?[0,5,25,50,100][Math.min(releaseStep,4)]:strategyName==="A/B testing"?(releaseStep>=2?50:0):strategyName==="Blue / green"?(releaseStep>=4?100:0):Math.min(100,releaseStep*20);
+ const selectedStrategy=strategies.find(s=>s.name===strategyName)!;
+ const activeLessons=hasKubernetesCluster?[...lessons,...kubernetesLessons]:lessons;
+ const strategyTraffic=strategyName==="Canary"?[0,5,25,50,100][Math.min(releaseStep,4)]:strategyName==="A/B testing"?(releaseStep>=2?50:0):strategyName==="Blue / green"?(releaseStep>=4?100:0):Math.min(100,releaseStep*20);
   const costResources:DeploymentResource[]=scenarioId==="ecs-fargate-ci"?[...deploymentResources,{id:"ecs-alb",name:"Application Load Balancer",kind:"network",description:"Public HTTPS entry point routing requests to private ECS Fargate tasks."}]:deploymentResources;
   const cloudResources=costResources.map(resource=>({resource,estimate:estimateMonthlyResourceCost(resource,deploymentProvider)})).filter((item):item is {resource:DeploymentResource;estimate:NonNullable<ReturnType<typeof estimateMonthlyResourceCost>>}=>item.estimate!==null).map(({resource,estimate})=>({...resource,monthlyCost:estimate.monthlyUsd,costBasis:estimate.basis}));
   const monthlyTotal=deploymentCompleted?cloudResources.reduce((sum,r)=>sum+r.monthlyCost,0):0;
