@@ -6,7 +6,6 @@ type Props={scenarioName:string;stages:Stage[];stageIndex:number;playing:boolean
 
 export default function DeploymentSimulator({scenarioName,stages,stageIndex,playing,completed,failedStage,failureAt,logs,releaseVersion,attempt,onFailureAt,onInject,onRetry,onRollback,onReset,onPlay}:Props){
  const [showLogs,setShowLogs]=useState(true);
- const current=failedStage??stageIndex;
  const status=failedStage!==null?"FAILED":completed?"SUCCEEDED":playing?"RUNNING":stageIndex>=0?"PAUSED":"QUEUED";
  const completedCount=failedStage!==null?failedStage:completed?stages.length:Math.max(0,stageIndex+1);
  const progress=Math.round(completedCount/stages.length*100);
