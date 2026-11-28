@@ -528,3 +528,66 @@
 .runbook-empty-meta{display:flex;align-items:center;gap:7px;margin-top:5px;padding:8px 10px;background:var(--panel-alt);border-radius:6px;color:var(--muted);font-size:9px}
 @media(max-width:900px){.runbooks-layout{grid-template-columns:1fr}.runbooks-list{grid-template-columns:repeat(2,minmax(0,1fr))}.runbooks-list-head{grid-column:1/-1}}
 @media(max-width:560px){.runbooks-list{grid-template-columns:1fr}.runbooks-context,.runbook-detail-head,.runbook-footer-actions{align-items:flex-start;flex-direction:column}.runbook-footer-actions>span{text-align:left}.runbook-step{grid-template-columns:23px minmax(0,1fr);gap:7px;padding:9px}.runbook-step-marker{width:22px;height:22px}.runbook-export{align-self:flex-start}}
+
+
+/* Phase 02 — deployment execution simulator */
+.deployment-simulator{display:grid;gap:13px;margin:14px 0;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:11px;min-width:0}
+.simulator-topline{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.simulator-eyebrow{font:9px "DM Mono";letter-spacing:.1em;color:var(--accent)}
+.simulator-topline h3{font:600 17px "Space Grotesk";margin:4px 0}
+.simulator-topline p{font-size:10px;color:var(--muted);margin:0}
+.simulator-status{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--line);border-radius:20px;font:9px "DM Mono";white-space:nowrap}
+.simulator-status i{width:7px;height:7px;border-radius:50%;background:#91a0b4}
+.simulator-status.running{color:#356cb0;border-color:#c6d9f3;background:#f2f7ff}.simulator-status.running i{background:#3978e8;box-shadow:0 0 0 4px #3978e81c}
+.simulator-status.failed{color:#a34236;border-color:#e8c4bd;background:#fff5f2}.simulator-status.failed i{background:#c95b4d}
+.simulator-status.succeeded{color:#4e7d4c;border-color:#c8dcc2;background:#f5faf2}.simulator-status.succeeded i{background:#6b9b60}
+.simulator-status.paused{color:#956a2f;background:#fffaf1;border-color:#ecd8b7}
+.simulator-summary{display:grid;grid-template-columns:1.5fr repeat(3,minmax(0,1fr));gap:9px}
+.simulator-summary>div{padding:10px;background:var(--panel-alt);border:1px solid var(--line);border-radius:7px;min-width:0}
+.simulator-summary small{display:block;font:8px "DM Mono";letter-spacing:.06em;color:var(--muted)}
+.simulator-summary b{display:block;margin-top:5px;font:600 13px "Space Grotesk";overflow-wrap:anywhere}
+.simulator-progress{height:5px;margin-top:8px;background:#dfe6ef;border-radius:10px;overflow:hidden}
+.simulator-progress i{display:block;height:100%;background:#6e9e69;border-radius:10px;transition:width .25s}
+.simulator-body{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr);gap:11px;align-items:start}
+.simulator-stage-list,.simulator-controls-panel,.simulator-log-panel{min-width:0;padding:12px;border:1px solid var(--line);border-radius:8px}
+.simulator-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.simulator-section-head>b,.simulator-section-head>span{font:8px "DM Mono";letter-spacing:.07em;color:var(--muted)}
+.simulator-section-head>b{color:var(--ink)}
+.simulator-stage{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 7px;border-top:1px solid var(--line)}
+.simulator-stage-icon{width:23px;height:23px;display:grid;place-items:center;border-radius:50%;background:var(--panel-alt);color:var(--muted)}
+.simulator-stage>div{display:grid;gap:3px;min-width:0}
+.simulator-stage>div b{font-size:10px;color:var(--ink)}
+.simulator-stage>div small{font-size:8px;color:var(--muted)}
+.simulator-stage-number{font:8px "DM Mono";color:var(--muted)}
+.simulator-stage.done .simulator-stage-icon{background:#e8f2e4;color:#5c8b55}
+.simulator-stage.active{background:#f2f7ff}.simulator-stage.active .simulator-stage-icon{background:#dceaff;color:#3978e8}
+.simulator-stage.failed{background:#fff4f1}.simulator-stage.failed .simulator-stage-icon{background:#f8dfd9;color:#b44f42}.simulator-stage.failed>div b{color:#a34236}
+.simulator-controls-panel{display:grid;gap:10px}
+.simulator-fault-control{padding:10px;background:var(--panel-alt);border:1px solid var(--line);border-radius:7px}
+.simulator-fault-control label{display:block;margin-bottom:6px;font:9px "DM Mono";color:var(--ink)}
+.simulator-fault-control select{width:100%;padding:9px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);font:9px "DM Mono"}
+.simulator-fault-control p{font-size:9px;line-height:1.5;color:var(--muted);margin:7px 0}
+.simulator-inject,.simulator-run,.simulator-reset,.simulator-failure-card button,.simulator-success-card button{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);font:9px "DM Mono";cursor:pointer}
+.simulator-inject{border-color:#e6c9a5;color:#98672e;background:#fffaf2}
+.simulator-inject:disabled,.simulator-run:disabled,.simulator-reset:disabled{opacity:.45;cursor:not-allowed}
+.simulator-action-row{display:flex;gap:7px;flex-wrap:wrap}
+.simulator-run{background:#344d39;color:#fff;border-color:#344d39}.simulator-reset:hover,.simulator-inject:hover:not(:disabled){border-color:var(--accent)}
+.simulator-failure-card{padding:11px;border:1px solid #e7c2bb;border-radius:7px;background:#fff5f2}
+.simulator-failure-card>div{display:flex;align-items:center;gap:7px;color:#a34236;font-size:10px}
+.simulator-failure-card p{font-size:9px;line-height:1.5;color:#87534d}
+.simulator-failure-card button{background:#a84b40;color:white;border-color:#a84b40}
+.simulator-success-card{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid #c9ddc3;border-radius:7px;background:#f5faf2;color:#56824e}
+.simulator-success-card>div{min-width:0}.simulator-success-card b{font-size:10px}
+.simulator-success-card p{margin:4px 0 8px;color:#60765b;font-size:9px;line-height:1.5}
+.simulator-success-card button{border-color:#c5d9bd;color:#4f7948}
+.simulator-log-panel{padding:0;overflow:hidden}
+.simulator-log-panel>.simulator-section-head{padding:10px 12px;margin:0;border-bottom:1px solid var(--line)}
+.simulator-log-panel .simulator-section-head button{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--muted);font:9px "DM Mono";cursor:pointer}
+.simulator-log-panel .simulator-section-head button:first-child b{color:var(--ink)}
+.simulator-log-output{max-height:220px;overflow:auto;padding:9px 12px;background:#1e2924}
+.simulator-log-output pre{margin:0;padding:4px 0;white-space:pre-wrap;overflow-wrap:anywhere;color:#c9d7cb;font:9px/1.55 "DM Mono"}
+.simulator-log-output pre.error{color:#ff9f91}.simulator-log-output pre.success{color:#a6d99b}.simulator-log-output pre.retry{color:#f2c47b}
+.simulator-log-output>p{margin:5px 0;color:#b9c7ba;font-size:9px}
+.simulator-disclaimer{margin:0;color:var(--muted);font-size:8px;line-height:1.5}
+@media(max-width:850px){.simulator-body{grid-template-columns:1fr}.simulator-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.deployment-simulator{padding:11px}.simulator-topline{flex-direction:column}.simulator-summary{grid-template-columns:1fr 1fr}.simulator-stage{padding:8px 3px}}
