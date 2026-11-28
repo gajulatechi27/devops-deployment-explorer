@@ -28,7 +28,7 @@ function filesFor(provider: string, scenarioId: string, deploymentName: string):
     { name: "providers.tf", purpose: "Configure Azure Resource Manager.", content: 'provider "azurerm" {\n  features {}\n  # Authenticate with Azure CLI or workload identity.\n}' },
     { name: "variables.tf", purpose: "Declare resource group and region inputs.", content: 'variable "location" {\n  type    = string\n  default = "Central India"\n}\nvariable "resource_group_name" {\n  type    = string\n  default = "'+slug+'-rg"\n}\nvariable "cluster_name" {\n  type    = string\n  default = "'+slug+'"\n}\nvariable "app_name" {\n  type    = string\n  default = "'+slug+'-app"\n}\nvariable "container_app_environment_id" {\n  type    = string\n  default = null\n}\nvariable "container_image" {\n  type    = string\n  default = "example.azurecr.io/app:replace-me"\n}\nvariable "service_plan_id" {\n  type    = string\n  default = null\n}\nvariable "storage_account_name" {\n  type    = string\n  default = null\n}\nvariable "storage_account_access_key" {\n  type    = string\n  default = null\n}' },
     { name: "main.tf", purpose: "Define the Azure Kubernetes infrastructure.", content: 'resource "azurerm_resource_group" "deployment" {\n  name     = var.resource_group_name\n  location = var.location\n}\n\nresource "azurerm_kubernetes_cluster" "deployment" {\n  name                = var.cluster_name\n  location            = azurerm_resource_group.deployment.location\n  resource_group_name = azurerm_resource_group.deployment.name\n  dns_prefix          = var.cluster_name\n\n  default_node_pool {\n    name       = "system"\n    node_count = 2\n    vm_size    = "Standard_D2s_v3"\n  }\n\n  identity {\n    type = "SystemAssigned"\n  }\n}' },
-    { name: "outputs.tf", purpose: "Expose cluster name and location.", content: 'output "cluster_name" { value = google_container_cluster.deployment.name }\noutput "cluster_location" { value = google_container_cluster.deployment.location }' },
+    { name: "outputs.tf", purpose: "Expose cluster name and location.", content: 'output "cluster_name" { value = azurerm_kubernetes_cluster.deployment.name }\noutput "cluster_location" { value = azurerm_kubernetes_cluster.deployment.location }' },
     { name: "terraform.tfvars.example", purpose: "Example values; supply an existing project and network.", content: 'project_id = "REPLACE_WITH_PROJECT_ID"\nregion = "asia-south1"\ncluster_name = "'+slug+'"\nnetwork = "REPLACE_WITH_VPC"\nsubnetwork = "REPLACE_WITH_SUBNET"' }
   ];
   return [
@@ -38,6 +38,49 @@ function filesFor(provider: string, scenarioId: string, deploymentName: string):
 }
 
 export function buildTerraformPack(provider: string, scenarioId: string, deploymentName: string): TerraformPack {
+  const generatedFiles = filesFor(provider, scenarioId, deploymentName).map(file => {
+    if (provider === "AWS CLOUD" && scenarioId === "ecs-fargate-ci" && file.name === "main.tf") {
+      return { ...file, purpose: "Illustrative ECS Fargate cluster, task definition and service resources.", content: `resource "aws_ecs_cluster" "deployment" {
+  name = var.project_name
+}
+
+resource "aws_ecs_task_definition" "app" {
+  family                   = var.project_name
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = var.execution_role_arn
+  container_definitions = jsonencode([{
+    name      = "app"
+    image     = var.container_image
+    essential = true
+    portMappings = [{ containerPort = 8080, protocol = "tcp" }]
+  }])
+}
+
+resource "aws_ecs_service" "app" {
+  name            = var.project_name
+  cluster         = aws_ecs_cluster.deployment.id
+  task_definition = aws_ecs_task_definition.app.arn
+  desired_count   = 2
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = var.private_subnet_ids
+    security_groups  = var.security_group_ids
+    assign_public_ip = false
+  }
+}` };
+    }
+    if (provider === "AWS CLOUD" && scenarioId === "ecs-fargate-ci" && file.name === "variables.tf") {
+      return { ...file, content: file.content + `
+variable "container_image" { type = string }
+variable "execution_role_arn" { type = string }
+` };
+    }
+    return file;
+  });
+
   const supported = ["AWS CLOUD", "MICROSOFT AZURE", "GOOGLE CLOUD"].includes(provider);
   return {
     providerLabel: provider,
@@ -45,7 +88,7 @@ export function buildTerraformPack(provider: string, scenarioId: string, deploym
     note: supported
       ? "Illustrative provider-specific starter files for this deployment flow. Review networking, IAM, state backend, versions and cost before using them. DeployLab never runs these commands."
       : "Terraform is not automatically required for this deployment. Confirm who owns the infrastructure and which provider/platform is used before creating Terraform resources.",
-    files: filesFor(provider, scenarioId, deploymentName),
+    files: generatedFiles,
     commands
   };
 }
