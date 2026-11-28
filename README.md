@@ -1,19 +1,23 @@
-# DeployLab — Interactive DevOps Simulation & Learning Platform
+# DeployLab — Deployment Engineering & DevOps Simulation
 
-DeployLab is a simulation-only environment for learning how software is built, deployed, monitored and recovered. It combines architecture maps, deterministic deployment events, infrastructure labs, troubleshooting exercises and learning paths.
+DeployLab is a browser-based, simulation-only environment for exploring software delivery across cloud and on-premises reference architectures. It combines architecture maps, a deterministic deployment walkthrough, engineering labs, operational guidance and learning paths.
 
-**Safety by design:** DeployLab does not connect to AWS, Azure, GCP, Kubernetes clusters or on-premises infrastructure. It does not execute shell commands, provision resources, request credentials or send telemetry. Every output is simulated in the browser.
+> **Simulation boundary:** DeployLab does not connect to AWS, Azure, GCP, Kubernetes clusters or on-premises infrastructure. It does not provision resources, execute commands on a host, request cloud credentials or ingest live telemetry. Commands, files, logs, traces, metrics, costs, security checks and deployment outcomes are illustrative local examples.
 
 ## Workspaces
 
-- **Architectures** — explore cloud and on-premises deployment flows plus application/deployment architecture pairs for retail, video streaming, food delivery, digital banking, instant payments and multi-tenant SaaS. Inspect components, follow deployment stages and view illustrative commands.
-- **Kubernetes** — step through an EKS release lifecycle, inspect control-plane responsibilities, and adjust a simulated replica count across worker nodes.
-- **Troubleshoot** — inject ImagePullBackOff, CrashLoopBackOff, readiness-probe and Service-selector incidents; inspect symptoms and apply a simulated recovery.
-- **Terminal** — practise a safe allow-listed subset of kubectl, Docker and Terraform commands. Unknown commands return a simulated error; commands never reach the host.
-- **Monitoring** — inspect synthetic CPU, memory, request and error metrics; trigger a traffic spike and see alert thresholds change.
-- **Strategies** — compare rolling, blue/green, canary and A/B release strategies by risk, downtime and rollout speed.
-- **Terraform** — preview a simulated plan/apply and learn the infrastructure lifecycle without configuring a provider.
-- **Learn** — complete short lessons and knowledge checks on CI/CD, Kubernetes reconciliation, probes and Infrastructure as Code.
+- **Deployment Dashboard** — entry point to the deployment engineering workspaces.
+- **Deployment Architectures** — browse cloud, on-premises and application reference architectures; inspect components and follow the selected deployment flow.
+- **Deployment Terminal** — practise supported, simulated command workflows. Commands are not sent to a real shell or cloud account.
+- **Infrastructure & Terraform** — inspect architecture-specific Terraform examples and simulated plan/apply concepts.
+- **Kubernetes Deployments** — available for Kubernetes architectures; inspect example manifests and simulated workload progression.
+- **Deployment Security** — inspect workflow-specific security reference files, identity policies, runtime controls and verification guidance. No scanner or cloud security API is connected.
+- **Deployment Cost Explorer** — view illustrative estimates, not provider billing or quotes.
+- **Deployment Runbooks** — review target-aware verification and rollback procedures. Commands are reference material and are not executed.
+- **Deployment Observability** — inspect synthetic metrics, illustrative logs/traces, alert thresholds and selected architecture resources. No Prometheus, Grafana, Datadog or cloud telemetry integration is connected.
+- **Troubleshooting Lab** — investigate architecture-aware simulated incidents, collect evidence and practise recovery decisions.
+- **Deployment Strategies** — practise rolling, blue/green, canary and A/B release progressions with simulated health gates and rollback.
+- **Learning Paths** — complete deployment-aware lessons, practical tasks and knowledge checks. Quiz progress is stored locally in the browser per deployment.
 
 ## Run locally
 
@@ -32,42 +36,37 @@ npm run build
 npm run preview
 ```
 
-The simulation engine has Node's built-in test runner coverage for ordered event progression, fault injection/recovery, reset behavior and empty event lists. CI runs tests before the TypeScript/Vite production build.
+GitHub Actions runs the test suite and TypeScript/Vite production build on pushes and pull requests to `main`.
 
 ## Architecture
 
 - React 18, TypeScript and Vite
-- Data-driven architecture scenarios in `src/App.tsx`
+- Data-driven architecture scenarios and deployment orchestration in `src/App.tsx`
+- Engineering workspaces in `src/LabWorkspace.tsx`
+- Dedicated modules for security, runbooks and observability
 - Shared simulation state transitions in `src/simulation/engine.ts`
-- Interactive labs in `src/LabWorkspace.tsx`
-- Node built-in tests in `src/simulation/engine.test.mjs`
+- Node's built-in test runner for simulation and pricing logic
 
-The simulation engine is deterministic and local. New scenarios should define events and component metadata rather than implementing their own playback state machines.
-
-## Architecture references and attribution\n\nThe AKS and GKE learning flows are educational representations based on public cloud reference guidance, not exact reproductions of any private production environment. The marketplace, retail, streaming, food delivery, banking, instant payment and SaaS examples are fictional reference architectures inspired by common industry patterns; they are **not** claims about the named companies' private internal systems. Each case study provides an application view and a separate deployment view.\n\n- [Microsoft AKS baseline architecture](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks/baseline-aks)\n- [Microsoft AKS DevSecOps process](https://learn.microsoft.com/en-us/azure/architecture/guide/devsecops/devsecops-on-aks)\n- [Google Cloud modern CI/CD with GKE](https://docs.cloud.google.com/kubernetes-engine/docs/tutorials/modern-cicd-gke-reference-architecture)\n- [Google Cloud GKE CI/CD best practices](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/best-practices-continuous-integration-delivery-kubernetes)\n\n## Product principles
+## Product principles
 
 1. Teach how systems behave, not only what components are called.
 2. Keep architecture content and simulation events data-driven.
-3. Make failure and recovery first-class learning activities.
-4. Clearly label all commands, logs and metrics as simulated.
+3. Make failure, recovery and release safety first-class learning activities.
+4. Label illustrative commands, files, logs, metrics, costs and security artifacts clearly.
 5. Never silently connect to or mutate real infrastructure.
+6. Do not represent synthetic results as production evidence.
 
 ## Roadmap
 
 - [x] Responsive 2D architecture maps and component inspector
-- [x] Shared deterministic simulation engine and unit tests
-- [x] EKS lifecycle walkthrough and cluster replica visualizer
-- [x] Troubleshooting fault injection and recovery exercises
-- [x] Safe terminal command simulator
-- [x] Synthetic monitoring and alert thresholds
-- [x] Terraform plan/apply simulator
-- [x] Deployment strategy comparison
-- [x] Learning modules and quizzes
-- [x] Add Azure AKS deployment with GitHub Actions, ACR and federated identity\n- [x] Add Google GKE deployment with Cloud Build, Artifact Registry and Cloud Deploy\n- [x] Add a representative Flipkart-style marketplace microservices reference flow
-- [x] Add Amazon-style retail, Netflix-style streaming and Swiggy-style food delivery reference architectures
-- [x] Add digital banking, UPI-style payment and multi-tenant SaaS reference architectures
-- [x] Add switchable application and deployment architecture views to case studies\n- [ ] Expand architecture library: ECS, Lambda, Helm, Ansible, Argo CD and GitOps
-- [ ] Add more scenario-specific branching, rollback and dependency graphs
-- [ ] Add persistent local learning progress and richer guided challenges
-- [ ] Add accessible keyboard-first terminal history and command completion
-
+- [x] Shared deployment simulation engine and CI checks
+- [x] Cloud and on-premises reference architecture library
+- [x] Architecture-aware troubleshooting and operational runbooks
+- [x] Deployment security reference packs
+- [x] Synthetic observability workspace
+- [x] Deployment strategy simulations
+- [x] Deployment-aware learning paths and local quiz progress
+- [ ] Expand automated component and interaction tests
+- [ ] Add keyboard-first accessibility and end-to-end browser coverage
+- [ ] Expand provider-specific security and operational reference packs
+- [ ] Add optional, explicitly configured real integrations only as a separately scoped product capability
