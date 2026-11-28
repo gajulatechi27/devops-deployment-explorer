@@ -122,7 +122,7 @@ export default function LabWorkspace({mode,deploymentCompleted=false,deploymentT
 
  const activeFaults=hasKubernetesCluster?faults:buildPlatformFaults(scenarioId);
  const fault=activeFaults.find(f=>f.id===faultId)||activeFaults[0];
- useEffect(()=>{setFaultId((hasKubernetesCluster?faults:buildPlatformFaults(scenarioId,deploymentProvider))[0].id);setIncidentEvidence([]);setIncidentGuess("");setIncidentSolved(false);setRuntime(initialRuntime());},[hasKubernetesCluster,scenarioId,deploymentProvider,deploymentName]);
+ useEffect(()=>{setFaultId((hasKubernetesCluster?faults:buildPlatformFaults(scenarioId))[0].id);setIncidentEvidence([]);setIncidentGuess("");setIncidentSolved(false);setRuntime(initialRuntime());},[hasKubernetesCluster,scenarioId,deploymentProvider,deploymentName]);
 
  const kubernetesEvents=kubernetesEventsFor(deploymentProvider);
  const event=kubernetesEvents[runtime.currentEvent];
