@@ -40,7 +40,6 @@ function buildRunbooks(scenarioId:string,resources:Resource[]):Runbook[]{
    ]}
   ];
  }
- const target=ecs?"Amazon ECS Fargate":k8s?(provider==="AWS CLOUD"?"Amazon EKS":provider==="MICROSOFT AZURE"?"Azure Kubernetes Service":"Google Kubernetes Engine"):provider;
  const verify:Step[]=ecs?[
   {title:"Confirm ECS service stability",purpose:"Check desired, running and pending task counts before accepting the release.",command:"aws ecs describe-services --cluster \"$ECS_CLUSTER\" --services \"$ECS_SERVICE\" --query 'services[0].{status:status,desired:desiredCount,running:runningCount,pending:pendingCount}'",expected:"Service is ACTIVE; runningCount matches desiredCount and pendingCount returns to zero.",warning:"Set the cluster and service variables for the selected environment."},
   {title:"Inspect the active task definition",purpose:"Confirm the service uses the intended task-definition revision and image.",command:"aws ecs describe-task-definition --task-definition \"$TASK_DEFINITION\" --query 'taskDefinition.{family:family,revision:revision,cpu:cpu,memory:memory,images:containerDefinitions[*].image}'",expected:"The approved task-definition revision and image reference are shown."},
