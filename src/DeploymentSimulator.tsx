@@ -1,0 +1,29 @@
+import { useState } from "react";
+import { Activity,AlertTriangle,Check,Circle,Clipboard,Play,RefreshCw,RotateCcw,ShieldAlert,Terminal,Undo2 } from "lucide-react";
+
+type Stage={title:string;detail:string;command:string;node:string;from:string;to:string;kind:"request"|"response"|"success"};
+type Props={scenarioName:string;stages:Stage[];stageIndex:number;playing:boolean;completed:boolean;failedStage:number|null;failureAt:number|null;logs:string[];releaseVersion:number;attempt:number;onFailureAt:(value:number|null)=>void;onInject:()=>void;onRetry:()=>void;onRollback:()=>void;onReset:()=>void;onPlay:()=>void};
+
+export default function DeploymentSimulator({scenarioName,stages,stageIndex,playing,completed,failedStage,failureAt,logs,releaseVersion,attempt,onFailureAt,onInject,onRetry,onRollback,onReset,onPlay}:Props){
+ const [showLogs,setShowLogs]=useState(true);
+ const current=failedStage??stageIndex;
+ const status=failedStage!==null?"FAILED":completed?"SUCCEEDED":playing?"RUNNING":stageIndex>=0?"PAUSED":"QUEUED";
+ const completedCount=failedStage!==null?failedStage:completed?stages.length:Math.max(0,stageIndex+1);
+ const progress=Math.round(completedCount/stages.length*100);
+ const copy=async()=>{try{await navigator.clipboard.writeText(logs.join("\n"));}catch{}};
+ return <section className="deployment-simulator">
+  <div className="simulator-topline"><div><span className="simulator-eyebrow">PHASE 02 · EXECUTION ENGINE</span><h3>Deployment execution</h3><p>{scenarioName} · Attempt {attempt} · Simulated release v{releaseVersion}</p></div><span className={"simulator-status "+status.toLowerCase()}><i/>{status}</span></div>
+  <div className="simulator-summary"><div><small>PIPELINE PROGRESS</small><b>{progress}%</b><div className="simulator-progress"><i style={{width:progress+"%"}}/></div></div><div><small>STAGES</small><b>{completedCount} / {stages.length}</b></div><div><small>ACTIVE RELEASE</small><b>v{releaseVersion}</b></div><div><small>EXECUTION</small><b>{attempt>1?"Retry #"+(attempt-1):"First attempt"}</b></div></div>
+  <div className="simulator-body">
+   <div className="simulator-stage-list"><div className="simulator-section-head"><b>PIPELINE STAGES</b><span>{stages.length} stages</span></div>{stages.map((stage,i)=>{const failed=failedStage===i,done=failedStage!==null?i<failedStage:completed||i<stageIndex||completed&&i===stageIndex,active=!failed&&!completed&&i===stageIndex;return <div key={stage.title} className={"simulator-stage "+(failed?"failed":done?"done":active?"active":"")}><span className="simulator-stage-icon">{failed?<AlertTriangle size={14}/>:done?<Check size={14}/>:active?<Activity size={14}/>:<Circle size={12}/>}</span><div><b>{stage.title}</b><small>{failed?"Failure injected":done?"Completed":active?playing?"Executing now":"Current stage":"Waiting"}</small></div><span className="simulator-stage-number">{String(i+1).padStart(2,"0")}</span></div>;})}</div>
+   <div className="simulator-controls-panel"><div className="simulator-section-head"><b>EXECUTION CONTROLS</b><span>LOCAL SIMULATION</span></div>
+    <div className="simulator-fault-control"><label htmlFor="sim-failure-stage">Inject a failure at</label><select id="sim-failure-stage" value={failureAt===null?"":String(failureAt)} onChange={e=>onFailureAt(e.target.value===""?null:Number(e.target.value))} disabled={playing||completed||failedStage!==null}><option value="">No injected failure</option>{stages.map((s,i)=><option key={s.title} value={i}>{String(i+1).padStart(2,"0")} · {s.title}</option>)}</select><p>Choose a stage, then start or resume the flow. The simulator will stop when that stage is reached.</p><button className="simulator-inject" onClick={onInject} disabled={failureAt===null||playing||completed||failedStage!==null}><ShieldAlert size={14}/> Inject at selected stage</button></div>
+    <div className="simulator-action-row"><button className="simulator-run" onClick={onPlay} disabled={playing||failedStage!==null||completed}><Play size={14}/>{stageIndex<0?"Start deployment":"Resume deployment"}</button><button className="simulator-reset" onClick={onReset}><RotateCcw size={14}/> Reset</button></div>
+    {failedStage!==null&&<div className="simulator-failure-card"><div><AlertTriangle size={16}/><b>{stages[failedStage]?.title} failed</b></div><p>The simulated stage stopped. Review the execution log, then retry the failed stage or roll back the active release.</p><button onClick={onRetry}><RefreshCw size={14}/> Retry failed stage</button></div>}
+    {completed&&<div className="simulator-success-card"><Check size={16}/><div><b>Deployment completed</b><p>Simulated release v{releaseVersion} is active. You can inspect the deployment-specific workspace tabs.</p><button onClick={onRollback} disabled={releaseVersion===1}><Undo2 size={14}/> Roll back to v{releaseVersion-1||1}</button></div></div>}
+   </div>
+  </div>
+  <div className="simulator-log-panel"><div className="simulator-section-head"><button onClick={()=>setShowLogs(v=>!v)}><Terminal size={14}/><b>EXECUTION LOG</b><span>{logs.length} entries</span></button><button onClick={copy}><Clipboard size={13}/> Copy logs</button></div>{showLogs&&<div className="simulator-log-output" aria-live="polite">{logs.length?logs.map((line,i)=><pre key={i} className={line.includes("[ERROR]")?"error":line.includes("[SUCCESS]")?"success":line.includes("[RETRY]")?"retry":""}>{line}</pre>):<p>Execution output will appear here when the deployment starts.</p>}</div>}</div>
+  <p className="simulator-disclaimer">All stage results, failures, logs and release versions are simulated in the browser. No cloud API, account or infrastructure is contacted.</p>
+ </section>;
+}
