@@ -692,3 +692,9 @@
 .strategy-deployment-target b{font-size:10px;color:var(--ink)}
 .strategy-deployment-target span{font-size:10px;font-weight:600;color:var(--ink)}
 .strategy-deployment-target small{font-size:8px;color:var(--muted)}
+
+
+/* Learning path deployment context */
+.learning-deployment-resources{display:grid;gap:5px;margin:10px 0 14px;padding:10px 11px;border:1px solid var(--line);border-radius:6px;background:var(--panel-alt)}
+.learning-deployment-resources b{font-size:9px;color:var(--ink)}
+.learning-deployment-resources span{font-size:9px;line-height:1.6;color:var(--muted)}
