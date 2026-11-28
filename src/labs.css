@@ -672,3 +672,16 @@
 .obs-empty>small{color:var(--muted);font-size:8px}
 @media(max-width:900px){.obs-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.obs-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.obs-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.obs-heading{flex-direction:column}.obs-log-full{grid-template-columns:75px 38px minmax(0,1fr)}.obs-log-full strong{display:none}.obs-tabs button{padding:7px 6px;font-size:8px}}
+
+
+/* Phase 03 — rollout controls and structured learning paths */
+.strategy-traffic{display:grid;gap:7px;margin:12px 0;padding:11px;border:1px solid var(--line);border-radius:7px;background:var(--panel-alt)}
+.strategy-traffic>div:first-child{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.strategy-traffic>div:first-child span{font-size:9px;color:var(--muted)}
+.strategy-traffic>div:first-child b{font:600 14px "DM Mono";color:var(--ink)}
+.strategy-traffic>small{font-size:8px;line-height:1.5;color:var(--muted)}
+.strategy-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.learning-context{padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel-alt);font-size:9px;line-height:1.5;color:var(--muted)}
+.learning-task{margin:9px 0;padding:9px 10px;border-left:3px solid var(--accent);background:var(--panel-alt);border-radius:0 6px 6px 0}
+.learning-task strong{font:9px "DM Mono";color:var(--ink)}
+.learning-task p{margin:4px 0 0;font-size:9px;line-height:1.5;color:var(--muted)}
